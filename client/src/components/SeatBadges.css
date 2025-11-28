@@ -1,0 +1,33 @@
+.seat-badges {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.seat-badge {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.seat-available {
+    background: #1abc9c;
+}
+
+/* 초록 */
+.seat-hold {
+    background: #f39c12;
+}
+
+/* 주황 */
+.seat-booked {
+    background: #e74c3c;
+}
+
+/* 빨강 */

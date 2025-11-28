@@ -1,0 +1,20 @@
+[
+    {
+        "id": "moal-mola",
+        "title": "Moal Mola Liveaboard Trip",
+        "image": "/images/special/moal-mola.jpg",
+        "dates": "2025.08.12 - 2025.08.19",
+        "price": 3900,
+        "description": "스쿠버넷 단독 기획 갈라파고스 여행",
+        "link": "/special/moal-mola"
+    },
+    {
+        "id": "invictus",
+        "title": "Invictus Liveaboard Trip",
+        "image": "/images/special/invictus.jpg",
+        "dates": "2025.10.02 - 2025.10.09",
+        "price": 4200,
+        "description": "코모도 최고의 프리미엄 리브어보드",
+        "link": "/special/invictus"
+    }
+]

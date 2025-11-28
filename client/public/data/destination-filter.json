@@ -1,0 +1,85 @@
+{
+  "Egypt": [
+    "Red Sea"
+  ],
+  "Costrica": [
+    "Cocos Islands"
+  ],
+  "Ecuador": [
+    "Galapagos"
+  ],
+  "Indonesia": [
+    "Banda Sea",
+    "Banda Sea, Raja Ampat",
+    "Cenderawasih",
+    "Derawan",
+    "Halmahera",
+    "Halmahera, Raja Ampat",
+    "Komodo",
+    "Lembeh, Banka, Bunaken",
+    "Lembeh, Halmahera",
+    "Lembeh, Luwuk",
+    "Manado ",
+    "Manado, Halmahera",
+    "Raja Ampat",
+    "Raja Ampat, Banda Sea",
+    "Raja Ampat, Halmahera",
+    "Raja Ampat, Halmahera, Lembeh",
+    "Raja Ampat, Triton Bay",
+    "Sangihe",
+    "Sulawisi"
+  ],
+  "Maldives": [
+    "Central",
+    "Deep South",
+    "Far North",
+    "Hanifaru Bay"
+  ],
+  "Marshall Islands": [
+    "Bikini Atoll"
+  ],
+  "Mexico": [
+    "Socorro",
+    "Sea of Cortez",
+    "La Paz",
+    "Cabo Pulmo",
+    "Magdalena Bay"
+  ],
+  "Myanmar": [
+    "Merqui Archipelago"
+  ],
+  "Oman": [
+    "Oman"
+  ],
+  "Palau": [
+    "Palau"
+  ],
+  "Papua New Guinea": [
+    "Alotau",
+    "Kavieng",
+    "Kimbe Bay",
+    "Milne Bay",
+    "Rabaul",
+    "Wewak"
+  ],
+  "Philippines": [
+    "Tubbataha",
+    "Visayas"
+  ],
+  "Saudi Arabia": [
+    "Red Sea"
+  ],
+  "Solomon Islands": [
+    "Solomon"
+  ],
+  "Thailand": [
+    "Similan",
+    "Similan - South"
+  ],
+  "Truk": [
+    "Truk"
+  ],
+  "Others": [
+    "othres"
+  ]
+}

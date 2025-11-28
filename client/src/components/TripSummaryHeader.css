@@ -1,0 +1,104 @@
+.trip-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 24px;
+}
+
+.trip-summary-info h1 {
+    font-size: 1.8rem;
+    margin-bottom: 4px;
+}
+
+.trip-summary-info h3 {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.trip-date {
+    font-weight: 500;
+}
+
+.trip-route {
+    color: #444;
+    margin-top: 4px;
+}
+
+.trip-meta {
+    margin-top: 8px;
+    display: flex;
+    gap: 16px;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.trip-summary-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-outline {
+    border: 1px solid #007bff;
+    color: #007bff;
+    background: transparent;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-outline:hover {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary {
+    background: #00a86b;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background: #00925f;
+}
+
+.trip-summary-actions .btn-outline,
+.trip-summary-actions .btn-primary {
+    all: unset;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* outline 버튼 스타일 */
+.trip-summary-actions .btn-outline {
+    border: 1px solid #007bff;
+    color: #007bff;
+    background: #fff;
+}
+
+.trip-summary-actions .btn-outline:hover {
+    background: #007bff;
+    color: #fff;
+}
+
+/* primary 버튼 스타일 */
+.trip-summary-actions .btn-primary {
+    background: #00a86b;
+    color: #fff;
+    border: none;
+}
+
+.trip-summary-actions .btn-primary:hover {
+    background: #00925f;
+}

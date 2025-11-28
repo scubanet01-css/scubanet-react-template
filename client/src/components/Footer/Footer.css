@@ -1,0 +1,79 @@
+/* /src/components/Footer/Footer.css */
+
+.footer {
+    background: #f4f6f8;
+    padding: 40px 20px 20px;
+    margin-top: 60px;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* 그리드 레이아웃 */
+.footer-section {
+    margin-bottom: 32px;
+}
+
+.footer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 40px;
+}
+
+/* 제목 */
+.footer-section h3 {
+    font-size: 18px;
+    margin-bottom: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* 사이트맵 리스트 */
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-section ul li {
+    margin-bottom: 10px;
+}
+
+.footer-section ul li a {
+    text-decoration: none;
+    color: #555;
+    font-size: 15px;
+}
+
+.footer-section ul li a:hover {
+    color: #0099ff;
+}
+
+/* 회사 정보 */
+.company-info p {
+    margin: 4px 0;
+    color: #555;
+    font-size: 15px;
+}
+
+/* 증서 이미지 */
+.cert-image-wrapper {
+    background: white;
+    padding: 8px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+}
+
+.cert-image-wrapper img {
+    width: 100%;
+    border-radius: 6px;
+    display: block;
+}
+
+/* 하단 카피라이트 */
+.footer-bottom {
+    grid-column: 1 / -1;
+    margin-top: 20px;
+    text-align: center;
+    color: #777;
+    font-size: 14px;
+}

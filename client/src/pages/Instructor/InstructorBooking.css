@@ -1,0 +1,145 @@
+.instructorBooking-container {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  font-family: "Noto Sans KR", sans-serif;
+}
+
+.product-name {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 8px;
+}
+
+.special-offer-box {
+  margin: 10px 0;
+}
+
+.special-badge {
+  background-color: #00b386;
+  color: white;
+  border-radius: 8px;
+  padding: 4px 10px;
+  margin-right: 6px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.cabin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cabin-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  padding: 12px;
+}
+
+.cabin-header {
+  font-size: 1.1em;
+  margin-bottom: 6px;
+}
+
+.deck {
+  color: #777;
+  font-size: 0.9em;
+}
+
+.seat-status span {
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.price {
+  font-weight: bold;
+  color: #222;
+}
+
+.original {
+  text-decoration: line-through;
+  color: #888;
+  margin-left: 6px;
+}
+
+.book-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.book-btn:hover {
+  background-color: #0056b3;
+}
+
+.footer-bar {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.back-btn,
+.invoice-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+}
+
+.back-btn {
+  background-color: #007bff;
+}
+
+.invoice-btn {
+  background-color: #00b386;
+}
+
+.book-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.subcabin-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px dotted #ddd;
+}
+
+.occ-select {
+  padding: 3px 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 0.8rem;
+}
+
+.book-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.book-btn:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}

@@ -1,0 +1,84 @@
+.special-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.special-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.special-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* 이미지 */
+.special-image-wrapper {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+}
+
+.special-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 텍스트 */
+.special-info {
+    padding: 16px;
+}
+
+.special-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.special-dates {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.special-description {
+    font-size: 15px;
+    color: #444;
+    margin-bottom: 14px;
+    min-height: 42px;
+}
+
+/* 하단 가격/버튼 */
+.special-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.special-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0099ff;
+}
+
+.special-btn {
+    padding: 6px 12px;
+    background: #0099ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.special-btn:hover {
+    background: #0077cc;
+}

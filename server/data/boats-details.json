@@ -1,0 +1,2290 @@
+{
+  "data": [
+    {
+      "id": 115,
+      "name": "Adora",
+      "fleet": {
+        "id": 341,
+        "name": "Maldives Boat Club"
+      },
+      "type": "motor_yacht",
+      "model": "",
+      "yearBuilt": 2014,
+      "yearRenovation": 2023,
+      "material": "glass_reinforced_plastic",
+      "builder": "",
+      "length": 38,
+      "width": 10,
+      "draft": 3,
+      "capacity": 21,
+      "cabinsNumber": 11,
+      "wifi": true,
+      "onboardPayMethods": [
+        "american_express",
+        "discover",
+        "master_card",
+        "visa",
+        "cash"
+      ],
+      "crewSize": 13,
+      "languagesCrew": [],
+      "boatDescription": "",
+      "media": [],
+      "guestsGuige": "",
+      "nitrox": false,
+      "divingEquipmentRental": false,
+      "divingFacilities": [],
+      "divingPhotographyFacilities": [],
+      "languagesDiveGuides": [],
+      "facilitiesAmenities": [],
+      "foodDrinks": [],
+      "sharedKitchen": [],
+      "additionalInfo": "",
+      "suitableFor": [],
+      "friendlyFor": [],
+      "speed": "",
+      "fuelConsumption": "",
+      "fuelCapacity": "",
+      "range": "",
+      "engines": "",
+      "generator": "",
+      "compressors": "",
+      "tenders": "",
+      "powerPlugsVoltage": [],
+      "powerPlugsTypes": [],
+      "waterMaker": false,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "",
+      "navigationSafety": [],
+      "freshwaterTankCapacity": "",
+      "updatedAt": "2025-02-13T11:23:18+00:00"
+    },
+    {
+      "id": 363,
+      "name": "Black Pearl",
+      "fleet": {
+        "id": 211,
+        "name": "Pearl Fleet"
+      },
+      "type": "motor_yacht",
+      "model": "",
+      "yearBuilt": 2019,
+      "yearRenovation": 0,
+      "material": "steel",
+      "builder": "",
+      "length": 47,
+      "width": 9,
+      "draft": 4,
+      "capacity": 24,
+      "cabinsNumber": 12,
+      "wifi": true,
+      "onboardPayMethods": [
+        "master_card",
+        "visa",
+        "cash",
+        "american_express"
+      ],
+      "crewSize": 20,
+      "languagesCrew": [
+        "english",
+        "chinese",
+        "indonesian",
+        "filipino",
+        "thai"
+      ],
+      "boatDescription": "Crafted to meet the rigorous standards of the International Integrity Stability Standard for yachts surpassing 46-metres, M/Y Black Pearl was constructed using only the finest materials and outfitted with the latest in navigation, safety, and scuba diving systems and equipment.\n\nBuilt in 2019 with a length of 46.80 meters (153 feet) and a beam of 8.60 meters (28 feet), it features 2 Master Seaview Cabins, 4 Seaview Cabins, and 6 Deluxe Cabins, accommodating up to 24 guests. The vessel is powered by two sets of 477kW Cummins engines with auxiliary propulsion and has a draft of 4.20 meters (13.77 feet). It also has two 9-meter aluminum all-purpose built tender boats and produces 30 tons of water per day with its very own reverse osmosis water makers.\n\nAs you journey across the crystal-clear waters of Palau, our state-of-the-art design and cutting-edge functionality will exceed your expectations.\n\nWe are committed to providing top-tier amenities and unparalleled comfort, ensuring that every guest enjoys a truly unforgettable stay.\n\nThe vessel offers guests comfort, convenience, and entertainment through various amenities, such as outdoor seating, a whirlpool, a bar, an indoor dining area, and a business center.\n\nAccommodation includes ensuite and twin share cabins with basic room amenities, while the sun deck provides additional outdoor seating and sun beds.\n\nOur tenders are also equipped with safety equipment, including life jackets, first aid kits, oxygen tanks, and communication devices such as VHF radios or satellite phones, so our crew can respond to any emergencies promptly and effectively.",
+      "media": [
+        {
+          "title": "8f17abb06fcaf7ac2c8d4dca2d311695.jpg",
+          "image": "https://app.inseanq.com/s3-media/8f17abb06fcaf7ac2c8d4dca2d311695.jpg?t=1745503705"
+        },
+        {
+          "title": "257d2f383c195625cdbe15bb1b71a2bd.jpg",
+          "image": "https://app.inseanq.com/s3-media/257d2f383c195625cdbe15bb1b71a2bd.jpg?t=1747840903"
+        },
+        {
+          "title": "f5b2fc3aa2f1b7c8be8bb7845f9d174c.jpg",
+          "image": "https://app.inseanq.com/s3-media/f5b2fc3aa2f1b7c8be8bb7845f9d174c.jpg?t=1747840903"
+        },
+        {
+          "title": "b6d25bcae01d7102a84dcb2525bffce7.jpg",
+          "image": "https://app.inseanq.com/s3-media/b6d25bcae01d7102a84dcb2525bffce7.jpg?t=1745503706"
+        },
+        {
+          "title": "14cf880ff03762faa86d7bb459ce268b.jpg",
+          "image": "https://app.inseanq.com/s3-media/14cf880ff03762faa86d7bb459ce268b.jpg?t=1747840903"
+        },
+        {
+          "title": "51fa5c96e53e9163b5692cd30049c667.jpg",
+          "image": "https://app.inseanq.com/s3-media/51fa5c96e53e9163b5692cd30049c667.jpg?t=1747840903"
+        },
+        {
+          "title": "e2f8e37d54bef9f34c50d34a2a020003.jpg",
+          "image": "https://app.inseanq.com/s3-media/e2f8e37d54bef9f34c50d34a2a020003.jpg?t=1747841092"
+        },
+        {
+          "title": "053066ea41b4e506e7f4c61c8c4eb144.jpg",
+          "image": "https://app.inseanq.com/s3-media/053066ea41b4e506e7f4c61c8c4eb144.jpg?t=1747841092"
+        },
+        {
+          "title": "7af7a3f1ba2c6d9299826aec709e1dd8.jpg",
+          "image": "https://app.inseanq.com/s3-media/7af7a3f1ba2c6d9299826aec709e1dd8.jpg?t=1747841092"
+        },
+        {
+          "title": "d3dbb3e91cc7e91b86a6db6f0cc43bb1.jpg",
+          "image": "https://app.inseanq.com/s3-media/d3dbb3e91cc7e91b86a6db6f0cc43bb1.jpg?t=1747841092"
+        },
+        {
+          "title": "5879205922fe95186115701fda3b1d5f.jpg",
+          "image": "https://app.inseanq.com/s3-media/5879205922fe95186115701fda3b1d5f.jpg?t=1747841092"
+        },
+        {
+          "title": "adcb44b9003a802f3b494ae334ff5e97.jpg",
+          "image": "https://app.inseanq.com/s3-media/adcb44b9003a802f3b494ae334ff5e97.jpg?t=1747841092"
+        },
+        {
+          "title": "5a7a31b1e59c9c7b92de652850749745.jpg",
+          "image": "https://app.inseanq.com/s3-media/5a7a31b1e59c9c7b92de652850749745.jpg?t=1747841092"
+        },
+        {
+          "title": "d24121e63c52d70a60bdfdf1bfcc0383.jpg",
+          "image": "https://app.inseanq.com/s3-media/d24121e63c52d70a60bdfdf1bfcc0383.jpg?t=1747841092"
+        },
+        {
+          "title": "ee29312d125b7f1c9b5e45223ba5a7ca.jpg",
+          "image": "https://app.inseanq.com/s3-media/ee29312d125b7f1c9b5e45223ba5a7ca.jpg?t=1747841092"
+        },
+        {
+          "title": "db1b3efe73dac398501b3ee3e18ab680.jpg",
+          "image": "https://app.inseanq.com/s3-media/db1b3efe73dac398501b3ee3e18ab680.jpg?t=1747840903"
+        },
+        {
+          "title": "0585c700a099b13ee4c484d712be1127.jpg",
+          "image": "https://app.inseanq.com/s3-media/0585c700a099b13ee4c484d712be1127.jpg?t=1747841092"
+        },
+        {
+          "title": "618311d1e883583e7a2dbd0dcb0183f3.jpg",
+          "image": "https://app.inseanq.com/s3-media/618311d1e883583e7a2dbd0dcb0183f3.jpg?t=1747840903"
+        },
+        {
+          "title": "ef6e1cfada7e2091d132fcca95635b4f.jpg",
+          "image": "https://app.inseanq.com/s3-media/ef6e1cfada7e2091d132fcca95635b4f.jpg?t=1747840904"
+        },
+        {
+          "title": "543e904b7f9f446f62c17615078716cf.jpg",
+          "image": "https://app.inseanq.com/s3-media/543e904b7f9f446f62c17615078716cf.jpg?t=1747841092"
+        }
+      ],
+      "guestsGuige": "6:1",
+      "nitrox": true,
+      "divingEquipmentRental": false,
+      "divingFacilities": [
+        "nitrox",
+        "equipment_rental",
+        "dive_deck",
+        "tenders_for_diving",
+        "fresh_water_shower",
+        "personal_storage_space",
+        "din_adaptors"
+      ],
+      "divingPhotographyFacilities": [
+        "camera_and_photography_station",
+        "camera_table",
+        "charging_stations",
+        "separate_rinsing_tanks_for_uw_camera"
+      ],
+      "languagesDiveGuides": [
+        "english"
+      ],
+      "facilitiesAmenities": [
+        "indoor_saloon",
+        "air_conditioned_saloon",
+        "open_air_saloon",
+        "bar",
+        "sun_deck",
+        "sun_loungers",
+        "hot_tub_jacuzzi",
+        "spa",
+        "massage",
+        "audio_video_entertainment",
+        "onboard_kayaks",
+        "laundry_service",
+        "teak_deck",
+        "bathing_platform"
+      ],
+      "foodDrinks": [
+        "western_food",
+        "local_food",
+        "buffet_style",
+        "alcoholic_beverages_spirits",
+        "hot_cold_soft_drinks",
+        "snacks_all_day"
+      ],
+      "sharedKitchen": [
+        "fridge",
+        "microwave",
+        "kitchenware"
+      ],
+      "additionalInfo": "",
+      "suitableFor": [
+        "diving",
+        "non_diver_snorkeler_friendly",
+        "fishing"
+      ],
+      "friendlyFor": [],
+      "speed": "12",
+      "fuelConsumption": "",
+      "fuelCapacity": "",
+      "range": "",
+      "engines": "477kW Cummins x2",
+      "generator": "",
+      "compressors": "",
+      "tenders": "2x Aluminum All-purpose Built Tenders",
+      "powerPlugsVoltage": [
+        "220"
+      ],
+      "powerPlugsTypes": [
+        "us_style",
+        "uk_style",
+        "eu_style"
+      ],
+      "waterMaker": true,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "",
+      "navigationSafety": [
+        "life_jackets",
+        "life_rafts",
+        "gps_tracking",
+        "first_aid_kits",
+        "satellite_phone",
+        "emergency_oxygen_kit",
+        "smoke_detectors",
+        "radar",
+        "fire_fighting_equipment",
+        "searchlight"
+      ],
+      "freshwaterTankCapacity": "",
+      "updatedAt": "2025-05-21T19:21:23+00:00"
+    },
+    {
+      "id": 554,
+      "name": "Blue Horizon",
+      "fleet": {
+        "id": 222,
+        "name": "Master Liveaboards"
+      },
+      "type": "motor_yacht",
+      "model": "",
+      "yearBuilt": 2006,
+      "yearRenovation": 2024,
+      "material": "wood",
+      "builder": "",
+      "length": 41,
+      "width": 9,
+      "draft": 2,
+      "capacity": 26,
+      "cabinsNumber": 13,
+      "wifi": true,
+      "onboardPayMethods": [
+        "cash",
+        "visa",
+        "master_card"
+      ],
+      "crewSize": 14,
+      "languagesCrew": [
+        "english",
+        "arabic"
+      ],
+      "boatDescription": "With a contemporary and stylish feel, Blue Horizon takes Red Sea liveaboard diving to a whole new level and is truly deserving of her wins as ‘Best Liveaboard’ in the Sport Diver awards, as well as ‘Liveaboard of the Year’ awarded by DIVER magazine.\n\nWith a large dining area, a separate air-conditioned sky lounge featuring a state-of-the-art entertainment system, a shaded deck area with comfortable seating, a jacuzzi and a sun deck, there is always space to relax and enjoy the beauty of the Red Sea. All guest cabins benefit from air-conditioning, en-suite facilities with centrally heated hot water and complimentary shower gel, lockable safety boxes and mini-refrigerators.\n\nBlue Horizon is also equipped with a nitrox membrane system and can cater for rebreather and technical divers, upon request and subject to availability.",
+      "media": [
+        {
+          "title": "2af94b0dc9122027f946d6281a303a8e.jpg",
+          "image": "https://app.inseanq.com/s3-media/2af94b0dc9122027f946d6281a303a8e.jpg?t=1740119235"
+        },
+        {
+          "title": "f55fb8c7a03b2c89c9c843b831f48cdb.jpg",
+          "image": "https://app.inseanq.com/s3-media/f55fb8c7a03b2c89c9c843b831f48cdb.jpg?t=1740119235"
+        },
+        {
+          "title": "96ab7073a47c552b9384c4b66d166702.jpg",
+          "image": "https://app.inseanq.com/s3-media/96ab7073a47c552b9384c4b66d166702.jpg?t=1740119338"
+        },
+        {
+          "title": "cbc9397141e3354b6d2d552662a586f5.jpg",
+          "image": "https://app.inseanq.com/s3-media/cbc9397141e3354b6d2d552662a586f5.jpg?t=1740119236"
+        },
+        {
+          "title": "01e9aa606ea875177738df7ce458f7dd.jpg",
+          "image": "https://app.inseanq.com/s3-media/01e9aa606ea875177738df7ce458f7dd.jpg?t=1740119236"
+        },
+        {
+          "title": "96e0fc4ea894606231a86a835c7025b1.jpg",
+          "image": "https://app.inseanq.com/s3-media/96e0fc4ea894606231a86a835c7025b1.jpg?t=1740119236"
+        },
+        {
+          "title": "9aa68355bc569037e6e3f5c228ba5d9e.jpg",
+          "image": "https://app.inseanq.com/s3-media/9aa68355bc569037e6e3f5c228ba5d9e.jpg?t=1740119236"
+        },
+        {
+          "title": "b04095c7765802508033a01dccd22d01.jpg",
+          "image": "https://app.inseanq.com/s3-media/b04095c7765802508033a01dccd22d01.jpg?t=1740119236"
+        },
+        {
+          "title": "96ea62245634d237e73ae4016d7543c3.jpg",
+          "image": "https://app.inseanq.com/s3-media/96ea62245634d237e73ae4016d7543c3.jpg?t=1740119236"
+        }
+      ],
+      "guestsGuige": "8:1",
+      "nitrox": true,
+      "divingEquipmentRental": false,
+      "divingFacilities": [
+        "nitrox",
+        "equipment_rental",
+        "dive_deck",
+        "tenders_for_diving",
+        "rinse_hosts",
+        "fresh_water_shower",
+        "personal_storage_space",
+        "din_adaptors"
+      ],
+      "divingPhotographyFacilities": [
+        "camera_table",
+        "charging_stations",
+        "separate_rinsing_tanks_for_uw_camera"
+      ],
+      "languagesDiveGuides": [
+        "english",
+        "arabic"
+      ],
+      "facilitiesAmenities": [
+        "indoor_saloon",
+        "air_conditioned_saloon",
+        "bar",
+        "sun_deck",
+        "sun_loungers",
+        "open_air_saloon",
+        "hot_tub_jacuzzi",
+        "audio_video_entertainment"
+      ],
+      "foodDrinks": [
+        "western_food",
+        "local_food",
+        "buffet_style",
+        "hot_cold_soft_drinks",
+        "snacks_all_day",
+        "dietary_restrictions",
+        "alcoholic_beverages_spirits"
+      ],
+      "sharedKitchen": [],
+      "additionalInfo": "Spirits are not available on board\nCharges apply for some snacks\nCharges apply for Tonic & Soda Water",
+      "suitableFor": [
+        "diving",
+        "rebreather_diving",
+        "tech_diving"
+      ],
+      "friendlyFor": [],
+      "speed": "13",
+      "fuelConsumption": "",
+      "fuelCapacity": "18,000",
+      "range": "",
+      "engines": "2 x Cummins K19 600HP",
+      "generator": "2 x CAT 3316",
+      "compressors": "1 X L&W 450L; 1 x L&W 280L",
+      "tenders": "2 Zodiac RHIB",
+      "powerPlugsVoltage": [
+        "220"
+      ],
+      "powerPlugsTypes": [
+        "eu_style",
+        "uk_style",
+        "us_style"
+      ],
+      "waterMaker": true,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "Waterline, 6000L per day",
+      "navigationSafety": [
+        "radar",
+        "depth_sounder",
+        "gps_tracking",
+        "radio_vhf_dsc_ssb",
+        "life_rafts",
+        "life_jackets",
+        "fire_fighting_equipment",
+        "emergency_oxygen_kit",
+        "first_aid_kits",
+        "satellite_phone",
+        "bilge_pump_alarm",
+        "epirb_distress_system",
+        "emergency_flares",
+        "smoke_detectors",
+        "life_rings",
+        "ais",
+        "searchlight"
+      ],
+      "freshwaterTankCapacity": "8000",
+      "updatedAt": "2025-05-28T10:59:18+00:00"
+    },
+    {
+      "id": 555,
+      "name": "Blue Melody",
+      "fleet": {
+        "id": 222,
+        "name": "Master Liveaboards"
+      },
+      "type": "motor_yacht",
+      "model": "",
+      "yearBuilt": 2005,
+      "yearRenovation": 2025,
+      "material": "wood",
+      "builder": "",
+      "length": 38,
+      "width": 8,
+      "draft": 2,
+      "capacity": 26,
+      "cabinsNumber": 13,
+      "wifi": true,
+      "onboardPayMethods": [
+        "master_card",
+        "visa",
+        "cash"
+      ],
+      "crewSize": 14,
+      "languagesCrew": [
+        "arabic",
+        "english"
+      ],
+      "boatDescription": "This spacious liveaboard boasts a large dining area, two air-conditioned lounges with state-of-the-art entertainment systems, a shaded outdoor seating area and bar as well as a sundeck, all providing plenty of space and possibilities for relaxing between dives. With three double-bed cabins and ten twin-bed cabins, all benefiting from ensuite facilities, air-conditioning and plenty of storage space, Blue Melody comfortably accommodates up to 26 guests. A generous dive deck also makes kitting up and getting in the water a stress-free experience on this beautiful Red Sea liveaboard.\n\nWe are extremely proud that this superb vessel was once awarded the prestigious Diver Award for ‘Liveaboard of the Year‘ and the Sport Diver ‘Best Liveaboard‘ award.\n\nBlue Melody is also equipped with a nitrox membrane system and can cater for rebreather and technical divers, upon request and subject to availability.",
+      "media": [
+        {
+          "title": "d8d83dcc3d84cd6f3aa952f6ee0b2eb8.jpg",
+          "image": "https://app.inseanq.com/s3-media/d8d83dcc3d84cd6f3aa952f6ee0b2eb8.jpg?t=1740130105"
+        },
+        {
+          "title": "9aa21b85962409d2a1735f53d30b9302.jpg",
+          "image": "https://app.inseanq.com/s3-media/9aa21b85962409d2a1735f53d30b9302.jpg?t=1740130106"
+        },
+        {
+          "title": "fa7031704f1994e801c0a3e2ba88eee7.jpg",
+          "image": "https://app.inseanq.com/s3-media/fa7031704f1994e801c0a3e2ba88eee7.jpg?t=1740130106"
+        },
+        {
+          "title": "1899d48793c83165170bbbecd355d87c.jpg",
+          "image": "https://app.inseanq.com/s3-media/1899d48793c83165170bbbecd355d87c.jpg?t=1748435708"
+        },
+        {
+          "title": "839f8e92741f7a0bab2d406866a88f13.jpg",
+          "image": "https://app.inseanq.com/s3-media/839f8e92741f7a0bab2d406866a88f13.jpg?t=1748435709"
+        },
+        {
+          "title": "1135f5ab457c0a6ba73acb156fe8774c.jpg",
+          "image": "https://app.inseanq.com/s3-media/1135f5ab457c0a6ba73acb156fe8774c.jpg?t=1748435709"
+        },
+        {
+          "title": "018f650e1843ce569588aaace27652f1.jpg",
+          "image": "https://app.inseanq.com/s3-media/018f650e1843ce569588aaace27652f1.jpg?t=1748435709"
+        },
+        {
+          "title": "e777c72874f183a9fce9bacb549e16e4.jpg",
+          "image": "https://app.inseanq.com/s3-media/e777c72874f183a9fce9bacb549e16e4.jpg?t=1748435709"
+        },
+        {
+          "title": "bb956524b7a233640a3422e5854bf06a.jpg",
+          "image": "https://app.inseanq.com/s3-media/bb956524b7a233640a3422e5854bf06a.jpg?t=1748435709"
+        }
+      ],
+      "guestsGuige": "8:1",
+      "nitrox": true,
+      "divingEquipmentRental": false,
+      "divingFacilities": [
+        "nitrox",
+        "equipment_rental",
+        "dive_deck",
+        "tenders_for_diving",
+        "rinse_hosts",
+        "fresh_water_shower",
+        "personal_storage_space",
+        "din_adaptors"
+      ],
+      "divingPhotographyFacilities": [
+        "camera_table",
+        "charging_stations",
+        "separate_rinsing_tanks_for_uw_camera"
+      ],
+      "languagesDiveGuides": [
+        "english",
+        "arabic"
+      ],
+      "facilitiesAmenities": [
+        "indoor_saloon",
+        "air_conditioned_saloon",
+        "open_air_saloon",
+        "bar",
+        "sun_deck",
+        "sun_loungers",
+        "audio_video_entertainment",
+        "teak_deck"
+      ],
+      "foodDrinks": [
+        "western_food",
+        "local_food",
+        "dietary_restrictions",
+        "buffet_style",
+        "alcoholic_beverages_spirits",
+        "hot_cold_soft_drinks",
+        "snacks_all_day"
+      ],
+      "sharedKitchen": [],
+      "additionalInfo": "Spirits are not available on board\nCharges apply for some snacks\nCharges apply for Tonic & Soda Water",
+      "suitableFor": [
+        "diving",
+        "non_diver_snorkeler_friendly"
+      ],
+      "friendlyFor": [],
+      "speed": "10",
+      "fuelConsumption": "",
+      "fuelCapacity": "15,000",
+      "range": "",
+      "engines": "2 x CAT 3412, 750 HP",
+      "generator": "2 x CAT 3316",
+      "compressors": "2 x Bauer 260L",
+      "tenders": "2 x Zodiac RHIB",
+      "powerPlugsVoltage": [
+        "220"
+      ],
+      "powerPlugsTypes": [
+        "eu_style",
+        "uk_style",
+        "us_style"
+      ],
+      "waterMaker": true,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "Waterline, 6000L per day",
+      "navigationSafety": [
+        "radar",
+        "depth_sounder",
+        "gps_tracking",
+        "radio_vhf_dsc_ssb",
+        "life_rafts",
+        "life_jackets",
+        "fire_fighting_equipment",
+        "emergency_oxygen_kit",
+        "first_aid_kits",
+        "satellite_phone",
+        "bilge_pump_alarm",
+        "searchlight",
+        "epirb_distress_system",
+        "emergency_flares",
+        "smoke_detectors",
+        "life_rings",
+        "ais"
+      ],
+      "freshwaterTankCapacity": "6000",
+      "updatedAt": "2025-06-30T10:24:51+00:00"
+    },
+    {
+      "id": 48,
+      "name": "Galapagos Master",
+      "fleet": {
+        "id": 222,
+        "name": "Master Liveaboards"
+      },
+      "type": "motor_yacht",
+      "model": "",
+      "yearBuilt": 2004,
+      "yearRenovation": 2025,
+      "material": "steel",
+      "builder": "",
+      "length": 32,
+      "width": 8,
+      "draft": 3,
+      "capacity": 16,
+      "cabinsNumber": 8,
+      "wifi": true,
+      "onboardPayMethods": [
+        "cash",
+        "visa",
+        "master_card"
+      ],
+      "crewSize": 11,
+      "languagesCrew": [
+        "english",
+        "spanish"
+      ],
+      "boatDescription": "Known locally as Deep Blue, Galapagos Master comfortably accommodates a maximum of 16 guests on each liveaboard trip, maximising safety and space for all guests on board. Featuring eight air-conditioned cabins spread across three decks, each has its own private en-suite bathroom with hot water and ample storage for all of your personal belongings. For added convenience and flexibility, Galapagos Master offers some cabins that can be used either as a twin or double bedded room.\n\nThe communal areas include a spacious indoor lounge where guests can relax and unwind while watching their favourite movie, or their latest underwater shots, on the plasma screen television. The indoor dining area brings a tantalising array of mouth-watering meals, complimented by the adjacent cocktail bar. Photographers can take full advantage of the indoor camera set-up station which includes multiple charging points (US round pin plug). Additional storage drawers to the aft of the vessel mean that even photography charter groups will have no problem finding enough space for their equipment.\n\nGalapagos Master’s top deck ensures that sun worshippers can top up their tan while soaking up the Galapagos sights. Or, for those who prefer to relax out of the sun, the shaded upper level is an ideal location to chill out in cushioned lounge chairs and benches.",
+      "media": [
+        {
+          "title": "10b387152b2467da4a1334959f4bd195.jpg",
+          "image": "https://app.inseanq.com/s3-media/10b387152b2467da4a1334959f4bd195.jpg?t=1748436633"
+        },
+        {
+          "title": "f91a8aa2e41f930c8fa6ff4e1f0740a4.jpg",
+          "image": "https://app.inseanq.com/s3-media/f91a8aa2e41f930c8fa6ff4e1f0740a4.jpg?t=1748436633"
+        },
+        {
+          "title": "71b208782454e2792d96bb3dee145707.jpg",
+          "image": "https://app.inseanq.com/s3-media/71b208782454e2792d96bb3dee145707.jpg?t=1748436634"
+        },
+        {
+          "title": "e87dd8ee9843467fc5699a5503ce2de4.jpg",
+          "image": "https://app.inseanq.com/s3-media/e87dd8ee9843467fc5699a5503ce2de4.jpg?t=1748436634"
+        },
+        {
+          "title": "28d768453c9ba45e809d977615e9dccf.jpg",
+          "image": "https://app.inseanq.com/s3-media/28d768453c9ba45e809d977615e9dccf.jpg?t=1748436634"
+        },
+        {
+          "title": "57df4c52a6c0d8812932b98e59177e34.jpg",
+          "image": "https://app.inseanq.com/s3-media/57df4c52a6c0d8812932b98e59177e34.jpg?t=1748436634"
+        },
+        {
+          "title": "bf666c91d3287bb004c1f99e2729a54c.jpg",
+          "image": "https://app.inseanq.com/s3-media/bf666c91d3287bb004c1f99e2729a54c.jpg?t=1748436800"
+        },
+        {
+          "title": "f23bbaec68ac922ed9bb39447424879a.jpg",
+          "image": "https://app.inseanq.com/s3-media/f23bbaec68ac922ed9bb39447424879a.jpg?t=1748436801"
+        }
+      ],
+      "guestsGuige": "8:1",
+      "nitrox": true,
+      "divingEquipmentRental": false,
+      "divingFacilities": [
+        "nitrox",
+        "equipment_rental",
+        "dive_deck",
+        "tenders_for_diving",
+        "fresh_water_shower",
+        "personal_storage_space",
+        "din_adaptors"
+      ],
+      "divingPhotographyFacilities": [
+        "camera_and_photography_station",
+        "camera_table",
+        "charging_stations",
+        "separate_rinsing_tanks_for_uw_camera",
+        "special_storage_for_uw_camera"
+      ],
+      "languagesDiveGuides": [
+        "english",
+        "spanish"
+      ],
+      "facilitiesAmenities": [
+        "indoor_saloon",
+        "air_conditioned_saloon",
+        "bar",
+        "sun_deck",
+        "sun_loungers",
+        "audio_video_entertainment",
+        "laundry_service",
+        "open_air_saloon"
+      ],
+      "foodDrinks": [
+        "western_food",
+        "local_food",
+        "alcoholic_beverages_spirits",
+        "buffet_style",
+        "hot_cold_soft_drinks",
+        "dietary_restrictions"
+      ],
+      "sharedKitchen": [],
+      "additionalInfo": "",
+      "suitableFor": [
+        "diving",
+        "non_diver_snorkeler_friendly",
+        "land_excursions"
+      ],
+      "friendlyFor": [],
+      "speed": "9",
+      "fuelConsumption": "",
+      "fuelCapacity": "12000",
+      "range": "",
+      "engines": "2 x 475 HP MTU 6062",
+      "generator": "2 x John Deere 4045TFM50",
+      "compressors": "3 x Coltri Sub M16",
+      "tenders": "2 x 50 HP Zodiac RHIB",
+      "powerPlugsVoltage": [
+        "110",
+        "220"
+      ],
+      "powerPlugsTypes": [
+        "us_style",
+        "eu_style"
+      ],
+      "waterMaker": true,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "Hydracell RO",
+      "navigationSafety": [
+        "epirb_distress_system",
+        "life_rings",
+        "first_aid_kits",
+        "fire_fighting_equipment",
+        "emergency_oxygen_kit",
+        "life_jackets",
+        "life_rafts",
+        "radio_vhf_dsc_ssb",
+        "smoke_detectors",
+        "emergency_flares",
+        "satellite_phone",
+        "radar",
+        "gps_tracking",
+        "ais"
+      ],
+      "freshwaterTankCapacity": "16000",
+      "updatedAt": "2025-05-28T12:58:23+00:00"
+    },
+    {
+      "id": 260,
+      "name": "Heaven Saphir",
+      "fleet": {
+        "id": 150,
+        "name": "Heaven Saphir"
+      },
+      "type": "",
+      "model": "",
+      "yearBuilt": 0,
+      "yearRenovation": 0,
+      "material": "",
+      "builder": "",
+      "length": 0,
+      "width": 0,
+      "draft": 0,
+      "capacity": 0,
+      "cabinsNumber": 0,
+      "wifi": false,
+      "onboardPayMethods": [],
+      "crewSize": 0,
+      "languagesCrew": [],
+      "boatDescription": "",
+      "media": [],
+      "guestsGuige": "",
+      "nitrox": false,
+      "divingEquipmentRental": false,
+      "divingFacilities": [],
+      "divingPhotographyFacilities": [],
+      "languagesDiveGuides": [],
+      "facilitiesAmenities": [],
+      "foodDrinks": [],
+      "sharedKitchen": [],
+      "additionalInfo": "",
+      "suitableFor": [],
+      "friendlyFor": [],
+      "speed": "",
+      "fuelConsumption": "",
+      "fuelCapacity": "",
+      "range": "",
+      "engines": "",
+      "generator": "",
+      "compressors": "",
+      "tenders": "",
+      "powerPlugsVoltage": [],
+      "powerPlugsTypes": [],
+      "waterMaker": false,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "",
+      "navigationSafety": [],
+      "freshwaterTankCapacity": "",
+      "updatedAt": "2025-05-14T22:35:26+00:00"
+    },
+    {
+      "id": 583,
+      "name": "Indo Master",
+      "fleet": {
+        "id": 222,
+        "name": "Master Liveaboards"
+      },
+      "type": "motor_yacht",
+      "model": "Traditional Indonesian Phinisi",
+      "yearBuilt": 2022,
+      "yearRenovation": 2024,
+      "material": "ironwood",
+      "builder": "",
+      "length": 47,
+      "width": 8,
+      "draft": 3,
+      "capacity": 18,
+      "cabinsNumber": 9,
+      "wifi": true,
+      "onboardPayMethods": [
+        "cash",
+        "visa",
+        "master_card"
+      ],
+      "crewSize": 16,
+      "languagesCrew": [
+        "english",
+        "indonesian"
+      ],
+      "boatDescription": "Indo Master liveaboard was built on the Indonesian island of Sulawesi and is handcrafted from ironwood and teak (traditional to the area). Designed by divers for divers, you can be rest assured that every need has been thought of and addressed.\n\nThe spacious dive deck has personal storage space for masks and other small equipment items, designated areas for camera and video equipment, as well as separate rinse tanks for camera equipment.\n\nThe spacious air-conditioned saloon offers a great setting for your meals and dive briefings, a cocktail bar, comfortable seating, a charging station and a large flat-screen TV.",
+      "media": [
+        {
+          "title": "f404fb67b77608fc8751c0142e8fa164.jpg",
+          "image": "https://app.inseanq.com/s3-media/f404fb67b77608fc8751c0142e8fa164.jpg?t=1748437796"
+        },
+        {
+          "title": "443221f430e2f66d378ab6e0d0be9edd.jpg",
+          "image": "https://app.inseanq.com/s3-media/443221f430e2f66d378ab6e0d0be9edd.jpg?t=1748437796"
+        },
+        {
+          "title": "dca373b6786f6bf4193e4668ed03e624.jpg",
+          "image": "https://app.inseanq.com/s3-media/dca373b6786f6bf4193e4668ed03e624.jpg?t=1748437796"
+        },
+        {
+          "title": "d6708f8f441a518e4832b3828f42412f.jpg",
+          "image": "https://app.inseanq.com/s3-media/d6708f8f441a518e4832b3828f42412f.jpg?t=1748437797"
+        },
+        {
+          "title": "f31ee8f167d1727f3ba0bcb1deda17ba.jpg",
+          "image": "https://app.inseanq.com/s3-media/f31ee8f167d1727f3ba0bcb1deda17ba.jpg?t=1748437797"
+        },
+        {
+          "title": "6c512274b837dd75a21d9a4e5dd263da.jpg",
+          "image": "https://app.inseanq.com/s3-media/6c512274b837dd75a21d9a4e5dd263da.jpg?t=1748437797"
+        },
+        {
+          "title": "eecf5b0ba616667bbafb9c6400bc5dc2.jpg",
+          "image": "https://app.inseanq.com/s3-media/eecf5b0ba616667bbafb9c6400bc5dc2.jpg?t=1748437797"
+        },
+        {
+          "title": "344ff416af18008ca148b0e3ccb8b8ab.jpg",
+          "image": "https://app.inseanq.com/s3-media/344ff416af18008ca148b0e3ccb8b8ab.jpg?t=1748437797"
+        },
+        {
+          "title": "438fa4ffdd901f1aef6154a080d5f832.jpg",
+          "image": "https://app.inseanq.com/s3-media/438fa4ffdd901f1aef6154a080d5f832.jpg?t=1748437797"
+        },
+        {
+          "title": "8840c13de7da8b86d7131c650bb03b94.jpg",
+          "image": "https://app.inseanq.com/s3-media/8840c13de7da8b86d7131c650bb03b94.jpg?t=1748437798"
+        },
+        {
+          "title": "694b1bc8a25280cf9eb3f373903e5061.jpg",
+          "image": "https://app.inseanq.com/s3-media/694b1bc8a25280cf9eb3f373903e5061.jpg?t=1748437798"
+        }
+      ],
+      "guestsGuige": "6:1",
+      "nitrox": true,
+      "divingEquipmentRental": false,
+      "divingFacilities": [
+        "nitrox",
+        "equipment_rental",
+        "dive_deck",
+        "tenders_for_diving",
+        "rinse_hosts",
+        "fresh_water_shower",
+        "personal_storage_space",
+        "din_adaptors"
+      ],
+      "divingPhotographyFacilities": [
+        "camera_and_photography_station",
+        "camera_table",
+        "charging_stations",
+        "separate_rinsing_tanks_for_uw_camera"
+      ],
+      "languagesDiveGuides": [
+        "english",
+        "indonesian"
+      ],
+      "facilitiesAmenities": [
+        "indoor_saloon",
+        "air_conditioned_saloon",
+        "open_air_saloon",
+        "bar",
+        "sun_deck",
+        "sun_loungers",
+        "teak_deck",
+        "massage",
+        "onboard_kayaks",
+        "laundry_service",
+        "audio_video_entertainment"
+      ],
+      "foodDrinks": [
+        "western_food",
+        "local_food",
+        "dietary_restrictions",
+        "alcoholic_beverages_spirits",
+        "hot_cold_soft_drinks",
+        "snacks_all_day",
+        "buffet_style"
+      ],
+      "sharedKitchen": [],
+      "additionalInfo": "",
+      "suitableFor": [
+        "diving",
+        "non_diver_snorkeler_friendly",
+        "land_excursions"
+      ],
+      "friendlyFor": [],
+      "speed": "8",
+      "fuelConsumption": "",
+      "fuelCapacity": "15000",
+      "range": "",
+      "engines": "2 x 400 HP Yanmar",
+      "generator": "2 x Mitsubishi 70 kVA, 1 x Isuzu silent 40 kVA",
+      "compressors": "2 x Bauer",
+      "tenders": "2 x 100HP Zodiac RHIB",
+      "powerPlugsVoltage": [
+        "220"
+      ],
+      "powerPlugsTypes": [
+        "eu_style"
+      ],
+      "waterMaker": true,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "Anovy Reverberi RG 24",
+      "navigationSafety": [
+        "radar",
+        "depth_sounder",
+        "gps_tracking",
+        "radio_vhf_dsc_ssb",
+        "life_rafts",
+        "life_jackets",
+        "fire_fighting_equipment",
+        "emergency_oxygen_kit",
+        "first_aid_kits",
+        "satellite_phone",
+        "epirb_distress_system",
+        "emergency_flares",
+        "smoke_detectors",
+        "life_rings",
+        "ais",
+        "bilge_pump_alarm"
+      ],
+      "freshwaterTankCapacity": "15000",
+      "updatedAt": "2025-05-28T13:10:32+00:00"
+    },
+    {
+      "id": 616,
+      "name": "Lagoon 380",
+      "fleet": {
+        "id": 379,
+        "name": "Indian Ocean Cruises"
+      },
+      "type": "catamaran",
+      "model": "380 S1",
+      "yearBuilt": 2002,
+      "yearRenovation": 2024,
+      "material": "glass_reinforced_plastic",
+      "builder": "Lagoon",
+      "length": 12,
+      "width": 7,
+      "draft": 1,
+      "capacity": 8,
+      "cabinsNumber": 4,
+      "wifi": false,
+      "onboardPayMethods": [
+        "cash"
+      ],
+      "crewSize": 2,
+      "languagesCrew": [
+        "french"
+      ],
+      "boatDescription": "This catamaran is a reference in the history of liveaboard catamarans. She is recognized as a confortable, robust off shore sailing catamaran. Produced from 1999 until 2018 she is the most produced model in history. The modern design allows 8 passengers and a crew of 2 to sail in comfort in the large cockpit, saloon or trampoline.",
+      "media": [
+        {
+          "title": "1224e9788fc598a481d5b77ef9bc1224.jpg",
+          "image": "https://app.inseanq.com/s3-media/1224e9788fc598a481d5b77ef9bc1224.jpg?t=1740304748"
+        },
+        {
+          "title": "8620c437e565fd6093cf85d2f125e3c5.jpg",
+          "image": "https://app.inseanq.com/s3-media/8620c437e565fd6093cf85d2f125e3c5.jpg?t=1740304749"
+        },
+        {
+          "title": "7ccd2d03def1b1e3c106afcc6768efd0.jpg",
+          "image": "https://app.inseanq.com/s3-media/7ccd2d03def1b1e3c106afcc6768efd0.jpg?t=1740304755"
+        },
+        {
+          "title": "c8f9738a4c52cfc2bd4046d8a50595e9.jpg",
+          "image": "https://app.inseanq.com/s3-media/c8f9738a4c52cfc2bd4046d8a50595e9.jpg?t=1740304755"
+        },
+        {
+          "title": "7c221f474a69cac4ea1023af717a6f62.jpg",
+          "image": "https://app.inseanq.com/s3-media/7c221f474a69cac4ea1023af717a6f62.jpg?t=1747999525"
+        },
+        {
+          "title": "dc3266b5153ad4bc3ccf1728c98e3761.jpg",
+          "image": "https://app.inseanq.com/s3-media/dc3266b5153ad4bc3ccf1728c98e3761.jpg?t=1747999525"
+        },
+        {
+          "title": "34d5b6a54c58aed061f5490b1f6f3e69.jpg",
+          "image": "https://app.inseanq.com/s3-media/34d5b6a54c58aed061f5490b1f6f3e69.jpg?t=1740304761"
+        },
+        {
+          "title": "7355b60aeb494756bd37e2d55fe168d4.jpg",
+          "image": "https://app.inseanq.com/s3-media/7355b60aeb494756bd37e2d55fe168d4.jpg?t=1740304761"
+        },
+        {
+          "title": "eecad28f076f668ca3325e7fa72b1a39.jpg",
+          "image": "https://app.inseanq.com/s3-media/eecad28f076f668ca3325e7fa72b1a39.jpg?t=1740304765"
+        },
+        {
+          "title": "6dde7036840890f877622aeb9f7707fe.jpg",
+          "image": "https://app.inseanq.com/s3-media/6dde7036840890f877622aeb9f7707fe.jpg?t=1740304765"
+        },
+        {
+          "title": "fcbe16d3486bcf18ec53dd50fdcc7168.jpg",
+          "image": "https://app.inseanq.com/s3-media/fcbe16d3486bcf18ec53dd50fdcc7168.jpg?t=1740304766"
+        },
+        {
+          "title": "3584887dee6edcdfffabcf8b38565be2.jpg",
+          "image": "https://app.inseanq.com/s3-media/3584887dee6edcdfffabcf8b38565be2.jpg?t=1740304766"
+        },
+        {
+          "title": "9d07c274601e3ffa46f33cf05920410d.jpg",
+          "image": "https://app.inseanq.com/s3-media/9d07c274601e3ffa46f33cf05920410d.jpg?t=1740304766"
+        },
+        {
+          "title": "4c761a13c5fb31178a8b2bab13cfeef3.jpg",
+          "image": "https://app.inseanq.com/s3-media/4c761a13c5fb31178a8b2bab13cfeef3.jpg?t=1740304766"
+        },
+        {
+          "title": "6e96546c1b8d9b9adb0f317721d8a00f.jpg",
+          "image": "https://app.inseanq.com/s3-media/6e96546c1b8d9b9adb0f317721d8a00f.jpg?t=1740304766"
+        },
+        {
+          "title": "602b3d9a5ca8ca4c6197c89987c6a686.jpg",
+          "image": "https://app.inseanq.com/s3-media/602b3d9a5ca8ca4c6197c89987c6a686.jpg?t=1740304766"
+        },
+        {
+          "title": "40da7359b38682ab71b2fdb881256d48.jpg",
+          "image": "https://app.inseanq.com/s3-media/40da7359b38682ab71b2fdb881256d48.jpg?t=1740304766"
+        },
+        {
+          "title": "fb032d1e642d571fbec8645707c129b0.jpg",
+          "image": "https://app.inseanq.com/s3-media/fb032d1e642d571fbec8645707c129b0.jpg?t=1740304766"
+        }
+      ],
+      "guestsGuige": "6:1",
+      "nitrox": false,
+      "divingEquipmentRental": false,
+      "divingFacilities": [
+        "equipment_rental",
+        "fresh_water_shower",
+        "din_adaptors",
+        "rinse_hosts"
+      ],
+      "divingPhotographyFacilities": [
+        "charging_stations"
+      ],
+      "languagesDiveGuides": [
+        "french"
+      ],
+      "facilitiesAmenities": [
+        "indoor_saloon",
+        "open_air_saloon",
+        "sun_deck",
+        "onboard_kayaks",
+        "solar_panels"
+      ],
+      "foodDrinks": [
+        "local_food",
+        "western_food",
+        "alcoholic_beverages_spirits",
+        "hot_cold_soft_drinks"
+      ],
+      "sharedKitchen": [
+        "stove",
+        "oven",
+        "fridge",
+        "sink",
+        "dishware",
+        "kitchenware"
+      ],
+      "additionalInfo": "",
+      "suitableFor": [
+        "diving",
+        "non_diver_snorkeler_friendly",
+        "land_excursions",
+        "cruising",
+        "sailing",
+        "fishing"
+      ],
+      "friendlyFor": [
+        "child_friendly"
+      ],
+      "speed": "6",
+      "fuelConsumption": "",
+      "fuelCapacity": "300",
+      "range": "",
+      "engines": "2 Yanmar 3YM30AE",
+      "generator": "No",
+      "compressors": "1",
+      "tenders": "1",
+      "powerPlugsVoltage": [
+        "220"
+      ],
+      "powerPlugsTypes": [
+        "eu_style"
+      ],
+      "waterMaker": true,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "Dessalator D60BY 60 liters/hour",
+      "navigationSafety": [
+        "radar",
+        "depth_sounder",
+        "gps_tracking",
+        "radio_vhf_dsc_ssb",
+        "life_rafts",
+        "life_jackets",
+        "fire_fighting_equipment",
+        "emergency_oxygen_kit",
+        "first_aid_kits",
+        "bilge_pump_alarm",
+        "searchlight",
+        "epirb_distress_system",
+        "emergency_flares",
+        "ais"
+      ],
+      "freshwaterTankCapacity": "450",
+      "updatedAt": "2025-05-23T11:24:02+00:00"
+    },
+    {
+      "id": 423,
+      "name": "Pacific Master",
+      "fleet": {
+        "id": 222,
+        "name": "Master Liveaboards"
+      },
+      "type": "motor_yacht",
+      "model": "",
+      "yearBuilt": 2003,
+      "yearRenovation": 2024,
+      "material": "steel",
+      "builder": "",
+      "length": 27,
+      "width": 8,
+      "draft": 4,
+      "capacity": 20,
+      "cabinsNumber": 12,
+      "wifi": true,
+      "onboardPayMethods": [
+        "master_card",
+        "visa",
+        "cash"
+      ],
+      "crewSize": 13,
+      "languagesCrew": [
+        "english"
+      ],
+      "boatDescription": "This custom-designed liveaboard was built with divers in mind to bring you the very best diving holiday experience possible. Previously, sailing the stunning dive sites of the Solomon Islands as M/V Taka, this steel-hulled vessel boasts an experienced boat crew, dive team and chefs to ensure the highest standards of service.\n\nPacific Master features 12 cabins allowing comfortable accommodation for up to 20 guests. These are categorised into one en-suite premium double cabin, five en-suite premium double/twin cabins, four standard single cabins and two standard twin cabins with shared bathroom facilities.\n\nAn incredibly spacious lounge and dining area is located on the main deck of the boat providing plenty of air-conditioned space to unwind and enjoy the on-board cuisine. An expansive dive deck leads perfectly to the dive platform, and also boasts a dedicated camera area for our photographer guests. Individual dive stations provide plenty of space and storage for your dive kit. This area also provides individual toilets, freshwater showers and rinse tanks for your equipment.\n\nIf you prefer to relax in the sunshine and fresh air, the large sun deck comes complete with comfortable loungers to lie back and enjoy the views.",
+      "media": [
+        {
+          "title": "f70447acba860f4aee9b6679be83457b.jpg",
+          "image": "https://app.inseanq.com/s3-media/f70447acba860f4aee9b6679be83457b.jpg?t=1748442212"
+        },
+        {
+          "title": "e40aa7bb015ef9dc8d36f0dbbb08b868.jpg",
+          "image": "https://app.inseanq.com/s3-media/e40aa7bb015ef9dc8d36f0dbbb08b868.jpg?t=1748442214"
+        },
+        {
+          "title": "15f37c4f158f8d2fca0251aa5e1c0cca.jpg",
+          "image": "https://app.inseanq.com/s3-media/15f37c4f158f8d2fca0251aa5e1c0cca.jpg?t=1748442214"
+        },
+        {
+          "title": "1e786dd24354064bdd1dbc4a6f58e977.jpg",
+          "image": "https://app.inseanq.com/s3-media/1e786dd24354064bdd1dbc4a6f58e977.jpg?t=1748442214"
+        },
+        {
+          "title": "c71af7bbf75a9499cf0922d3e1a8ba79.jpg",
+          "image": "https://app.inseanq.com/s3-media/c71af7bbf75a9499cf0922d3e1a8ba79.jpg?t=1748442214"
+        }
+      ],
+      "guestsGuige": "5:1",
+      "nitrox": true,
+      "divingEquipmentRental": false,
+      "divingFacilities": [
+        "nitrox",
+        "equipment_rental",
+        "dive_deck",
+        "tenders_for_diving",
+        "rinse_hosts",
+        "fresh_water_shower",
+        "personal_storage_space",
+        "din_adaptors"
+      ],
+      "divingPhotographyFacilities": [
+        "charging_stations",
+        "separate_rinsing_tanks_for_uw_camera",
+        "special_storage_for_uw_camera",
+        "camera_table"
+      ],
+      "languagesDiveGuides": [
+        "english"
+      ],
+      "facilitiesAmenities": [
+        "indoor_saloon",
+        "air_conditioned_saloon",
+        "bar",
+        "sun_deck",
+        "sun_loungers",
+        "audio_video_entertainment"
+      ],
+      "foodDrinks": [
+        "western_food",
+        "local_food",
+        "dietary_restrictions",
+        "buffet_style",
+        "alcoholic_beverages_spirits",
+        "hot_cold_soft_drinks",
+        "snacks_all_day"
+      ],
+      "sharedKitchen": [],
+      "additionalInfo": "",
+      "suitableFor": [
+        "diving",
+        "rebreather_diving",
+        "tech_diving",
+        "non_diver_snorkeler_friendly"
+      ],
+      "friendlyFor": [],
+      "speed": "8",
+      "fuelConsumption": "",
+      "fuelCapacity": "37000",
+      "range": "",
+      "engines": "1 x MTU 2000",
+      "generator": "2 x Cummins",
+      "compressors": "2 x Mako Type K1",
+      "tenders": "1 or 2 depending on destination",
+      "powerPlugsVoltage": [
+        "220"
+      ],
+      "powerPlugsTypes": [
+        "Australian (Type 1)"
+      ],
+      "waterMaker": true,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "",
+      "navigationSafety": [
+        "radar",
+        "depth_sounder",
+        "gps_tracking",
+        "radio_vhf_dsc_ssb",
+        "life_rafts",
+        "life_jackets",
+        "fire_fighting_equipment",
+        "emergency_oxygen_kit",
+        "first_aid_kits",
+        "satellite_phone",
+        "bilge_pump_alarm",
+        "epirb_distress_system",
+        "emergency_flares",
+        "smoke_detectors",
+        "life_rings",
+        "ais"
+      ],
+      "freshwaterTankCapacity": "8000",
+      "updatedAt": "2025-05-28T14:23:38+00:00"
+    },
+    {
+      "id": 45,
+      "name": "Palau Siren",
+      "fleet": {
+        "id": 222,
+        "name": "Master Liveaboards"
+      },
+      "type": "motor_sailer",
+      "model": "Phinisi",
+      "yearBuilt": 2012,
+      "yearRenovation": 2024,
+      "material": "ironwood",
+      "builder": "",
+      "length": 40,
+      "width": 10,
+      "draft": 3,
+      "capacity": 16,
+      "cabinsNumber": 8,
+      "wifi": true,
+      "onboardPayMethods": [
+        "master_card",
+        "visa",
+        "cash"
+      ],
+      "crewSize": 12,
+      "languagesCrew": [
+        "english"
+      ],
+      "boatDescription": "Built on the Indonesian island of Sulawesi, Palau Siren is a traditional Phinisi handcrafted from ironwood and teak. You will find no other diving liveaboard as beautiful in Palau waters and, being built by divers for divers, you can rest assured that every need has been thought of and addressed.\n\nWelcoming a maximum of 16 guests per cruise ensures ample space to relax. The 8 double occupancy cabins offer a choice of double or twin beds, all with individually controlled air conditioning and ensuite bathrooms with hot water.\n\nThe spacious dive deck has individual personal storage for smaller equipment items, separate rinse tanks for scuba and camera equipment and freshwater showers on deck.\n\nThe covered outdoor dining area provides a great setting for all meals and the spacious air-conditioned saloon offers a cocktail bar, comfortable seating and a large flat-screen TV. The saloon also has designated areas for charging and preparation of camera and video equipment making the Palau Siren liveaboard a top choice for underwater photographers and videographers.\n\nPalau Siren also benefits from 2 shaded, high-powered, fibreglass skiffs, a nitrox compressor, equipment rental, kayaks, laundry and massage services.",
+      "media": [
+        {
+          "title": "bdeea0afb95aed28a6f8ea1d107d6bf3.jpg",
+          "image": "https://app.inseanq.com/s3-media/bdeea0afb95aed28a6f8ea1d107d6bf3.jpg?t=1740373362"
+        },
+        {
+          "title": "28cf89b26e594971fc1f1cb7d4e6129b.jpg",
+          "image": "https://app.inseanq.com/s3-media/28cf89b26e594971fc1f1cb7d4e6129b.jpg?t=1740373362"
+        },
+        {
+          "title": "8f4498b62f87bb32bb6a5e785e850e23.jpg",
+          "image": "https://app.inseanq.com/s3-media/8f4498b62f87bb32bb6a5e785e850e23.jpg?t=1740373362"
+        },
+        {
+          "title": "b57a9fb140d18a11d0ee2b8a012fc85e.jpg",
+          "image": "https://app.inseanq.com/s3-media/b57a9fb140d18a11d0ee2b8a012fc85e.jpg?t=1740373362"
+        },
+        {
+          "title": "a8dae5abf4ba09ac415675335184325e.jpg",
+          "image": "https://app.inseanq.com/s3-media/a8dae5abf4ba09ac415675335184325e.jpg?t=1740373362"
+        },
+        {
+          "title": "77620cd7c86d5ee040b352900f45f0d8.jpg",
+          "image": "https://app.inseanq.com/s3-media/77620cd7c86d5ee040b352900f45f0d8.jpg?t=1740373362"
+        },
+        {
+          "title": "b86a1df20404f69bcfc9c8367ceb4189.jpg",
+          "image": "https://app.inseanq.com/s3-media/b86a1df20404f69bcfc9c8367ceb4189.jpg?t=1740373362"
+        },
+        {
+          "title": "4e29f106eff7a2a02bed425aa2e2360b.jpg",
+          "image": "https://app.inseanq.com/s3-media/4e29f106eff7a2a02bed425aa2e2360b.jpg?t=1740373362"
+        },
+        {
+          "title": "7cebad4b91b33f98525272e47baeaee0.jpg",
+          "image": "https://app.inseanq.com/s3-media/7cebad4b91b33f98525272e47baeaee0.jpg?t=1740373362"
+        },
+        {
+          "title": "d09f80b7c57adad83d3c1c14c95305dc.jpg",
+          "image": "https://app.inseanq.com/s3-media/d09f80b7c57adad83d3c1c14c95305dc.jpg?t=1740373363"
+        }
+      ],
+      "guestsGuige": "6:1",
+      "nitrox": true,
+      "divingEquipmentRental": false,
+      "divingFacilities": [
+        "nitrox",
+        "equipment_rental",
+        "tenders_for_diving",
+        "rinse_hosts",
+        "fresh_water_shower",
+        "personal_storage_space",
+        "din_adaptors",
+        "dive_deck"
+      ],
+      "divingPhotographyFacilities": [
+        "charging_stations",
+        "separate_rinsing_tanks_for_uw_camera",
+        "special_storage_for_uw_camera",
+        "camera_and_photography_station"
+      ],
+      "languagesDiveGuides": [
+        "english"
+      ],
+      "facilitiesAmenities": [
+        "indoor_saloon",
+        "air_conditioned_saloon",
+        "bar",
+        "sun_deck",
+        "sun_loungers",
+        "audio_video_entertainment",
+        "onboard_kayaks",
+        "laundry_service",
+        "open_air_saloon",
+        "massage"
+      ],
+      "foodDrinks": [
+        "western_food",
+        "local_food",
+        "dietary_restrictions",
+        "buffet_style",
+        "alcoholic_beverages_spirits",
+        "hot_cold_soft_drinks",
+        "snacks_all_day"
+      ],
+      "sharedKitchen": [],
+      "additionalInfo": "",
+      "suitableFor": [
+        "diving",
+        "non_diver_snorkeler_friendly",
+        "cruising"
+      ],
+      "friendlyFor": [],
+      "speed": "10",
+      "fuelConsumption": "",
+      "fuelCapacity": "14,000",
+      "range": "",
+      "engines": "1 x Nissan RH-10, 1 x Mitsubishi 6D-22",
+      "generator": "2 x Yanmar 65Kva, 1 x Yanmar 37.5Kva",
+      "compressors": "1 x MCH 13, 1 x MCH 16",
+      "tenders": "2 x 150HP Skiffs",
+      "powerPlugsVoltage": [
+        "220"
+      ],
+      "powerPlugsTypes": [
+        "eu_style",
+        "uk_style",
+        "us_style"
+      ],
+      "waterMaker": true,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "2 x Reverse Osmosis units",
+      "navigationSafety": [
+        "radar",
+        "depth_sounder",
+        "gps_tracking",
+        "radio_vhf_dsc_ssb",
+        "life_rafts",
+        "life_jackets",
+        "emergency_oxygen_kit",
+        "fire_fighting_equipment",
+        "first_aid_kits",
+        "satellite_phone",
+        "bilge_pump_alarm",
+        "epirb_distress_system",
+        "emergency_flares",
+        "smoke_detectors",
+        "life_rings",
+        "ais"
+      ],
+      "freshwaterTankCapacity": "12000",
+      "updatedAt": "2025-05-29T06:26:03+00:00"
+    },
+    {
+      "id": 46,
+      "name": "Philippine Siren",
+      "fleet": {
+        "id": 222,
+        "name": "Master Liveaboards"
+      },
+      "type": "motor_sailer",
+      "model": "Phinisi",
+      "yearBuilt": 2013,
+      "yearRenovation": 2023,
+      "material": "ironwood",
+      "builder": "",
+      "length": 40,
+      "width": 10,
+      "draft": 3,
+      "capacity": 16,
+      "cabinsNumber": 8,
+      "wifi": true,
+      "onboardPayMethods": [
+        "master_card",
+        "visa",
+        "cash"
+      ],
+      "crewSize": 13,
+      "languagesCrew": [
+        "english",
+        "filipino"
+      ],
+      "boatDescription": "The 40 metre Philippine Siren liveaboard was built on the Indonesian island of Sulawesi. Handcrafted from ironwood and teak (traditional to the area), you will find no other diving liveaboard as beautiful in waters of the Philippines.\n\nPhilippine Siren welcomes up to 16 guests in eight cabins. Guest accommodation on board comprises two fixed double bed cabins, four fixed twins and 2 cabins that are flexible doubles/twins. Each cabin is equipped with individually controlled air-conditioning units, plenty of storage space and private ensuite bathrooms. \n\nThe spacious, air-conditioned saloon benefits from a cocktail bar, comfortable seating and a large flat screen TV. Dining is outdoors under a covered area with uninterrupted views of the ocean. An expansive dive deck provides ample space for kitting up and storing dive equipment, even when the vessel is full, and fresh water showers available to rinse off after each dive. Underwater photographers and videographers will definitely appreciate the separate rinse tanks as well as the designated areas for charging and preparation of camera equipment.\n\nThe vessel also benefits from 2 high-powered tenders, nitrox compressor, equipment rental, kayaks, laundry and massage services.",
+      "media": [
+        {
+          "title": "f9bfbfc672505b4fa051965a7beee916.jpg",
+          "image": "https://app.inseanq.com/s3-media/f9bfbfc672505b4fa051965a7beee916.jpg?t=1748503813"
+        },
+        {
+          "title": "b36ac61a933399e5effba19a983ecf2b.jpg",
+          "image": "https://app.inseanq.com/s3-media/b36ac61a933399e5effba19a983ecf2b.jpg?t=1748503814"
+        },
+        {
+          "title": "73fbafc98d360e8dd505a680aced52dd.jpg",
+          "image": "https://app.inseanq.com/s3-media/73fbafc98d360e8dd505a680aced52dd.jpg?t=1748503814"
+        },
+        {
+          "title": "0223ebaa72007b887df6d16e5bc790b6.jpg",
+          "image": "https://app.inseanq.com/s3-media/0223ebaa72007b887df6d16e5bc790b6.jpg?t=1748503814"
+        },
+        {
+          "title": "79935eca479888a0a2b4afcd5a206a9a.jpg",
+          "image": "https://app.inseanq.com/s3-media/79935eca479888a0a2b4afcd5a206a9a.jpg?t=1748503815"
+        },
+        {
+          "title": "199aa05dcc7e475c15a223778e422e3d.jpg",
+          "image": "https://app.inseanq.com/s3-media/199aa05dcc7e475c15a223778e422e3d.jpg?t=1748503815"
+        }
+      ],
+      "guestsGuige": "6:1",
+      "nitrox": true,
+      "divingEquipmentRental": false,
+      "divingFacilities": [
+        "nitrox",
+        "equipment_rental",
+        "dive_deck",
+        "tenders_for_diving",
+        "rinse_hosts",
+        "fresh_water_shower",
+        "personal_storage_space",
+        "din_adaptors"
+      ],
+      "divingPhotographyFacilities": [
+        "camera_and_photography_station",
+        "charging_stations",
+        "separate_rinsing_tanks_for_uw_camera",
+        "special_storage_for_uw_camera"
+      ],
+      "languagesDiveGuides": [
+        "english",
+        "filipino"
+      ],
+      "facilitiesAmenities": [
+        "indoor_saloon",
+        "air_conditioned_saloon",
+        "open_air_saloon",
+        "bar",
+        "sun_deck",
+        "sun_loungers",
+        "massage",
+        "audio_video_entertainment",
+        "onboard_kayaks",
+        "laundry_service"
+      ],
+      "foodDrinks": [
+        "western_food",
+        "local_food",
+        "dietary_restrictions",
+        "buffet_style",
+        "alcoholic_beverages_spirits",
+        "hot_cold_soft_drinks",
+        "snacks_all_day"
+      ],
+      "sharedKitchen": [],
+      "additionalInfo": "",
+      "suitableFor": [
+        "diving",
+        "non_diver_snorkeler_friendly",
+        "land_excursions",
+        "cruising"
+      ],
+      "friendlyFor": [],
+      "speed": "8",
+      "fuelConsumption": "",
+      "fuelCapacity": "16000",
+      "range": "",
+      "engines": "1 x Nissan RH-10, 1 x Mitsubishi 6D-22",
+      "generator": "3 x Yanmar 4TNV106T",
+      "compressors": "2 x MCH 13",
+      "tenders": "2 x 90HP Zodiac RHIBs",
+      "powerPlugsVoltage": [
+        "220"
+      ],
+      "powerPlugsTypes": [
+        "eu_style",
+        "uk_style",
+        "us_style"
+      ],
+      "waterMaker": true,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "Seafari Reverse Osmosis",
+      "navigationSafety": [
+        "radar",
+        "depth_sounder",
+        "gps_tracking",
+        "radio_vhf_dsc_ssb",
+        "life_rafts",
+        "life_jackets",
+        "fire_fighting_equipment",
+        "emergency_oxygen_kit",
+        "first_aid_kits",
+        "satellite_phone",
+        "bilge_pump_alarm",
+        "epirb_distress_system",
+        "emergency_flares",
+        "smoke_detectors",
+        "life_rings",
+        "ais"
+      ],
+      "freshwaterTankCapacity": "16000",
+      "updatedAt": "2025-05-29T07:30:38+00:00"
+    },
+    {
+      "id": 422,
+      "name": "Solomons Master",
+      "fleet": {
+        "id": 222,
+        "name": "Master Liveaboards"
+      },
+      "type": "motor_yacht",
+      "model": "",
+      "yearBuilt": 1974,
+      "yearRenovation": 2025,
+      "material": "steel",
+      "builder": "",
+      "length": 39,
+      "width": 7,
+      "draft": 3,
+      "capacity": 16,
+      "cabinsNumber": 8,
+      "wifi": true,
+      "onboardPayMethods": [
+        "master_card",
+        "visa",
+        "cash"
+      ],
+      "crewSize": 16,
+      "languagesCrew": [
+        "english"
+      ],
+      "boatDescription": "The steel-hulled Solomons Master (formerly Truk Master) boasts eight double occupancy cabins providing comfortable accommodation for up to 16 guests with a choice of classic, premium or superior cabins. Each cabin benefits from private, en-suite bathroom facilities and individually controlled air-conditioning.\n\nThe dive deck on Solomons Master is large and spacious with individual set-up stations, under-bench storage and a platform with ladders at the rear. The boat is fully equipped to cater for recreational, technical and rebreather divers.\n\nThe main deck houses a spacious indoor dining room as well as a camera station complete with numerous charging points and storage space. After a fantastic day of diving, unwind and relax in Solomons Master’s indoor lounge and bar area which is equipped with a plasma screen ideal for watching a movie or photo viewing. Alternatively, head out to the shaded relaxation area or the large sundeck on the upper deck and sink into a lounge chair to soak up the atmosphere and stunning views.",
+      "media": [
+        {
+          "title": "2939df24ea1408942a051c1d7d30d3b0.jpg",
+          "image": "https://app.inseanq.com/s3-media/2939df24ea1408942a051c1d7d30d3b0.jpg?t=1748504945"
+        },
+        {
+          "title": "c941a86f5e37122199b164e3e057bc9a.jpg",
+          "image": "https://app.inseanq.com/s3-media/c941a86f5e37122199b164e3e057bc9a.jpg?t=1748504945"
+        },
+        {
+          "title": "f9129a9091bbb4a1d29a6744da0897ec.jpg",
+          "image": "https://app.inseanq.com/s3-media/f9129a9091bbb4a1d29a6744da0897ec.jpg?t=1748504945"
+        },
+        {
+          "title": "b556d528ec2ac421c1ffc32c873ad07e.jpg",
+          "image": "https://app.inseanq.com/s3-media/b556d528ec2ac421c1ffc32c873ad07e.jpg?t=1748504945"
+        },
+        {
+          "title": "b78ddc98c834e4120912519f295ab13b.jpg",
+          "image": "https://app.inseanq.com/s3-media/b78ddc98c834e4120912519f295ab13b.jpg?t=1748504946"
+        },
+        {
+          "title": "b18f9c2063101af61b8f502d49df35bc.jpg",
+          "image": "https://app.inseanq.com/s3-media/b18f9c2063101af61b8f502d49df35bc.jpg?t=1748504946"
+        },
+        {
+          "title": "709246a9d72e8bc2f72f0bc962530fda.jpg",
+          "image": "https://app.inseanq.com/s3-media/709246a9d72e8bc2f72f0bc962530fda.jpg?t=1748504946"
+        },
+        {
+          "title": "f7114e216de35e22ebd1314fec614183.jpg",
+          "image": "https://app.inseanq.com/s3-media/f7114e216de35e22ebd1314fec614183.jpg?t=1748504946"
+        },
+        {
+          "title": "a3c3ca1eb2571403ca3ed5d14015c46b.jpg",
+          "image": "https://app.inseanq.com/s3-media/a3c3ca1eb2571403ca3ed5d14015c46b.jpg?t=1748504946"
+        },
+        {
+          "title": "6b01855399110728037f454145712606.jpg",
+          "image": "https://app.inseanq.com/s3-media/6b01855399110728037f454145712606.jpg?t=1748504946"
+        }
+      ],
+      "guestsGuige": "8:1",
+      "nitrox": true,
+      "divingEquipmentRental": false,
+      "divingFacilities": [
+        "nitrox",
+        "equipment_rental",
+        "dive_deck",
+        "tenders_for_diving",
+        "rinse_hosts",
+        "fresh_water_shower",
+        "personal_storage_space",
+        "din_adaptors"
+      ],
+      "divingPhotographyFacilities": [
+        "camera_table",
+        "charging_stations",
+        "separate_rinsing_tanks_for_uw_camera",
+        "special_storage_for_uw_camera"
+      ],
+      "languagesDiveGuides": [
+        "english"
+      ],
+      "facilitiesAmenities": [
+        "indoor_saloon",
+        "air_conditioned_saloon",
+        "bar",
+        "sun_deck",
+        "sun_loungers",
+        "massage",
+        "audio_video_entertainment",
+        "laundry_service"
+      ],
+      "foodDrinks": [
+        "western_food",
+        "local_food",
+        "dietary_restrictions",
+        "buffet_style",
+        "alcoholic_beverages_spirits",
+        "hot_cold_soft_drinks",
+        "snacks_all_day"
+      ],
+      "sharedKitchen": [],
+      "additionalInfo": "",
+      "suitableFor": [
+        "diving",
+        "non_diver_snorkeler_friendly",
+        "rebreather_diving",
+        "tech_diving",
+        "land_excursions",
+        "cruising"
+      ],
+      "friendlyFor": [],
+      "speed": "9",
+      "fuelConsumption": "",
+      "fuelCapacity": "22000",
+      "range": "",
+      "engines": "2 x Cummins 520 HP",
+      "generator": "4 x Cummins 6BT5.9",
+      "compressors": "2 x Coltri MCH 16-Tropical",
+      "tenders": "2 x twin 85HP Zodiac RHIBs",
+      "powerPlugsVoltage": [
+        "110",
+        "220"
+      ],
+      "powerPlugsTypes": [
+        "eu_style",
+        "uk_style",
+        "us_style"
+      ],
+      "waterMaker": true,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "Reverese Osmosis",
+      "navigationSafety": [
+        "radar",
+        "depth_sounder",
+        "gps_tracking",
+        "radio_vhf_dsc_ssb",
+        "life_rafts",
+        "life_jackets",
+        "fire_fighting_equipment",
+        "emergency_oxygen_kit",
+        "first_aid_kits",
+        "satellite_phone",
+        "bilge_pump_alarm",
+        "searchlight",
+        "epirb_distress_system",
+        "emergency_flares",
+        "smoke_detectors",
+        "life_rings",
+        "ais"
+      ],
+      "freshwaterTankCapacity": "6000",
+      "updatedAt": "2025-05-29T07:49:11+00:00"
+    },
+    {
+      "id": 218,
+      "name": "Southern Sport",
+      "fleet": {
+        "id": 121,
+        "name": "Club Cantamar Liveaboards"
+      },
+      "type": "motor_yacht",
+      "model": "Southern Sport",
+      "yearBuilt": 1974,
+      "yearRenovation": 2019,
+      "material": "aluminium",
+      "builder": "Southern Sport",
+      "length": 32,
+      "width": 0,
+      "draft": 0,
+      "capacity": 18,
+      "cabinsNumber": 9,
+      "wifi": true,
+      "onboardPayMethods": [
+        "cash"
+      ],
+      "crewSize": 11,
+      "languagesCrew": [
+        "spanish",
+        "dutch"
+      ],
+      "boatDescription": "USA-built M/V Southern Sport is a sleek, fast and comfortable liveaboard ship for up to 18 divers. Featured in several movies and documentaries , it will take you to Amazing Diving in Socorro & Revillagigedo and the Sea of Cortez SCUBA adventure. Nicely appointed accomodations and some of the best crew members in the industry are onboard. 9 double cabins, large sun deck, and full service dive deck on the aft, it is the perfect adventure for Socorro & Revillagigedo and the Sea of Cortez – Aquarium of the World routes.",
+      "media": [
+        {
+          "title": "abd831e088b947868e7a8cc3daede4eb.jpg",
+          "image": "https://app.inseanq.com/s3-media/abd831e088b947868e7a8cc3daede4eb.jpg?t=1748878010"
+        },
+        {
+          "title": "10e6cfb263d5caa18144a7760cb77205.jpg",
+          "image": "https://app.inseanq.com/s3-media/10e6cfb263d5caa18144a7760cb77205.jpg?t=1748878010"
+        },
+        {
+          "title": "e5f7188b9edf227ebf24c8434d4d5de2.jpg",
+          "image": "https://app.inseanq.com/s3-media/e5f7188b9edf227ebf24c8434d4d5de2.jpg?t=1748878014"
+        },
+        {
+          "title": "da9aacbe455d331216a4aacd1a7fb99a.jpg",
+          "image": "https://app.inseanq.com/s3-media/da9aacbe455d331216a4aacd1a7fb99a.jpg?t=1748878015"
+        },
+        {
+          "title": "a0a5cb352749f64b2719f113348d3498.jpg",
+          "image": "https://app.inseanq.com/s3-media/a0a5cb352749f64b2719f113348d3498.jpg?t=1748878015"
+        },
+        {
+          "title": "921051ab2f3ba727e9b77a282a006bf0.jpg",
+          "image": "https://app.inseanq.com/s3-media/921051ab2f3ba727e9b77a282a006bf0.jpg?t=1748878015"
+        },
+        {
+          "title": "5a4244d168deba03af9a0bc5c7009aa7.jpg",
+          "image": "https://app.inseanq.com/s3-media/5a4244d168deba03af9a0bc5c7009aa7.jpg?t=1748878015"
+        },
+        {
+          "title": "102d4da0ffbfa1e4fa004a3a187ff7f4.jpg",
+          "image": "https://app.inseanq.com/s3-media/102d4da0ffbfa1e4fa004a3a187ff7f4.jpg?t=1748878016"
+        },
+        {
+          "title": "050d29c30cf1ae6ac474b2334e258d5f.jpg",
+          "image": "https://app.inseanq.com/s3-media/050d29c30cf1ae6ac474b2334e258d5f.jpg?t=1748878016"
+        },
+        {
+          "title": "a0afedf921505e0337b0b516f6c0ac2e.jpg",
+          "image": "https://app.inseanq.com/s3-media/a0afedf921505e0337b0b516f6c0ac2e.jpg?t=1748878016"
+        },
+        {
+          "title": "ac9970cee609705be256e4924467dc15.jpg",
+          "image": "https://app.inseanq.com/s3-media/ac9970cee609705be256e4924467dc15.jpg?t=1748878017"
+        }
+      ],
+      "guestsGuige": "9:1",
+      "nitrox": true,
+      "divingEquipmentRental": false,
+      "divingFacilities": [
+        "nitrox",
+        "equipment_rental",
+        "dive_deck",
+        "tenders_for_diving",
+        "fresh_water_shower"
+      ],
+      "divingPhotographyFacilities": [
+        "camera_table",
+        "charging_stations",
+        "separate_rinsing_tanks_for_uw_camera"
+      ],
+      "languagesDiveGuides": [
+        "english",
+        "spanish"
+      ],
+      "facilitiesAmenities": [
+        "indoor_saloon",
+        "open_air_saloon",
+        "sun_deck",
+        "audio_video_entertainment"
+      ],
+      "foodDrinks": [
+        "local_food",
+        "dietary_restrictions",
+        "alcoholic_beverages_spirits",
+        "hot_cold_soft_drinks",
+        "snacks_all_day",
+        "plate_service",
+        "western_food"
+      ],
+      "sharedKitchen": [],
+      "additionalInfo": "",
+      "suitableFor": [
+        "diving"
+      ],
+      "friendlyFor": [],
+      "speed": "11",
+      "fuelConsumption": "",
+      "fuelCapacity": "",
+      "range": "1500",
+      "engines": "2 Detroit 1454 kW",
+      "generator": "60 kW + 50 kW",
+      "compressors": "2",
+      "tenders": "2",
+      "powerPlugsVoltage": [
+        "110"
+      ],
+      "powerPlugsTypes": [
+        "us_style"
+      ],
+      "waterMaker": true,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "",
+      "navigationSafety": [
+        "radar",
+        "depth_sounder",
+        "gps_tracking",
+        "radio_vhf_dsc_ssb",
+        "life_rafts",
+        "life_jackets",
+        "fire_fighting_equipment",
+        "emergency_oxygen_kit",
+        "first_aid_kits",
+        "satellite_phone",
+        "bilge_pump_alarm",
+        "searchlight",
+        "emergency_flares",
+        "smoke_detectors",
+        "life_rings",
+        "ais"
+      ],
+      "freshwaterTankCapacity": "",
+      "updatedAt": "2025-06-02T15:38:25+00:00"
+    },
+    {
+      "id": 317,
+      "name": "Thailand Master",
+      "fleet": {
+        "id": 222,
+        "name": "Master Liveaboards"
+      },
+      "type": "motor_sailer",
+      "model": "Phinisi",
+      "yearBuilt": 2007,
+      "yearRenovation": 2024,
+      "material": "ironwood",
+      "builder": "",
+      "length": 34,
+      "width": 8,
+      "draft": 2,
+      "capacity": 18,
+      "cabinsNumber": 7,
+      "wifi": false,
+      "onboardPayMethods": [
+        "cash",
+        "visa",
+        "master_card"
+      ],
+      "crewSize": 12,
+      "languagesCrew": [
+        "english",
+        "thai",
+        "portuguese"
+      ],
+      "boatDescription": "Thailand Master is a traditional Indonesian sailing yacht offering liveaboard dive holidays in Thailand and Myanmar, comfortably accommodating 18 divers. She boasts a spacious dive deck with plenty of storage space for all of your dive gear. The outdoor dining area at the stern is covered and shaded so you can fully take in the breath-taking views of Thailand and Myanmar. Every day, our chef prepares plenty of dishes from the famous Thai cuisine with fresh, locally sourced ingredients. Friendly and experienced, our boat and dive crew are there to meet your every need, making your diving holiday in Thailand and Myanmar unforgettable.",
+      "media": [
+        {
+          "title": "d435b59c12bb6e769b0fc842a848b212.jpg",
+          "image": "https://app.inseanq.com/s3-media/d435b59c12bb6e769b0fc842a848b212.jpg?t=1748506543"
+        },
+        {
+          "title": "71e5f6a041596b16e951fde4e93fe464.jpg",
+          "image": "https://app.inseanq.com/s3-media/71e5f6a041596b16e951fde4e93fe464.jpg?t=1748506543"
+        },
+        {
+          "title": "d43d3ceab6e2a99ecce2cdd4e58e7e98.jpg",
+          "image": "https://app.inseanq.com/s3-media/d43d3ceab6e2a99ecce2cdd4e58e7e98.jpg?t=1748506543"
+        },
+        {
+          "title": "f452cc5adeacffcf519ffa5d8f83094e.jpg",
+          "image": "https://app.inseanq.com/s3-media/f452cc5adeacffcf519ffa5d8f83094e.jpg?t=1748506544"
+        },
+        {
+          "title": "ffa13517dab9b1b514b726b7c54c5fee.jpg",
+          "image": "https://app.inseanq.com/s3-media/ffa13517dab9b1b514b726b7c54c5fee.jpg?t=1748506544"
+        },
+        {
+          "title": "06e62c0c62d9cf30a7c51cd34e0c963d.jpg",
+          "image": "https://app.inseanq.com/s3-media/06e62c0c62d9cf30a7c51cd34e0c963d.jpg?t=1748506544"
+        },
+        {
+          "title": "d6c1d772e8d04592d33cf4ed48470160.jpg",
+          "image": "https://app.inseanq.com/s3-media/d6c1d772e8d04592d33cf4ed48470160.jpg?t=1748506544"
+        },
+        {
+          "title": "92a332d9eea8170c97c27a1d452cbc80.jpg",
+          "image": "https://app.inseanq.com/s3-media/92a332d9eea8170c97c27a1d452cbc80.jpg?t=1748506544"
+        },
+        {
+          "title": "e810c8e65c2113d6d0ab218c6414fdd3.jpg",
+          "image": "https://app.inseanq.com/s3-media/e810c8e65c2113d6d0ab218c6414fdd3.jpg?t=1748506544"
+        },
+        {
+          "title": "0e3e8d6c2a1a323f1b6cc77919ff7c99.jpg",
+          "image": "https://app.inseanq.com/s3-media/0e3e8d6c2a1a323f1b6cc77919ff7c99.jpg?t=1748506544"
+        }
+      ],
+      "guestsGuige": "6:1",
+      "nitrox": true,
+      "divingEquipmentRental": false,
+      "divingFacilities": [
+        "nitrox",
+        "equipment_rental",
+        "dive_deck",
+        "tenders_for_diving",
+        "fresh_water_shower",
+        "personal_storage_space",
+        "din_adaptors",
+        "rinse_hosts"
+      ],
+      "divingPhotographyFacilities": [
+        "camera_and_photography_station",
+        "camera_table",
+        "charging_stations",
+        "separate_rinsing_tanks_for_uw_camera",
+        "special_storage_for_uw_camera"
+      ],
+      "languagesDiveGuides": [
+        "english",
+        "portuguese"
+      ],
+      "facilitiesAmenities": [
+        "indoor_saloon",
+        "air_conditioned_saloon",
+        "open_air_saloon",
+        "sun_deck",
+        "sun_loungers",
+        "audio_video_entertainment",
+        "laundry_service",
+        "massage",
+        "onboard_kayaks",
+        "solar_panels"
+      ],
+      "foodDrinks": [
+        "western_food",
+        "local_food",
+        "buffet_style",
+        "alcoholic_beverages_spirits",
+        "hot_cold_soft_drinks",
+        "snacks_all_day",
+        "dietary_restrictions"
+      ],
+      "sharedKitchen": [],
+      "additionalInfo": "",
+      "suitableFor": [
+        "diving",
+        "non_diver_snorkeler_friendly",
+        "cruising",
+        "land_excursions"
+      ],
+      "friendlyFor": [],
+      "speed": "8",
+      "fuelConsumption": "",
+      "fuelCapacity": "10000",
+      "range": "",
+      "engines": "1 x Hino V25 480HP",
+      "generator": "2 x Hino",
+      "compressors": "2 x Coltri",
+      "tenders": "1 x 60HP RHIB, 1 x 40HP RHIB",
+      "powerPlugsVoltage": [
+        "220"
+      ],
+      "powerPlugsTypes": [
+        "eu_style",
+        "us_style"
+      ],
+      "waterMaker": true,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "Reverse Osmosis",
+      "navigationSafety": [
+        "life_rings",
+        "smoke_detectors",
+        "emergency_flares",
+        "epirb_distress_system",
+        "satellite_phone",
+        "first_aid_kits",
+        "emergency_oxygen_kit",
+        "fire_fighting_equipment",
+        "life_jackets",
+        "life_rafts",
+        "radio_vhf_dsc_ssb",
+        "gps_tracking",
+        "radar",
+        "depth_sounder",
+        "bilge_pump_alarm",
+        "ais"
+      ],
+      "freshwaterTankCapacity": "8000",
+      "updatedAt": "2025-05-29T08:16:21+00:00"
+    },
+    {
+      "id": 441,
+      "name": "White Pearl",
+      "fleet": {
+        "id": 211,
+        "name": "Pearl Fleet"
+      },
+      "type": "motor_yacht",
+      "model": "",
+      "yearBuilt": 2020,
+      "yearRenovation": 2020,
+      "material": "steel",
+      "builder": "",
+      "length": 56,
+      "width": 10,
+      "draft": 5,
+      "capacity": 26,
+      "cabinsNumber": 13,
+      "wifi": true,
+      "onboardPayMethods": [
+        "master_card",
+        "visa",
+        "cash",
+        "american_express"
+      ],
+      "crewSize": 25,
+      "languagesCrew": [
+        "chinese",
+        "english",
+        "french",
+        "maldivian"
+      ],
+      "boatDescription": "The M/Y White Pearl is an exceptional vessel that measuring 56.4m (183ft), with 13 opulent rooms including 1 Master Suite, 2 Junior Suites, and 10 Deluxe Cabins accommodating up to 26 guests. It features two Cummins KTA38-M3 engines, generating 746 KW/1015 Bhp, and three all-purpose built aluminium tender boats.\n\nBuilt-in 2020, it promises an unforgettable diving experience in the magnificent waters of the Maldives.\n\nThe vessel offers a variety of amenities, including a sun deck, dining area, camera room, diving area, and a range of cabins with basic amenities.\n\nDiving equipment and non-diving activities such as kayaking and paddle-boarding are also available, along with rental equipment and massage services.",
+      "media": [
+        {
+          "title": "2490b20e4e1a6d57df01a2ff594732d6.jpg",
+          "image": "https://app.inseanq.com/s3-media/2490b20e4e1a6d57df01a2ff594732d6.jpg?t=1747841619"
+        },
+        {
+          "title": "c1384c52fc2b1f0ae0ee58bd954f31ed.jpg",
+          "image": "https://app.inseanq.com/s3-media/c1384c52fc2b1f0ae0ee58bd954f31ed.jpg?t=1747841619"
+        },
+        {
+          "title": "d01205b26bbcad5512ea53e60b0f8800.jpg",
+          "image": "https://app.inseanq.com/s3-media/d01205b26bbcad5512ea53e60b0f8800.jpg?t=1747841619"
+        },
+        {
+          "title": "23815b50d8da23cc9f93048e77226805.jpg",
+          "image": "https://app.inseanq.com/s3-media/23815b50d8da23cc9f93048e77226805.jpg?t=1747841618"
+        },
+        {
+          "title": "fd41af087fdd3f3a6789508a815e5b00.jpg",
+          "image": "https://app.inseanq.com/s3-media/fd41af087fdd3f3a6789508a815e5b00.jpg?t=1747841619"
+        },
+        {
+          "title": "a307a09ea306891c439174c0dc542313.jpg",
+          "image": "https://app.inseanq.com/s3-media/a307a09ea306891c439174c0dc542313.jpg?t=1747841619"
+        },
+        {
+          "title": "1644d0176e35190f8641aa60cebe1818.jpg",
+          "image": "https://app.inseanq.com/s3-media/1644d0176e35190f8641aa60cebe1818.jpg?t=1747841619"
+        },
+        {
+          "title": "18fe773f363618c9650f641c30472bfc.jpg",
+          "image": "https://app.inseanq.com/s3-media/18fe773f363618c9650f641c30472bfc.jpg?t=1747839104"
+        },
+        {
+          "title": "4ce01e101915f65e2732d1d782079215.jpg",
+          "image": "https://app.inseanq.com/s3-media/4ce01e101915f65e2732d1d782079215.jpg?t=1747841618"
+        },
+        {
+          "title": "6d7365efc54ee784b2d45a1adc4a188e.jpg",
+          "image": "https://app.inseanq.com/s3-media/6d7365efc54ee784b2d45a1adc4a188e.jpg?t=1747841619"
+        },
+        {
+          "title": "18085a69adefc0ee82dacf21d56f3407.jpg",
+          "image": "https://app.inseanq.com/s3-media/18085a69adefc0ee82dacf21d56f3407.jpg?t=1747839115"
+        },
+        {
+          "title": "92faed3b54c6457224b30021254800da.jpg",
+          "image": "https://app.inseanq.com/s3-media/92faed3b54c6457224b30021254800da.jpg?t=1747841619"
+        },
+        {
+          "title": "5053c2fc0e53d8d6dc8c8dd8c1a4e7e4.jpg",
+          "image": "https://app.inseanq.com/s3-media/5053c2fc0e53d8d6dc8c8dd8c1a4e7e4.jpg?t=1747841619"
+        },
+        {
+          "title": "353b4854dfccf61bc91166e3feb2a12a.jpg",
+          "image": "https://app.inseanq.com/s3-media/353b4854dfccf61bc91166e3feb2a12a.jpg?t=1747841619"
+        },
+        {
+          "title": "b7db7e78d5c20c52426bb20f2c2a57be.jpg",
+          "image": "https://app.inseanq.com/s3-media/b7db7e78d5c20c52426bb20f2c2a57be.jpg?t=1747841618"
+        },
+        {
+          "title": "a892d7bb8f2a839fe9218c78721c47a3.jpg",
+          "image": "https://app.inseanq.com/s3-media/a892d7bb8f2a839fe9218c78721c47a3.jpg?t=1747841619"
+        },
+        {
+          "title": "792b67931a09f60db9e7f83ec9d0262d.jpg",
+          "image": "https://app.inseanq.com/s3-media/792b67931a09f60db9e7f83ec9d0262d.jpg?t=1747841620"
+        },
+        {
+          "title": "074f0321a7d99d62693977d5aeaf456a.jpg",
+          "image": "https://app.inseanq.com/s3-media/074f0321a7d99d62693977d5aeaf456a.jpg?t=1747841620"
+        },
+        {
+          "title": "65cdd9a0c9306c9bc9d36fe37b766f47.jpg",
+          "image": "https://app.inseanq.com/s3-media/65cdd9a0c9306c9bc9d36fe37b766f47.jpg?t=1747841620"
+        },
+        {
+          "title": "7229445ef42781ee110f08f0b2b27df2.jpg",
+          "image": "https://app.inseanq.com/s3-media/7229445ef42781ee110f08f0b2b27df2.jpg?t=1747841623"
+        }
+      ],
+      "guestsGuige": "6:1",
+      "nitrox": true,
+      "divingEquipmentRental": false,
+      "divingFacilities": [
+        "nitrox",
+        "equipment_rental",
+        "dive_deck",
+        "tenders_for_diving",
+        "rinse_hosts",
+        "fresh_water_shower",
+        "personal_storage_space",
+        "din_adaptors"
+      ],
+      "divingPhotographyFacilities": [
+        "camera_and_photography_station",
+        "camera_table",
+        "charging_stations",
+        "separate_rinsing_tanks_for_uw_camera",
+        "special_storage_for_uw_camera"
+      ],
+      "languagesDiveGuides": [
+        "chinese",
+        "english",
+        "french",
+        "maldivian",
+        "filipino",
+        "thai"
+      ],
+      "facilitiesAmenities": [
+        "indoor_saloon",
+        "air_conditioned_saloon",
+        "open_air_saloon",
+        "bar",
+        "sun_deck",
+        "sun_loungers",
+        "gym_exercise_equipment",
+        "bathing_platform",
+        "teak_deck",
+        "hot_tub_jacuzzi",
+        "spa",
+        "massage",
+        "audio_video_entertainment",
+        "onboard_kayaks",
+        "jet_ski_waverunner",
+        "laundry_service"
+      ],
+      "foodDrinks": [
+        "western_food",
+        "local_food",
+        "buffet_style",
+        "alcoholic_beverages_spirits",
+        "hot_cold_soft_drinks",
+        "snacks_all_day"
+      ],
+      "sharedKitchen": [
+        "fridge",
+        "microwave",
+        "sink"
+      ],
+      "additionalInfo": "",
+      "suitableFor": [
+        "diving",
+        "non_diver_snorkeler_friendly",
+        "fishing"
+      ],
+      "friendlyFor": [
+        "child_friendly"
+      ],
+      "speed": "14",
+      "fuelConsumption": "",
+      "fuelCapacity": "",
+      "range": "",
+      "engines": "Cummins KTA38-M3 x2",
+      "generator": "",
+      "compressors": "",
+      "tenders": "3",
+      "powerPlugsVoltage": [
+        "220"
+      ],
+      "powerPlugsTypes": [
+        "eu_style",
+        "uk_style",
+        "us_style"
+      ],
+      "waterMaker": true,
+      "zeroSpeedStabilizers": false,
+      "desalinators": "",
+      "navigationSafety": [
+        "radar",
+        "gps_tracking",
+        "radio_vhf_dsc_ssb",
+        "life_rafts",
+        "life_jackets",
+        "fire_fighting_equipment",
+        "emergency_oxygen_kit",
+        "first_aid_kits",
+        "satellite_phone",
+        "searchlight",
+        "smoke_detectors"
+      ],
+      "freshwaterTankCapacity": "",
+      "updatedAt": "2025-05-21T15:26:04+00:00"
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+/* 전체 */
+.home-container {
+  width: 100%;
+}
+
+/* Hero */
+.hero-section {
+  width: 100%;
+  height: 80vh;
+  background: url("/images/hero/underwater.jpg") center/cover no-repeat;
+  position: relative;
+}
+
+.hero-overlay {
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #fff;
+}
+
+.hero-title {
+  font-size: 42px;
+  font-weight: 700;
+}
+
+.hero-sub {
+  margin-top: 8px;
+  font-size: 18px;
+}
+
+/* Quick Search */
+.quick-search {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.qs-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.qs-btn {
+  background: #007bff;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Special Trips */
+.special-section {
+  width: 100%;
+  max-width: 1200px;
+  margin: 60px auto;
+  padding: 0 16px;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.hero-section {
+  background-image: url("/images/home-bg.jpg");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}

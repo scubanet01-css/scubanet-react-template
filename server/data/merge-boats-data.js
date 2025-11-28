@@ -1,0 +1,71 @@
+// 1️⃣ Node.js 모듈 불러오기
+const fs = require('fs');
+
+// 2️⃣ JSON 파일 경로
+const boatsData = JSON.parse(fs.readFileSync(__dirname + '/data/boats.json', 'utf-8'));
+const boatsDetailsData = JSON.parse(fs.readFileSync(__dirname + '/data/boats-details.json', 'utf-8'));
+const availabilityData = JSON.parse(fs.readFileSync(__dirname + '/data/availability-detailed.json', 'utf-8'));
+
+
+console.log('✅ 파일 읽기 완료');
+console.log('boats:', boatsData.data.length);
+console.log('boatsDetails:', boatsDetailsData.data.length);
+console.log('availability:', availabilityData.data.length);
+
+// 4️⃣ boats + boats-details 병합
+const mergedBoats = boatsData.data.map(boat => {
+  const details = boatsDetailsData.data.find(detail => detail.id === boat.id) || {};
+
+  const mergedBoat = {
+    id: boat.id,
+    name: boat.name,
+    fleet: boat.fleet || null,
+    currency: boat.currency || 'USD',
+    countries: boat.countries || [],
+    maxSpaces: boat.maxSpaces || null,
+    deckPlan: boat.deckPlan || [],
+    description: details.boatDescription || boat.description || '',
+    specs: {
+      length: details.length || null,
+      width: details.width || null,
+      maxGuests: boat.maxSpaces || null,
+      yearBuilt: details.yearBuilt || null,
+      wifi: details.wifi || false,
+      nitrox: details.nitrox || false,
+      description: details.boatDescription || ''
+    },
+    cabins: boat.cabins || [],
+    media: boat.media || [],
+    availability: boat.availabilities || [],
+    reviews: [],
+    includes: [],
+    excludes: []
+  };
+
+  return mergedBoat;
+});
+
+console.log('✅ boats + boats-details 병합 완료:', mergedBoats.length);
+
+// 5️⃣ availability 병합
+mergedBoats.forEach(boat => {
+  const boatTrips = availabilityData.data.filter(trip => trip.boatId === boat.id);
+  boat.availability = boatTrips.map(trip => ({
+    tripId: trip.id,
+    startDate: trip.startDate,
+    endDate: trip.endDate,
+    productName: trip.productName,
+    availability: trip.availability,
+    price: trip.price,
+    seatsLeft: trip.seatsLeft
+    // 필요한 추가 필드 여기서 확장 가능
+  }));
+});
+
+console.log('✅ availability 병합 완료');
+
+// 6️⃣ 병합 결과 저장
+const outputFile = '/root/data/boats-merged.json';
+fs.writeFileSync('/root/server/data/boats-merged.json', JSON.stringify({ data: mergedBoats }, null, 2), 'utf-8');
+
+console.log('🎉 병합된 JSON 파일 저장 완료:', outputFile);
