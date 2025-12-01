@@ -24,11 +24,16 @@ export function useDestinationFilter() {
 
                 setTrips(list);
 
-                // 📌 Country 목록
-                const countrySet = new Set(list.map(t => t.country || "Others"));
-                const sortedCountries = [...countrySet].filter(c => c !== "Others").sort();
+                // ✔ UTS 기반 country 리스트
+                const countrySet = new Set(
+                    list
+                        .map(t => t.country || "Others")
+                        .filter(Boolean)
+                );
 
-                setCountryList(["전체", ...sortedCountries, "Others"]);
+                const sorted = [...countrySet].filter(c => c !== "Others").sort();
+
+                setCountryList(["전체", ...sorted, "Others"]);
 
             } catch (err) {
                 console.error("❌ loadUTS error:", err);
@@ -40,25 +45,25 @@ export function useDestinationFilter() {
         loadUTS();
     }, []);
 
-    // 📌 Destination 목록 갱신
+    // ✔ destination 리스트 갱신
     useEffect(() => {
         if (!trips.length) {
             setDestinationList(["전체"]);
             return;
         }
 
-        let dest = [];
+        let targetTrips =
+            selectedCountry === "전체"
+                ? trips
+                : trips.filter(t => t.country === selectedCountry);
 
-        if (selectedCountry === "전체") {
-            const allDest = new Set(trips.map(t => t.destination || "Others"));
-            dest = [...allDest].sort();
-        } else {
-            const filtered = trips.filter(t => t.country === selectedCountry);
-            const destSet = new Set(filtered.map(t => t.destination || "Others"));
-            dest = [...destSet].sort();
-        }
+        const destSet = new Set(
+            targetTrips.map(t => t.destination || "Others").filter(Boolean)
+        );
 
-        setDestinationList(["전체", ...dest]);
+        const destArr = [...destSet].sort();
+
+        setDestinationList(["전체", ...destArr]);
     }, [selectedCountry, trips]);
 
     return {
