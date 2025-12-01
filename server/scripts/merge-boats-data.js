@@ -1,11 +1,14 @@
-// 1️⃣ Node.js 모듈 불러오기
+// 1️⃣ Node.js 모듈
 const fs = require('fs');
+const path = require('path');
 
-// 2️⃣ JSON 파일 경로
-const boatsData = JSON.parse(fs.readFileSync(__dirname + '/data/boats.json', 'utf-8'));
-const boatsDetailsData = JSON.parse(fs.readFileSync(__dirname + '/data/boats-details.json', 'utf-8'));
-const availabilityData = JSON.parse(fs.readFileSync(__dirname + '/data/availability-detailed.json', 'utf-8'));
+// 2️⃣ JSON 파일 경로 (우리가 저장하는 위치)
+const DATA_DIR = "/var/www/scubanet/data";
 
+// 3️⃣ JSON 읽기
+const boatsData = JSON.parse(fs.readFileSync(`${DATA_DIR}/boats.json`, 'utf-8'));
+const boatsDetailsData = JSON.parse(fs.readFileSync(`${DATA_DIR}/boats-details.json`, 'utf-8'));
+const availabilityData = JSON.parse(fs.readFileSync(`${DATA_DIR}/availability-detailed.json`, 'utf-8'));
 
 console.log('✅ 파일 읽기 완료');
 console.log('boats:', boatsData.data.length);
@@ -16,7 +19,7 @@ console.log('availability:', availabilityData.data.length);
 const mergedBoats = boatsData.data.map(boat => {
   const details = boatsDetailsData.data.find(detail => detail.id === boat.id) || {};
 
-  const mergedBoat = {
+  return {
     id: boat.id,
     name: boat.name,
     fleet: boat.fleet || null,
@@ -41,8 +44,6 @@ const mergedBoats = boatsData.data.map(boat => {
     includes: [],
     excludes: []
   };
-
-  return mergedBoat;
 });
 
 console.log('✅ boats + boats-details 병합 완료:', mergedBoats.length);
@@ -50,6 +51,7 @@ console.log('✅ boats + boats-details 병합 완료:', mergedBoats.length);
 // 5️⃣ availability 병합
 mergedBoats.forEach(boat => {
   const boatTrips = availabilityData.data.filter(trip => trip.boatId === boat.id);
+
   boat.availability = boatTrips.map(trip => ({
     tripId: trip.id,
     startDate: trip.startDate,
@@ -58,14 +60,13 @@ mergedBoats.forEach(boat => {
     availability: trip.availability,
     price: trip.price,
     seatsLeft: trip.seatsLeft
-    // 필요한 추가 필드 여기서 확장 가능
   }));
 });
 
 console.log('✅ availability 병합 완료');
 
 // 6️⃣ 병합 결과 저장
-const outputFile = '/root/data/boats-merged.json';
-fs.writeFileSync('/root/server/data/boats-merged.json', JSON.stringify({ data: mergedBoats }, null, 2), 'utf-8');
+const outputFile = `${DATA_DIR}/boats-merged.json`;
+fs.writeFileSync(outputFile, JSON.stringify({ data: mergedBoats }, null, 2), 'utf-8');
 
 console.log('🎉 병합된 JSON 파일 저장 완료:', outputFile);
