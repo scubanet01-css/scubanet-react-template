@@ -1,5 +1,7 @@
-// /root/scubanet-react-template/server/scripts/convertInseanqToUTS.js
-// Inseanq JSON → UTS Trip 통합 JSON 변환 스크립트
+/**
+ * convertInseanqToUTS.js 
+ * Inseanq JSON → UTS JSON 변환
+ */
 
 const fs = require("fs");
 const path = require("path");
@@ -17,91 +19,107 @@ const PATH_BOATS_DETAILS = path.join(DATA_DIR, "boats-details.json");
 const PATH_DEST_MAP = path.join(DATA_DIR, "destination-map.json");
 
 const PATH_OUT = path.join(DATA_DIR, "uts-trips.json");
-const REACT_OUT = PATH_OUT;
+
+const REACT_PUBLIC_DATA = DATA_DIR;
+const REACT_OUT = path.join(REACT_PUBLIC_DATA, "uts-trips.json");
 
 // --------------------------------------------------
-// 2. 기본 파일 체크
+// 2. 파일 체크
 // --------------------------------------------------
-[PATH_AVAIL, PATH_BOATS, PATH_BOATS_DETAILS].forEach((p) => {
-    if (!fs.existsSync(p)) console.error("❌ 없음:", p);
+[PATH_AVAIL, PATH_BOATS, PATH_BOATS_DETAILS, PATH_DEST_MAP].forEach((p) => {
+    if (!fs.existsSync(p)) console.error("❌ 파일 없음:", p);
     else console.log("✅ 파일 확인:", p);
 });
 
 // --------------------------------------------------
-// 3. JSON 로드 유틸
-// --------------------------------------------------
-function loadJsonArray(fp) {
-    const raw = fs.readFileSync(fp, "utf8");
-    const json = JSON.parse(raw);
-    if (Array.isArray(json)) return json;
-    if (Array.isArray(json.data)) return json.data;
-    throw new Error("❌ JSON 구조 오류 (배열 아님): " + fp);
-}
-
-// --------------------------------------------------
-// 4. destination-map.json 로드
-// Country → Destination → Ports 구조
-// --------------------------------------------------
-let DEST_MAP = {};
-if (fs.existsSync(PATH_DEST_MAP)) {
-    DEST_MAP = JSON.parse(fs.readFileSync(PATH_DEST_MAP, "utf8"));
-    console.log("📌 destination-map.json 로드됨");
-} else {
-    console.log("⚠️ destination-map.json 없음 — country/destination 매칭 없이 진행");
-}
-
-// product.name 기반 destination/country 찾기
-function findCountryDestination(productName) {
-    if (!productName) return { country: "Others", destination: "Others" };
-
-    const name = productName.toLowerCase();
-
-    for (const country of Object.keys(DEST_MAP)) {
-        const dests = DEST_MAP[country];
-
-        for (const destination of Object.keys(dests)) {
-            if (name.includes(destination.toLowerCase())) {
-                return { country, destination };
-            }
-        }
-    }
-
-    return { country: "Others", destination: "Others" };
-}
-
-// --------------------------------------------------
-// 5. 기타 유틸
+// 3. 유틸 함수
 // --------------------------------------------------
 function normalizeId(id) {
+    if (!id) return "";
     return String(id).replace(/boat_/i, "").trim();
 }
 
 function toNumber(val) {
     if (val === null || val === undefined) return null;
     const n = Number(String(val).replace(/[^0-9.]/g, ""));
-    return isNaN(n) ? null : n;
+    return Number.isNaN(n) ? null : n;
 }
 
-// --------------------------------------------------
-// 6. RatePlan/ Cabin 변환
-// --------------------------------------------------
+// JSON 로더
+function loadJsonArray(filePath, label) {
+    const raw = fs.readFileSync(filePath, "utf8");
+    let json = JSON.parse(raw);
+    if (Array.isArray(json)) return json;
+    if (Array.isArray(json.data)) {
+        console.log(`ℹ️ ${label}: data 배열 사용`);
+        return json.data;
+    }
+    throw new Error(`❌ ${label} JSON 구조 오류: 배열이 아닙니다.`);
+}
+
+// destination-map.json 로드
+function loadDestinationMap(filePath) {
+    const raw = fs.readFileSync(filePath, "utf8");
+    return JSON.parse(raw); // { Country: { Destination: [Ports...] } }
+}
+
+// departurePort 기반 Country 찾기
+function findCountryByPort(portName, destMap) {
+    if (!portName) return "Others";
+
+    for (const country of Object.keys(destMap)) {
+        const destinations = destMap[country];
+
+        for (const dest of Object.keys(destinations)) {
+            const portsArray = destinations[dest];
+            if (portsArray.includes(portName)) {
+                return country;
+            }
+        }
+    }
+    return "Others";
+}
+
+// productName 기반 Destination 추출 (기존 방식 유지)
+function extractDestination(productName) {
+    if (!productName) return "Unknown";
+    return productName
+        .replace(/\s*\([^)]*\)/g, "")
+        .replace(/4D\/3N|3D\/2N|7Nights/gi, "")
+        .trim();
+}
+
+// boat 정보 찾기
+function getBoatInfo(avail, boats, boatDetails) {
+    const boatId = avail.boat?.id;
+    const nid = normalizeId(boatId);
+
+    if (!nid) return null;
+
+    return (
+        boatDetails.find((b) => normalizeId(b.id) === nid) ||
+        boats.find((b) => normalizeId(b.id) === nid) ||
+        null
+    );
+}
+
+// RatePlan 정규화
 function normalizeRatePlanEntry(ratePlan, cabinTypeId, occ, kind) {
     const price = toNumber(occ.price);
     const parentPrice = toNumber(occ.parentPrice);
 
     let discountPercent = 0;
-    if (price !== null && parentPrice > 0) {
+    if (price !== null && parentPrice && parentPrice > 0) {
         discountPercent = Math.round((1 - price / parentPrice) * 1000) / 10;
     }
 
-    const name = (ratePlan.name || "").toLowerCase();
-    const isInstructorOnly =
-        kind === "charter" ||
-        name.includes("group") ||
-        name.includes("charter") ||
-        name.includes("pax") ||
-        name.includes("exclusive") ||
-        name.includes("free");
+    const nameLower = (ratePlan.name || "").toLowerCase();
+    const isGroupOrCharter =
+        nameLower.includes("group") ||
+        nameLower.includes("charter") ||
+        nameLower.includes("pax") ||
+        nameLower.includes("exclusive") ||
+        nameLower.includes("free");
 
     return {
         ratePlanId: ratePlan.id || null,
@@ -112,34 +130,46 @@ function normalizeRatePlanEntry(ratePlan, cabinTypeId, occ, kind) {
         price,
         parentPrice,
         discountPercent,
-        isInstructorOnly,
+        isInstructorOnly: kind === "charter" || isGroupOrCharter,
     };
 }
 
-function buildCabins(a) {
-    const cabinTypes = a.spaces?.cabinTypes || [];
-    const retail = a.ratePlansRetail || [];
-    const charter = a.ratePlansCharter || [];
+// Cabin 구조 생성
+function buildCabins(avail) {
+    const cabinTypes = avail.spaces?.cabinTypes || [];
+    const ratePlansRetail = avail.ratePlansRetail || [];
+    const ratePlansCharter = avail.ratePlansCharter || [];
 
     const cabins = [];
 
-    function collectRP(cabinTypeId) {
-        const list = [];
-        [...retail, ...charter].forEach((rp) => {
-            const kind = rp.kind || (rp === retail ? "retail" : "charter");
+    function collectRatePlansForCabinType(cabinTypeId) {
+        const collected = [];
+
+        ratePlansRetail.forEach((rp) => {
             (rp.cabinTypes || []).forEach((ct) => {
                 if (ct.id === cabinTypeId) {
                     (ct.occupancy || []).forEach((occ) => {
-                        list.push(normalizeRatePlanEntry(rp, cabinTypeId, occ, rp.kind || kind));
+                        collected.push(normalizeRatePlanEntry(rp, cabinTypeId, occ, "retail"));
                     });
                 }
             });
         });
-        return list;
+
+        ratePlansCharter.forEach((rp) => {
+            (rp.cabinTypes || []).forEach((ct) => {
+                if (ct.id === cabinTypeId) {
+                    (ct.occupancy || []).forEach((occ) => {
+                        collected.push(normalizeRatePlanEntry(rp, cabinTypeId, occ, "charter"));
+                    });
+                }
+            });
+        });
+
+        return collected;
     }
 
     cabinTypes.forEach((ct) => {
-        const rpList = collectRP(ct.id);
+        const ctRatePlans = collectRatePlansForCabinType(ct.id);
 
         (ct.cabins || []).forEach((cabin) => {
             cabins.push({
@@ -147,7 +177,8 @@ function buildCabins(a) {
                 name: cabin.name,
                 type: ct.name,
                 remaining: cabin.availableSpaces ?? 0,
-                ratePlans: rpList,
+                images: [],
+                ratePlans: ctRatePlans,
             });
         });
     });
@@ -156,28 +187,37 @@ function buildCabins(a) {
 }
 
 // --------------------------------------------------
-// 7. 메인 변환
+// 4. 메인 로직
 // --------------------------------------------------
 try {
-    const availability = loadJsonArray(PATH_AVAIL);
-    const boats = loadJsonArray(PATH_BOATS);
-    const boatDetails = loadJsonArray(PATH_BOATS_DETAILS);
+    const availability = loadJsonArray(PATH_AVAIL, "availability-detailed");
+    const boats = loadJsonArray(PATH_BOATS, "boats");
+    const boatDetails = loadJsonArray(PATH_BOATS_DETAILS, "boats-details");
+    const destMap = loadDestinationMap(PATH_DEST_MAP);
 
-    console.log("📄 JSON 로드 완료 — 총", availability.length, "트립");
+    console.log("📄 JSON 로드 완료");
+    console.log("  - availability:", availability.length);
+    console.log("  - boats:", boats.length);
+    console.log("  - boatDetails:", boatDetails.length);
+
+    console.log("🔄 변환 시작");
 
     const trips = availability.map((a) => {
-        const boatId = normalizeId(a.boat?.id);
-        const boat =
-            boatDetails.find((b) => normalizeId(b.id) === boatId) ||
-            boats.find((b) => normalizeId(b.id) === boatId) ||
-            null;
+        const boat = getBoatInfo(a, boats, boatDetails) || a.boat || null;
 
         const boatName = boat?.name || a.boat?.name || "";
-        const product = a.product?.name || "";
-        const title = boatName ? `${product} - ${boatName}` : product;
+        const productName = a.product?.name || "";
 
-        // 🔥 핵심: product.name 기반 검색
-        const region = findCountryDestination(product);
+        const title = boatName
+            ? `${productName} - ${boatName}`
+            : productName;
+
+        // 🔥 핵심: Port 기반 Country 검출
+        const departurePortName = a.departurePort?.name || "";
+        const country = findCountryByPort(departurePortName, destMap);
+
+        // Destination = product.name 기반
+        const destination = extractDestination(productName);
 
         return {
             id: `INQ_${a.id}`,
@@ -187,12 +227,15 @@ try {
             title,
             boatName,
 
-            country: region.country,
-            destination: region.destination,
+            country,
+            destination,
 
             startDate: a.startDate,
             endDate: a.endDate,
             nights: a.nights || null,
+
+            departurePort: a.departurePort || null,
+            arrivalPort: a.arrivalPort || null,
 
             images: {
                 cover: boat?.images?.[0] || "",
@@ -206,14 +249,21 @@ try {
             },
 
             cabins: buildCabins(a),
+
+            includes: a.includes || boat?.includes || [],
+            excludes: a.excludes || boat?.excludes || [],
+            itinerary: a.itinerary || boat?.itinerary || [],
         };
     });
 
-    console.log("💾 저장 중...");
+    console.log("💾 저장 시작");
+
     fs.writeFileSync(PATH_OUT, JSON.stringify(trips, null, 2), "utf8");
+    fs.writeFileSync(REACT_OUT, JSON.stringify(trips, null, 2), "utf8");
 
     console.log("🎉 변환 완료!");
-    console.log("📁 저장됨:", PATH_OUT);
+    console.log("📁 저장:", PATH_OUT);
+
 } catch (err) {
     console.error("❌ 변환 중 오류:", err);
 }
