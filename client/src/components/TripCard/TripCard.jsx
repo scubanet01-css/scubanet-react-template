@@ -1,4 +1,5 @@
 // src/components/TripCard/TripCard.jsx
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import SeatBadges from "../SeatBadges";
@@ -6,7 +7,7 @@ import { formatCurrency } from "../../utils/formatCurrency";
 
 import "./TripCard.css";
 
-// ✔ UTS JSON에서 가장 저렴한 요금 찾기
+// ✔ UTS JSON에서 최저가 요금 찾기
 function getLowestRatePlan(trip) {
     if (!trip.cabins || !trip.cabins.length) return null;
 
@@ -18,19 +19,13 @@ function getLowestRatePlan(trip) {
         }
     });
 
+    allRates = allRates.filter(r => r.price != null);
     if (!allRates.length) return null;
 
-    allRates = allRates.filter(r => r.price);
-
-    if (!allRates.length) return null;
-
-    const lowest = allRates.reduce((a, b) =>
-        a.price < b.price ? a : b
-    );
-
-    return lowest;
+    return allRates.reduce((a, b) => (a.price < b.price ? a : b));
 }
 
+// 좌석 계산
 function getSeatCounts(trip) {
     const s = trip.spaces || {};
     return {
@@ -40,6 +35,7 @@ function getSeatCounts(trip) {
     };
 }
 
+// 박수 계산
 function getNights(start, end) {
     try {
         const s = new Date(start);
@@ -50,25 +46,23 @@ function getNights(start, end) {
     }
 }
 
-export default function TripCard({ trip, mode = "diver" }) {
+export default function TripCard({ trip }) {
     const navigate = useNavigate();
-
     const seats = getSeatCounts(trip);
 
-    // ✔ UTS용 가격 계산
     const rate = getLowestRatePlan(trip);
+
     const displayPrice = rate?.price || null;
     const strikePrice = rate?.parentPrice || null;
     const discountPercent = rate?.discountPercent || 0;
 
     const hasDiscount =
-        strikePrice &&
-        displayPrice &&
-        Number(displayPrice) < Number(strikePrice);
+        strikePrice && displayPrice && Number(displayPrice) < Number(strikePrice);
 
     return (
         <div className="trip-card">
-            {/* ✔ boatName + title 표시 */}
+
+            {/* ✔ 보트명 + 상품명 */}
             <div className="trip-info">
                 <strong>{trip.boatName}</strong>
                 <br />
@@ -83,13 +77,11 @@ export default function TripCard({ trip, mode = "diver" }) {
             {/* ✔ 할인 배지 */}
             <div className="trip-badge">
                 {hasDiscount && (
-                    <span className="offer-badge">
-                        {discountPercent}% OFF
-                    </span>
+                    <span className="offer-badge">{discountPercent}% OFF</span>
                 )}
             </div>
 
-            {/* ✔ 가격 */}
+            {/* ✔ 금액 */}
             <div className="price-box">
                 {displayPrice ? (
                     <strong className="price-main">
@@ -99,19 +91,19 @@ export default function TripCard({ trip, mode = "diver" }) {
                     <strong>-</strong>
                 )}
 
-                {hasDiscount && (
+                {hasDiscount && strikePrice && (
                     <div className="price-original">
                         {formatCurrency(strikePrice, "USD")}
                     </div>
                 )}
             </div>
 
-            {/* ✔ 좌석 */}
+            {/* ✔ 좌석 표시 */}
             <div className="status-box">
                 <SeatBadges seats={seats} />
             </div>
 
-            {/* ✔ 상세보기 & 예약하기 */}
+            {/* ✔ 버튼 */}
             <div className="trip-actions">
                 <button
                     className="btn-detail"
