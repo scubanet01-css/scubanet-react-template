@@ -7,6 +7,7 @@ import TripCard from "../components/TripCard/TripCard";
 import { useDestinationFilter } from "../hooks/useDestinationFilter";
 
 function TripList() {
+    console.log("🔥 TripList 렌더링됨");
     const {
         trips,
         loading,
