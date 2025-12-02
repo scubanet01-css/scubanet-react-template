@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import "./TripList.css";
 import { isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import FilterBar from "../components/Common/FilterBar";
-import TripCard from "../components/TripCard/TripCard";
+import TripCard from "../components/TripCard/TripCard.jsx";
 import { useDestinationFilter } from "../hooks/useDestinationFilter";
 
 function TripList() {
