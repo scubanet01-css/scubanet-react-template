@@ -1,11 +1,17 @@
 // src/components/TripCard/TripCard.jsx
 
+// src/components/TripCard/TripCard.jsx
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import SeatBadges from "../SeatBadges";
 import { formatCurrency } from "../../utils/formatCurrency";
 
 import "./TripCard.css";
+
+export default function TripCard({ trip }) {
+    console.log("🔥 TripCard trip =", trip);
+}
 
 // ✔ UTS JSON에서 최저가 요금 찾기
 function getLowestRatePlan(trip) {
