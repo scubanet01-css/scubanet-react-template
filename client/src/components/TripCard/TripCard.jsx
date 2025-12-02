@@ -1,19 +1,12 @@
 // src/components/TripCard/TripCard.jsx
 
-// src/components/TripCard/TripCard.jsx
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import SeatBadges from "../SeatBadges";
 import { formatCurrency } from "../../utils/formatCurrency";
-
 import "./TripCard.css";
 
-export default function TripCard({ trip }) {
-    console.log("🔥 TripCard trip =", trip);
-}
-
-// ✔ UTS JSON에서 최저가 요금 찾기
+// ✔ UTS JSON에서 최저가 찾기
 function getLowestRatePlan(trip) {
     if (!trip.cabins || !trip.cabins.length) return null;
 
@@ -26,12 +19,13 @@ function getLowestRatePlan(trip) {
     });
 
     allRates = allRates.filter(r => r.price != null);
+
     if (!allRates.length) return null;
 
     return allRates.reduce((a, b) => (a.price < b.price ? a : b));
 }
 
-// 좌석 계산
+// ✔ 좌석 계산
 function getSeatCounts(trip) {
     const s = trip.spaces || {};
     return {
@@ -41,7 +35,7 @@ function getSeatCounts(trip) {
     };
 }
 
-// 박수 계산
+// ✔ 박수 계산
 function getNights(start, end) {
     try {
         const s = new Date(start);
@@ -58,12 +52,14 @@ export default function TripCard({ trip }) {
 
     const rate = getLowestRatePlan(trip);
 
-    const displayPrice = rate?.price || null;
-    const strikePrice = rate?.parentPrice || null;
-    const discountPercent = rate?.discountPercent || 0;
+    const displayPrice = rate?.price ?? null;
+    const strikePrice = rate?.parentPrice ?? null;
+    const discountPercent = rate?.discountPercent ?? 0;
 
     const hasDiscount =
-        strikePrice && displayPrice && Number(displayPrice) < Number(strikePrice);
+        strikePrice &&
+        displayPrice &&
+        Number(displayPrice) < Number(strikePrice);
 
     return (
         <div className="trip-card">
@@ -104,7 +100,7 @@ export default function TripCard({ trip }) {
                 )}
             </div>
 
-            {/* ✔ 좌석 표시 */}
+            {/* ✔ 좌석 */}
             <div className="status-box">
                 <SeatBadges seats={seats} />
             </div>
