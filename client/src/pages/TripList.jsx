@@ -31,24 +31,23 @@ function TripList() {
 
     // 🚤 Boat 목록 계산 (UTS boatName 기반)
     useEffect(() => {
-
-        if (!trips.length) return;
-        useEffect(() => {
-            console.log("📌 API 요청 시작");
-            axios.get("https://app.inseanq.com/api/v2/availability-detailed", {
-                headers: { "api-key": process.env.REACT_APP_INSEANQ_API_KEY },
+        console.log("📌 API 요청 시작");
+        axios.get("https://app.inseanq.com/api/v2/availability-detailed", {
+            headers: { "api-key": process.env.REACT_APP_INSEANQ_API_KEY },
+        })
+            .then(res => {
+                console.log("📌 API 응답 원본:", res);
+                console.log("📦 res.data:", res.data);
+                console.log("📦 res.data.data:", res.data?.data);
+                setTrips(res.data?.data || []);
             })
-                .then(res => {
-                    console.log("📌 API 응답 원본:", res);
-                    console.log("📦 res.data:", res.data);
-                    console.log("📦 res.data.data:", res.data?.data);
-                    setTrips(res.data?.data || []);
-                })
-                .catch(err => {
-                    console.error("❌ API 요청 오류:", err);
-                });
-        }, []);
+            .catch(err => {
+                console.error("❌ API 요청 오류:", err);
+            });
+    }, []);
 
+    useEffect(() => {
+        if (!trips.length) return;
         const boatSet = new Set(trips.map(t => t.boatName).filter(Boolean));
         setBoats(["전체", ...Array.from(boatSet).sort()]);
     }, [trips]);
