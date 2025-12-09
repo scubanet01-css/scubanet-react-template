@@ -19,23 +19,17 @@ export function useDestinationFilter() {
             fetchedRef.current = true;
 
             try {
-                //const res = await axios.get("/data/uts-trips.json");
-                const res = await axios.get("http://210.114.22.82:3002/api/availability");
-                const list = res.data?.data || [];
-
+                const res = await axios.get("/data/uts-trips.json");
+                const list = Array.isArray(res.data) ? res.data : res.data?.data || [];
                 setTrips(list);
 
-
-                // ✔ UTS 기반 country 리스트
                 const countrySet = new Set(
-                    list
-                        .map(t => t.country || "Others")
-                        .filter(Boolean)
+                    list.map(t => t.country || "Others").filter(Boolean)
                 );
 
                 const sorted = [...countrySet].filter(c => c !== "Others").sort();
-
                 setCountryList(["전체", ...sorted, "Others"]);
+
 
             } catch (err) {
                 console.error("❌ loadUTS error:", err);
