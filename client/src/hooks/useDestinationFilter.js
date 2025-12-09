@@ -19,7 +19,12 @@ export function useDestinationFilter() {
             fetchedRef.current = true;
 
             try {
-                const res = await axios.get("/data/uts-trips.json");
+                //const res = await axios.get("/data/uts-trips.json");
+                const res = await axios.get("https://app.inseanq.com/api/v2/availability-detailed", {
+                    headers: { "api-key": import.meta.env.VITE_INSEANQ_API_KEY },
+                });
+                setTrips(res.data?.data || []);
+
                 const list = Array.isArray(res.data) ? res.data : [];
 
                 setTrips(list);

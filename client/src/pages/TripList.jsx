@@ -35,7 +35,8 @@ function TripList() {
     useEffect(() => {
         console.log("📌 API 요청 시작");
         axios.get("https://app.inseanq.com/api/v2/availability-detailed", {
-            headers: { "api-key": process.env.REACT_APP_INSEANQ_API_KEY },
+            headers: { "api-key": import.meta.env.VITE_INSEANQ_API_KEY }
+            ,
         })
             .then(res => {
                 console.log("📌 API 응답 원본:", res);
