@@ -42,7 +42,7 @@ function TripList() {
                 console.log("📌 API 응답 원본:", res);
                 console.log("📦 res.data:", res.data);
                 console.log("📦 res.data.data:", res.data?.data);
-                setTrips(res.data?.data || []);
+                setTrips(Array.isArray(res.data) ? res.data : []);
             })
             .catch(err => {
                 console.error("❌ API 요청 오류:", err);
