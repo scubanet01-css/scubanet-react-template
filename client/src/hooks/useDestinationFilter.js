@@ -73,6 +73,7 @@ export function useDestinationFilter() {
 
     return {
         trips,
+        setTrips,
         loading,
         countryList,
         destinationList,
