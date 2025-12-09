@@ -34,10 +34,8 @@ function TripList() {
     // 🚤 Boat 목록 계산 (UTS boatName 기반)
     useEffect(() => {
         console.log("📌 API 요청 시작");
-        axios.get("https://app.inseanq.com/api/v2/availability-detailed", {
-            headers: { "api-key": import.meta.env.VITE_INSEANQ_API_KEY }
-            ,
-        })
+        axios.get("http://210.114.22.82:3002/api/availability")
+
             .then(res => {
                 console.log("📌 API 응답 원본:", res);
                 console.log("📦 res.data:", res.data);
