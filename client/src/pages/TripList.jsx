@@ -12,6 +12,7 @@ function TripList() {
     console.log("🔥 TripList 렌더링됨");
     const {
         trips,
+        setTrips,
         loading,
         countryList,
         destinationList,
