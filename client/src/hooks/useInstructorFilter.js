@@ -16,7 +16,12 @@ export function useInstructorFilter() {
     useEffect(() => {
         const load = async () => {
             try {
-                const res = await axios.get("/data/availability-detailed.json");
+                //const res = await axios.get("/data/availability-detailed.json");
+                const res = await axios.get("https://app.inseanq.com/api/v2/availability-detailed", {
+                    headers: { "api-key": import.meta.env.VITE_INSEANQ_API_KEY },
+                });
+                setTrips(res.data?.data || []);
+
                 const raw = Array.isArray(res.data) ? res.data : res.data.data || [];
 
                 // 강사용 rate plan 있는 것만

@@ -5,6 +5,8 @@ import { isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import FilterBar from "../components/Common/FilterBar";
 import TripCard from "../components/TripCard/TripCard.jsx";
 import { useDestinationFilter } from "../hooks/useDestinationFilter";
+import axios from "axios";
+
 
 function TripList() {
     console.log("🔥 TripList 렌더링됨");
