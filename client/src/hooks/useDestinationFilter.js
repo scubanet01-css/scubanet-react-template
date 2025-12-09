@@ -1,6 +1,4 @@
-// src/hooks/useDestinationFilter.js
-import { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
 
 export function useDestinationFilter() {
     const [trips, setTrips] = useState([]);
@@ -11,55 +9,29 @@ export function useDestinationFilter() {
     const [selectedDestination, setSelectedDestination] = useState("전체");
 
     const [loading, setLoading] = useState(true);
-    const fetchedRef = useRef(false);
 
+    // 🟢 TripList에서 데이터가 들어오면 Country 리스트 생성
     useEffect(() => {
-        async function loadUTS() {
-            if (fetchedRef.current) return;
-            fetchedRef.current = true;
+        if (!trips.length) return;
 
-            try {
-                const res = await axios.get("/data/uts-trips.json");
-                const list = Array.isArray(res.data) ? res.data : res.data?.data || [];
-                setTrips(list);
-
-                const countrySet = new Set(
-                    list.map(t => t.country || "Others").filter(Boolean)
-                );
-
-                const sorted = [...countrySet].filter(c => c !== "Others").sort();
-                setCountryList(["전체", ...sorted, "Others"]);
-
-
-            } catch (err) {
-                console.error("❌ loadUTS error:", err);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        loadUTS();
-    }, []);
-
-    // ✔ destination 리스트 갱신
-    useEffect(() => {
-        if (!trips.length) {
-            setDestinationList(["전체"]);
-            return;
-        }
-
-        let targetTrips =
-            selectedCountry === "전체"
-                ? trips
-                : trips.filter(t => t.country === selectedCountry);
-
-        const destSet = new Set(
-            targetTrips.map(t => t.destination || "Others").filter(Boolean)
+        const countrySet = new Set(
+            trips.map(t => t.country || "Others").filter(Boolean)
         );
+        const sorted = [...countrySet].filter(c => c !== "Others").sort();
+        setCountryList(["전체", ...sorted, "Others"]);
 
-        const destArr = [...destSet].sort();
+        setLoading(false);
+    }, [trips]);
 
-        setDestinationList(["전체", ...destArr]);
+    // 🟢 Destination 리스트 생성
+    useEffect(() => {
+        if (!trips.length) return;
+
+        let target =
+            selectedCountry === "전체" ? trips : trips.filter(t => t.country === selectedCountry);
+
+        const destSet = new Set(target.map(t => t.destination || "Others").filter(Boolean));
+        setDestinationList(["전체", ...[...destSet].sort()]);
     }, [selectedCountry, trips]);
 
     return {
