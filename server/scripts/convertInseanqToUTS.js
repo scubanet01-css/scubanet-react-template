@@ -11,6 +11,9 @@ console.log("🚀 UTS 변환 스크립트 시작됨");
 // --------------------------------------------------
 // 1. 경로 설정
 // --------------------------------------------------
+const DEV_DATA_DIR = "/root/scubanet-react-template/client/public/data";
+const PROD_DATA_DIR = "/var/www/scubanet/data";
+
 const DATA_DIR = "/var/www/scubanet/data";
 
 const PATH_AVAIL = path.join(DATA_DIR, "availability-detailed.json");
@@ -18,10 +21,8 @@ const PATH_BOATS = path.join(DATA_DIR, "boats.json");
 const PATH_BOATS_DETAILS = path.join(DATA_DIR, "boats-details.json");
 const PATH_DEST_MAP = path.join(DATA_DIR, "destination-map.json");
 
-const PATH_OUT = path.join(DATA_DIR, "uts-trips.json");
-
-const REACT_PUBLIC_DATA = DATA_DIR;
-const REACT_OUT = path.join(REACT_PUBLIC_DATA, "uts-trips.json");
+const DEV_OUT = path.join(DEV_DATA_DIR, "uts-trips.json");
+const PROD_OUT = path.join(PROD_DATA_DIR, "uts-trips.json");
 
 // --------------------------------------------------
 // 2. 파일 체크
@@ -258,11 +259,13 @@ try {
 
     console.log("💾 저장 시작");
 
-    fs.writeFileSync(PATH_OUT, JSON.stringify(trips, null, 2), "utf8");
-    fs.writeFileSync(REACT_OUT, JSON.stringify(trips, null, 2), "utf8");
+    fs.writeFileSync(DEV_OUT, JSON.stringify(trips, null, 2), "utf8");
+    fs.writeFileSync(PROD_OUT, JSON.stringify(trips, null, 2), "utf8");
 
-    console.log("🎉 변환 완료!");
-    console.log("📁 저장:", PATH_OUT);
+    console.log("📁 저장 완료:");
+    console.log(" - DEV :", DEV_OUT);
+    console.log(" - PROD:", PROD_OUT);
+
 
 } catch (err) {
     console.error("❌ 변환 중 오류:", err);
