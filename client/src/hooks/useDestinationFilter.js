@@ -20,14 +20,11 @@ export function useDestinationFilter() {
 
             try {
                 //const res = await axios.get("/data/uts-trips.json");
-                const res = await axios.get("https://app.inseanq.com/api/v2/availability-detailed", {
-                    headers: { "api-key": import.meta.env.VITE_INSEANQ_API_KEY },
-                });
-                setTrips(res.data?.data || []);
-
-                const list = Array.isArray(res.data) ? res.data : [];
+                const res = await axios.get("http://210.114.22.82:3002/api/availability");
+                const list = res.data?.data || [];
 
                 setTrips(list);
+
 
                 // ✔ UTS 기반 country 리스트
                 const countrySet = new Set(
