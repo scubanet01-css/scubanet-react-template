@@ -39,7 +39,9 @@ function TripList() {
                 headers: { "api-key": process.env.REACT_APP_INSEANQ_API_KEY },
             })
                 .then(res => {
-                    console.log("📌 API 응답 데이터:", res.data);
+                    console.log("📌 API 응답 원본:", res);
+                    console.log("📦 res.data:", res.data);
+                    console.log("📦 res.data.data:", res.data?.data);
                     setTrips(res.data?.data || []);
                 })
                 .catch(err => {
