@@ -50,7 +50,7 @@ const COUNTRY_KEYWORDS = [
     { country: "Seychelles", keywords: ["eden island"] },
     { country: "Marshall Islands", keywords: ["bikini", "kwajalein"] },
     { country: "Chile", keywords: ["punta arenas", "antarctica"] },
-    { country: "Costa Rica", keywords: ["puntarenas", "cocos"] },
+    { country: "Costa Rica", keywords: ["puntarenas", "cocos", "cocos islands"] },
     { country: "Bahamas", keywords: ["grenada", "martinique", "st. vincent", "nassau", "st. lucia", "freeport", "bimini",] }
 ];
 
