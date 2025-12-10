@@ -1,5 +1,5 @@
 /**
- * convertInseanqToUTS.js 
+ * convertInseanqToUTS.js
  * Inseanq JSON → UTS JSON 변환
  */
 
@@ -11,9 +11,6 @@ console.log("🚀 UTS 변환 스크립트 시작됨");
 // --------------------------------------------------
 // 1. 경로 설정
 // --------------------------------------------------
-const DEV_DATA_DIR = "/root/scubanet-react-template/client/public/data";
-const PROD_DATA_DIR = "/var/www/scubanet/data";
-
 const DATA_DIR = "/var/www/scubanet/data";
 
 const PATH_AVAIL = path.join(DATA_DIR, "availability-detailed.json");
@@ -21,8 +18,8 @@ const PATH_BOATS = path.join(DATA_DIR, "boats.json");
 const PATH_BOATS_DETAILS = path.join(DATA_DIR, "boats-details.json");
 const PATH_DEST_MAP = path.join(DATA_DIR, "destination-map.json");
 
-const DEV_OUT = path.join(DEV_DATA_DIR, "uts-trips.json");
-const PROD_OUT = path.join(PROD_DATA_DIR, "uts-trips.json");
+const DEV_OUT = "/root/scubanet-react-template/client/public/data/uts-trips.json";
+const PROD_OUT = path.join(DATA_DIR, "uts-trips.json");
 
 // --------------------------------------------------
 // 2. 파일 체크
@@ -33,7 +30,31 @@ const PROD_OUT = path.join(PROD_DATA_DIR, "uts-trips.json");
 });
 
 // --------------------------------------------------
-// 3. 유틸 함수
+// 3. Country Keyword Rules (강화 버전)
+// --------------------------------------------------
+const COUNTRY_KEYWORDS = [
+    { country: "Indonesia", keywords: ["komodo", "raja", "banda", "lembeh", "ambon", "bali", "alor", "misool", "sorong", "labuan", "halmahera", "ternate", "togean", "bitung", "luwuk", "bajau", "manado", "sangihe", "derawan", "sumbawa", "cenderawasih", "maluku", "triton"] },
+    { country: "Maldives", keywords: ["maldives", "ari", "male", "central atolls", "atolls", "laamu", "addu", "deeper south", "far south", "suvadiva", "far north", "hanifaru"] },
+    { country: "Egypt", keywords: ["red sea", "hurghada", "marsa", "ghalib", "zabargad", "deadalus", "thistlegorm", "brothers"] },
+    { country: "Palau", keywords: ["palau", "koror", "malakal"] },
+    { country: "Thailand", keywords: ["similan", "phuket", "surin", "ranong", "andaman", "thailand", "merdeka", "chalong", "thap lamu", "khao lak", "pakbara", "lipe"] },
+    { country: "Ecuador", keywords: ["wolf", "darwin", "galapagos", "san cristobal", "baltra"] },
+    { country: "Mexico", keywords: ["socorro", "revillagigedo", "cabo", "guadalupe", "cortez", "mag bay", "magdalena bay"] },
+    { country: "Philippines", keywords: ["tubbataha", "visayas", "leyte", "cebu", "apu", "mactan", "apo"] },
+    { country: "Solomon Islands", keywords: ["solomon", "honiara"] },
+    { country: "Oman", keywords: ["oman", "dibba"] },
+    { country: "Myanmar", keywords: ["burma", "mergui"] },
+    { country: "Papua New Guinea", keywords: ["kimbe", "rabaul", "kavieng", "alotau"] },
+    { country: "Sudan", keywords: ["sudan"] },
+    { country: "Seychelles", keywords: ["eden island"] },
+    { country: "Marshall Islands", keywords: ["bikini", "kwajalein"] },
+    { country: "Chile", keywords: ["punta arenas", "antarctica"] },
+    { country: "Costa Rica", keywords: ["puntarenas", "cocos"] },
+    { country: "Bahamas", keywords: ["grenada", "martinique", "st. vincent", "nassau", "st. lucia", "freeport", "bimini",] }
+];
+
+// --------------------------------------------------
+// 4. 함수 정의
 // --------------------------------------------------
 function normalizeId(id) {
     if (!id) return "";
@@ -46,7 +67,6 @@ function toNumber(val) {
     return Number.isNaN(n) ? null : n;
 }
 
-// JSON 로더
 function loadJsonArray(filePath, label) {
     const raw = fs.readFileSync(filePath, "utf8");
     let json = JSON.parse(raw);
@@ -58,39 +78,35 @@ function loadJsonArray(filePath, label) {
     throw new Error(`❌ ${label} JSON 구조 오류: 배열이 아닙니다.`);
 }
 
-// destination-map.json 로드
-function loadDestinationMap(filePath) {
-    const raw = fs.readFileSync(filePath, "utf8");
-    return JSON.parse(raw); // { Country: { Destination: [Ports...] } }
-}
+// improved Country detection
+function detectCountryImproved(productName, portName) {
+    const text = `${productName} ${portName}`.toLowerCase();
 
-// departurePort 기반 Country 찾기
-function findCountryByPort(portName, destMap) {
-    if (!portName) return "Others";
-
-    for (const country of Object.keys(destMap)) {
-        const destinations = destMap[country];
-
-        for (const dest of Object.keys(destinations)) {
-            const portsArray = destinations[dest];
-            if (portsArray.includes(portName)) {
-                return country;
-            }
+    for (const rule of COUNTRY_KEYWORDS) {
+        if (rule.keywords.some((kw) => text.includes(kw))) {
+            return rule.country;
         }
     }
+
     return "Others";
 }
 
-// productName 기반 Destination 추출 (기존 방식 유지)
 function extractDestination(productName) {
     if (!productName) return "Unknown";
+
     return productName
-        .replace(/\s*\([^)]*\)/g, "")
-        .replace(/4D\/3N|3D\/2N|7Nights/gi, "")
+        // 괄호 안 제거
+        .replace(/\([^)]*\)/g, "")
+        // 밤/일수 제거
+        .replace(/\b\d+d\s*\/\s*\d+n\b/gi, "")
+        .replace(/\b\d+nights?\b/gi, "")
+        .replace(/\b\d+days?\b/gi, "")
+        // 보트명 제거 패턴 ( – 또는 - 뒤에 나오는 보트명)
+        .replace(/\s*[-–]\s*.*$/g, "")
         .trim();
 }
 
-// boat 정보 찾기
+
 function getBoatInfo(avail, boats, boatDetails) {
     const boatId = avail.boat?.id;
     const nid = normalizeId(boatId);
@@ -104,7 +120,6 @@ function getBoatInfo(avail, boats, boatDetails) {
     );
 }
 
-// RatePlan 정규화
 function normalizeRatePlanEntry(ratePlan, cabinTypeId, occ, kind) {
     const price = toNumber(occ.price);
     const parentPrice = toNumber(occ.parentPrice);
@@ -135,7 +150,6 @@ function normalizeRatePlanEntry(ratePlan, cabinTypeId, occ, kind) {
     };
 }
 
-// Cabin 구조 생성
 function buildCabins(avail) {
     const cabinTypes = avail.spaces?.cabinTypes || [];
     const ratePlansRetail = avail.ratePlansRetail || [];
@@ -188,13 +202,12 @@ function buildCabins(avail) {
 }
 
 // --------------------------------------------------
-// 4. 메인 로직
+// 5. 메인 로직
 // --------------------------------------------------
 try {
     const availability = loadJsonArray(PATH_AVAIL, "availability-detailed");
     const boats = loadJsonArray(PATH_BOATS, "boats");
     const boatDetails = loadJsonArray(PATH_BOATS_DETAILS, "boats-details");
-    const destMap = loadDestinationMap(PATH_DEST_MAP);
 
     console.log("📄 JSON 로드 완료");
     console.log("  - availability:", availability.length);
@@ -208,16 +221,8 @@ try {
 
         const boatName = boat?.name || a.boat?.name || "";
         const productName = a.product?.name || "";
-
-        const title = boatName
-            ? `${productName} - ${boatName}`
-            : productName;
-
-        // 🔥 핵심: Port 기반 Country 검출
         const departurePortName = a.departurePort?.name || "";
-        const country = findCountryByPort(departurePortName, destMap);
-
-        // Destination = product.name 기반
+        const country = detectCountryImproved(productName, departurePortName);
         const destination = extractDestination(productName);
 
         return {
@@ -225,7 +230,7 @@ try {
             source: "inseanq",
             tripType: "liveaboard",
 
-            title,
+            title: `${productName} - ${boatName}`,
             boatName,
 
             country,
@@ -250,22 +255,17 @@ try {
             },
 
             cabins: buildCabins(a),
-
-            includes: a.includes || boat?.includes || [],
-            excludes: a.excludes || boat?.excludes || [],
-            itinerary: a.itinerary || boat?.itinerary || [],
         };
     });
 
     console.log("💾 저장 시작");
 
-    fs.writeFileSync(DEV_OUT, JSON.stringify(trips, null, 2), "utf8");
     fs.writeFileSync(PROD_OUT, JSON.stringify(trips, null, 2), "utf8");
+    fs.writeFileSync(DEV_OUT, JSON.stringify(trips, null, 2), "utf8");
 
     console.log("📁 저장 완료:");
     console.log(" - DEV :", DEV_OUT);
     console.log(" - PROD:", PROD_OUT);
-
 
 } catch (err) {
     console.error("❌ 변환 중 오류:", err);

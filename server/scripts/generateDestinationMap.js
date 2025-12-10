@@ -22,14 +22,18 @@ const COUNTRY_RULES = [
     { country: "Madagascar", keywords: ["Nosy Be"] }
 ];
 
-function detectCountry(portName) {
-    for (const rule of COUNTRY_RULES) {
-        if (rule.keywords.some(kw => portName.includes(kw))) {
+function detectCountryImproved(productName, portName) {
+    const text = `${productName} ${portName}`.toLowerCase();
+
+    for (const rule of COUNTRY_KEYWORDS) {
+        if (rule.keywords.some((kw) => text.includes(kw.toLowerCase()))) {
             return rule.country;
         }
     }
+
     return "Others";
 }
+
 
 // -----------------------------
 // 2) Destination 자동 생성
