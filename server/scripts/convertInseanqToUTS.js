@@ -68,7 +68,7 @@ const DEST_KEYWORDS = {
     ],
 
     "Maldives": [
-        { destination: "Central Atolls", keywords: ["male", "central atools", "4 atools", "best of maldives", "equatorial maldives", "heart of the maldives", "best of the maldives"] },
+        { destination: "Central Atolls", keywords: ["male", "central atolls", "4 atools", "best of maldives", "equatorial maldives", "heart of the maldives", "best of the maldives"] },
         { destination: "Deep South", keywords: ["deep south", "addu", "fuvahmulah", "Kooddoo", "Gan", "sothern atolls", "special south"] },
         { destination: "Hanifaru & North", keywords: ["hanifaru", "baa", "far north", "great north", "northern atolls",] }
     ],
@@ -86,7 +86,7 @@ const DEST_KEYWORDS = {
     "Thailand": [
         { destination: "Similan", keywords: ["similan", "north andaman", "best of thailand", "thap lamu", "khao lak", "koh bon", "koh tachai", "richelieu rock", "surin"] },
         { destination: "Burma bank & Mergui", keywords: ["burma banks", "mergui archipelago", "black rock"] },
-        { destination: "South Andaman", keywords: ["sothern thailand", "chalong"] }
+        { destination: "South Andaman", keywords: ["southern thailand", "chalong"] }
     ],
 
     "Ecuador": [
