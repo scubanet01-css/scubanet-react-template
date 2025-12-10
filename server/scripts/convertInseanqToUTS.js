@@ -30,29 +30,105 @@ const PROD_OUT = path.join(DATA_DIR, "uts-trips.json");
 });
 
 // --------------------------------------------------
-// 3. Country Keyword Rules (강화 버전)
+// 3. Country Keyword Rules
 // --------------------------------------------------
 const COUNTRY_KEYWORDS = [
     { country: "Indonesia", keywords: ["komodo", "raja", "banda", "lembeh", "ambon", "bali", "alor", "misool", "sorong", "labuan", "halmahera", "ternate", "togean", "bitung", "luwuk", "bajau", "manado", "sangihe", "derawan", "sumbawa", "cenderawasih", "maluku", "triton", "waisai", "kaimana"] },
-    { country: "Maldives", keywords: ["maldives", "ari", "male", "central atolls", "atolls", "laamu", "addu", "deeper south", "far south", "suvadiva", "far north", "hanifaru", "gan", "kooddoo", "gaafu", "gaafu dhaalu", "gaafu alifu"] },
+    { country: "Maldives", keywords: ["maldives", "ari", "male", "central atolls", "laamu", "addu", "deep south", "far south", "hanifaru", "gan", "kooddoo", "gaafu"] },
     { country: "Egypt", keywords: ["red sea", "hurghada", "marsa", "ghalib", "zabargad", "deadalus", "thistlegorm", "brothers"] },
     { country: "Palau", keywords: ["palau", "koror", "malakal"] },
-    { country: "Thailand", keywords: ["similan", "phuket", "surin", "ranong", "andaman", "thailand", "merdeka", "chalong", "thap lamu", "khao lak", "pakbara", "lipe"] },
+    { country: "Thailand", keywords: ["similan", "phuket", "surin", "ranong", "andaman", "chalong", "thap lamu"] },
     { country: "Ecuador", keywords: ["wolf", "darwin", "galapagos", "san cristobal", "baltra"] },
-    { country: "Mexico", keywords: ["socorro", "revillagigedo", "cabo", "guadalupe", "cortez", "mag bay", "magdalena bay"] },
+    { country: "Mexico", keywords: ["socorro", "revillagigedo", "cabo", "guadalupe", "cortez", "mag bay"] },
     { country: "Philippines", keywords: ["tubbataha", "visayas", "leyte", "cebu", "apu", "mactan", "apo"] },
-    { country: "Solomon Islands", keywords: ["solomon", "honiara", "guadalcanal", "western provice", "munda", "gizo"] },
+    { country: "Solomon Islands", keywords: ["solomon", "honiara", "guadalcanal", "munda", "gizo"] },
     { country: "Oman", keywords: ["oman", "dibba"] },
-    { country: "Micronesia", keywords: ["truk", "chuuk", "weno", "truk lagoon"] },
+    { country: "Micronesia", keywords: ["truk", "chuuk", "weno"] },
     { country: "Myanmar", keywords: ["burma", "mergui"] },
     { country: "Papua New Guinea", keywords: ["kimbe", "rabaul", "kavieng", "alotau", "wewak", "madang", "walindi"] },
     { country: "Sudan", keywords: ["sudan"] },
-    { country: "Seychelles", keywords: ["eden island"] },
+    { country: "Seychelles", keywords: ["seychelles", "eden island"] },
     { country: "Marshall Islands", keywords: ["bikini", "kwajalein"] },
     { country: "Chile", keywords: ["punta arenas", "antarctica"] },
-    { country: "Costa Rica", keywords: ["puntarenas", "cocos", "cocos islands"] },
-    { country: "Bahamas", keywords: ["grenada", "martinique", "st. vincent", "nassau", "st. lucia", "freeport", "bimini",] }
+    { country: "Costa Rica", keywords: ["puntarenas", "cocos"] },
+    { country: "Bahamas", keywords: ["nassau", "freeport", "bimini"] },
 ];
+
+// --------------------------------------------------
+// 3-B. Destination Keyword Rules
+// --------------------------------------------------
+const DEST_KEYWORDS = {
+    "Indonesia": [
+        { destination: "Raja Ampat", keywords: ["raja ampat", "sorong", "misool", "fam", "wayag"] },
+        { destination: "Banda Sea", keywords: ["banda", "ambon"] },
+        { destination: "Komodo", keywords: ["komodo", "labuan bajo"] },
+        { destination: "Alor", keywords: ["alor"] },
+        { destination: "Halmahera", keywords: ["halmahera", "ternate"] },
+        { destination: "Others", keywords: ["manado", "bunaken", "derawan", "triton", "cenderawasih", "moluccas", "banggai", "lembe", "seram"] }
+    ],
+
+    "Maldives": [
+        { destination: "Central Atolls", keywords: ["male", "central atools", "4 atools", "best of maldives", "equatorial maldives", "heart of the maldives", "best of the maldives"] },
+        { destination: "Deep South", keywords: ["deep south", "addu", "fuvahmulah", "Kooddoo", "Gan", "sothern atolls", "special south"] },
+        { destination: "Hanifaru & North", keywords: ["hanifaru", "baa", "far north", "great north", "northern atolls",] }
+    ],
+
+    "Egypt": [
+        { destination: "Hurghada", keywords: ["hurghada", "thistlegorm", "tiran", "ras muhammad", "red sea wrecks"] },
+        { destination: "BDE Reefs", keywords: ["ghalib", "marsa alam", "deadalus", "brothers", "elphinstone", "st. johns"] },
+        { destination: "Deep South", keywords: ["hamata", "elba", "zabargad"] }
+    ],
+
+    "Palau": [
+        { destination: "Palau", keywords: ["palau", "koror", "malakal"] }
+    ],
+
+    "Thailand": [
+        { destination: "Similan", keywords: ["similan", "north andaman", "best of thailand", "thap lamu", "khao lak", "koh bon", "koh tachai", "richelieu rock", "surin"] },
+        { destination: "Burma bank & Mergui", keywords: ["burma banks", "mergui archipelago", "black rock"] },
+        { destination: "South Andaman", keywords: ["sothern thailand", "chalong"] }
+    ],
+
+    "Ecuador": [
+        { destination: "Galapagos", keywords: ["galapagos", "baltra", "san cristobal"] }
+    ],
+
+    "Mexico": [
+        { destination: "Socorro", keywords: ["socorro", "revillagigedo"] },
+        { destination: "Sea of Cortez", keywords: ["cortez", "la paz"] },
+        { destination: "Magdalena Bay", keywords: ["mag bay", "magdalena"] }
+    ],
+
+    "Philippines": [
+        { destination: "Tubbataha", keywords: ["tubbataha", "puerto princesa"] },
+        { destination: "Visayas", keywords: ["visayas", "bohol", "cebu"] },
+        { destination: "Apo & Coron", keywords: ["apo reef", "coron"] }
+    ],
+
+    "Solomon Islands": [
+        { destination: "Solomon Islands", keywords: ["solomon", "honiara", "munda"] }
+    ],
+
+    "Oman": [
+        { destination: "Oman", keywords: ["oman", "dibba"] }
+    ],
+
+    "Micronesia": [
+        { destination: "Truk Lagoon", keywords: ["truk", "chuuk", "weno"] }
+    ],
+
+    "Papua New Guinea": [
+        { destination: "Papua New Guinea", keywords: ["kimbe", "rabaul", "kavieng", "alotau", "wewak", "madang", "walindi"] }
+    ],
+
+    "Costa Rica": [
+        { destination: "Cocos Island", keywords: ["cocos"] }
+    ],
+
+    "Bahamas": [
+        { destination: "Bahamas", keywords: ["bimini", "nassau", "freeport"] }
+    ]
+};
 
 // --------------------------------------------------
 // 4. 함수 정의
@@ -79,49 +155,54 @@ function loadJsonArray(filePath, label) {
     throw new Error(`❌ ${label} JSON 구조 오류: 배열이 아닙니다.`);
 }
 
-// improved Country detection
 function detectCountryImproved(productName, portName) {
     const text = `${productName} ${portName}`.toLowerCase();
 
     for (const rule of COUNTRY_KEYWORDS) {
         for (const kw of rule.keywords) {
-            if (text.includes(kw)) {
-                return rule.country;
+            if (text.includes(kw)) return rule.country;
+        }
+    }
+    return "Others";
+}
+
+// ---------------------------
+// Destination 자동 분류
+// ---------------------------
+function extractDestinationByCountry(country, productName) {
+    const text = (productName || "").toLowerCase();
+
+    const rules = DEST_KEYWORDS[country];
+    if (rules) {
+        for (const entry of rules) {
+            for (const kw of entry.keywords) {
+                if (text.includes(kw.toLowerCase())) {
+                    return entry.destination;
+                }
             }
         }
     }
 
-    console.log("⚠ Others 분류됨:", { productName, portName, text });
-    return "Others";
+    return extractDestinationBasic(productName);
 }
 
-function extractDestination(productName) {
-    if (!productName) return "Unknown";
-
-    return productName
-        // 괄호 안 제거
+function extractDestinationBasic(productName) {
+    return (productName || "")
         .replace(/\([^)]*\)/g, "")
-        // 밤/일수 제거
         .replace(/\b\d+d\s*\/\s*\d+n\b/gi, "")
         .replace(/\b\d+nights?\b/gi, "")
         .replace(/\b\d+days?\b/gi, "")
-        // 보트명 제거 패턴 ( – 또는 - 뒤에 나오는 보트명)
         .replace(/\s*[-–]\s*.*$/g, "")
         .trim();
 }
 
-
 function getBoatInfo(avail, boats, boatDetails) {
-    const boatId = avail.boat?.id;
-    const nid = normalizeId(boatId);
+    const id = normalizeId(avail.boat?.id);
+    if (!id) return null;
 
-    if (!nid) return null;
-
-    return (
-        boatDetails.find((b) => normalizeId(b.id) === nid) ||
-        boats.find((b) => normalizeId(b.id) === nid) ||
-        null
-    );
+    return boatDetails.find((b) => normalizeId(b.id) === id)
+        || boats.find((b) => normalizeId(b.id) === id)
+        || null;
 }
 
 function normalizeRatePlanEntry(ratePlan, cabinTypeId, occ, kind) {
@@ -129,75 +210,71 @@ function normalizeRatePlanEntry(ratePlan, cabinTypeId, occ, kind) {
     const parentPrice = toNumber(occ.parentPrice);
 
     let discountPercent = 0;
-    if (price !== null && parentPrice && parentPrice > 0) {
+    if (price !== null && parentPrice > 0) {
         discountPercent = Math.round((1 - price / parentPrice) * 1000) / 10;
     }
 
-    const nameLower = (ratePlan.name || "").toLowerCase();
-    const isGroupOrCharter =
-        nameLower.includes("group") ||
-        nameLower.includes("charter") ||
-        nameLower.includes("pax") ||
-        nameLower.includes("exclusive") ||
-        nameLower.includes("free");
+    const n = (ratePlan.name || "").toLowerCase();
+    const isGroup =
+        n.includes("group") || n.includes("charter") || n.includes("pax") || n.includes("exclusive");
 
     return {
-        ratePlanId: ratePlan.id || null,
-        ratePlanName: ratePlan.name || "",
+        ratePlanId: ratePlan.id,
+        ratePlanName: ratePlan.name,
         kind,
         cabinTypeId,
-        occupancyId: occ.id || null,
+        occupancyId: occ.id,
         price,
         parentPrice,
         discountPercent,
-        isInstructorOnly: kind === "charter" || isGroupOrCharter,
+        isInstructorOnly: kind === "charter" || isGroup,
     };
 }
 
 function buildCabins(avail) {
-    const cabinTypes = avail.spaces?.cabinTypes || [];
-    const ratePlansRetail = avail.ratePlansRetail || [];
-    const ratePlansCharter = avail.ratePlansCharter || [];
+    const types = avail.spaces?.cabinTypes || [];
+    const retail = avail.ratePlansRetail || [];
+    const charter = avail.ratePlansCharter || [];
 
     const cabins = [];
 
-    function collectRatePlansForCabinType(cabinTypeId) {
-        const collected = [];
+    function collectForType(typeId) {
+        const out = [];
 
-        ratePlansRetail.forEach((rp) => {
-            (rp.cabinTypes || []).forEach((ct) => {
-                if (ct.id === cabinTypeId) {
-                    (ct.occupancy || []).forEach((occ) => {
-                        collected.push(normalizeRatePlanEntry(rp, cabinTypeId, occ, "retail"));
-                    });
+        retail.forEach((r) => {
+            r.cabinTypes?.forEach((ct) => {
+                if (ct.id === typeId) {
+                    ct.occupancy?.forEach((occ) =>
+                        out.push(normalizeRatePlanEntry(r, typeId, occ, "retail"))
+                    );
                 }
             });
         });
 
-        ratePlansCharter.forEach((rp) => {
-            (rp.cabinTypes || []).forEach((ct) => {
-                if (ct.id === cabinTypeId) {
-                    (ct.occupancy || []).forEach((occ) => {
-                        collected.push(normalizeRatePlanEntry(rp, cabinTypeId, occ, "charter"));
-                    });
+        charter.forEach((r) => {
+            r.cabinTypes?.forEach((ct) => {
+                if (ct.id === typeId) {
+                    ct.occupancy?.forEach((occ) =>
+                        out.push(normalizeRatePlanEntry(r, typeId, occ, "charter"))
+                    );
                 }
             });
         });
 
-        return collected;
+        return out;
     }
 
-    cabinTypes.forEach((ct) => {
-        const ctRatePlans = collectRatePlansForCabinType(ct.id);
+    types.forEach((ct) => {
+        const ratePlans = collectForType(ct.id);
 
-        (ct.cabins || []).forEach((cabin) => {
+        ct.cabins?.forEach((c) => {
             cabins.push({
-                cabinId: cabin.id,
-                name: cabin.name,
+                cabinId: c.id,
+                name: c.name,
                 type: ct.name,
-                remaining: cabin.availableSpaces ?? 0,
+                remaining: c.availableSpaces ?? 0,
                 images: [],
-                ratePlans: ctRatePlans,
+                ratePlans,
             });
         });
     });
@@ -223,11 +300,12 @@ try {
     const trips = availability.map((a) => {
         const boat = getBoatInfo(a, boats, boatDetails) || a.boat || null;
 
-        const boatName = boat?.name || a.boat?.name || "";
         const productName = a.product?.name || "";
-        const departurePortName = a.departurePort?.name || "";
-        const country = detectCountryImproved(productName, departurePortName);
-        const destination = extractDestination(productName);
+        const boatName = boat?.name || "";
+        const portName = a.departurePort?.name || "";
+
+        const country = detectCountryImproved(productName, portName);
+        const destination = extractDestinationByCountry(country, productName);
 
         return {
             id: `INQ_${a.id}`,
