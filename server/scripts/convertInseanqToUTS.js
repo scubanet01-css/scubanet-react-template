@@ -33,7 +33,7 @@ const PROD_OUT = path.join(DATA_DIR, "uts-trips.json");
 // 3. Country Keyword Rules (강화 버전)
 // --------------------------------------------------
 const COUNTRY_KEYWORDS = [
-    { country: "Indonesia", keywords: ["komodo", "raja", "banda", "lembeh", "ambon", "bali", "alor", "misool", "sorong", "labuan", "halmahera", "ternate", "togean", "bitung", "luwuk", "bajau", "manado", "sangihe", "derawan", "sumbawa", "cenderawasih", "maluku", "triton"] },
+    { country: "Indonesia", keywords: ["komodo", "raja", "banda", "lembeh", "ambon", "bali", "alor", "misool", "sorong", "labuan", "halmahera", "ternate", "togean", "bitung", "luwuk", "bajau", "manado", "sangihe", "derawan", "sumbawa", "cenderawasih", "maluku", "triton", "waisai", "kaimana"] },
     { country: "Maldives", keywords: ["maldives", "ari", "male", "central atolls", "atolls", "laamu", "addu", "deeper south", "far south", "suvadiva", "far north", "hanifaru"] },
     { country: "Egypt", keywords: ["red sea", "hurghada", "marsa", "ghalib", "zabargad", "deadalus", "thistlegorm", "brothers"] },
     { country: "Palau", keywords: ["palau", "koror", "malakal"] },
@@ -43,6 +43,7 @@ const COUNTRY_KEYWORDS = [
     { country: "Philippines", keywords: ["tubbataha", "visayas", "leyte", "cebu", "apu", "mactan", "apo"] },
     { country: "Solomon Islands", keywords: ["solomon", "honiara"] },
     { country: "Oman", keywords: ["oman", "dibba"] },
+    { country: "Micronesia", keywords: ["truk", "chuuk", "weno", "truk lagoon"] },
     { country: "Myanmar", keywords: ["burma", "mergui"] },
     { country: "Papua New Guinea", keywords: ["kimbe", "rabaul", "kavieng", "alotau"] },
     { country: "Sudan", keywords: ["sudan"] },
@@ -83,11 +84,14 @@ function detectCountryImproved(productName, portName) {
     const text = `${productName} ${portName}`.toLowerCase();
 
     for (const rule of COUNTRY_KEYWORDS) {
-        if (rule.keywords.some((kw) => text.includes(kw))) {
-            return rule.country;
+        for (const kw of rule.keywords) {
+            if (text.includes(kw)) {
+                return rule.country;
+            }
         }
     }
 
+    console.log("⚠ Others 분류됨:", { productName, portName, text });
     return "Others";
 }
 
