@@ -70,8 +70,8 @@ const DEST_KEYWORDS = {
     "Maldives": [
         { destination: "Central Atolls", keywords: ["male", "central atolls", "4 atolls", "best of maldives", "equatorial maldives", "heart of the maldives", "best of the maldives", "special central", "top 12"] },
         { destination: "Deep South", keywords: ["deep south", "addu", "fuvahmulah", "Kooddoo", "Gan", "sothern atolls", "extreme south atolls", "south maldives", "special south", "deeper south"] },
-        { destination: "Hanifaru & North", keywords: ["hanifaru", "baa", "far north", "great north", "northern atolls"] },
-        { destination: "Ohters", keywords: ["beyond the blue", "yoga", "family", "fishing", "kite", "surf", "safari", "suvaiva"] }
+        { destination: "Hanifaru & North", keywords: ["hanifaru", "baa", "far north", "great north", "northern atolls", "manta madness"] },
+        { destination: "Ohters", keywords: ["beyond the blue", "yoga", "family", "fishing", "kite", "surf", "safari", "suvaiva atoll", "swim mania", "learn to dive"] }
     ],
 
     "Egypt": [
