@@ -10,9 +10,9 @@ export function useDestinationFilter() {
 
     const [loading, setLoading] = useState(true);
 
-    // -----------------------------------------
+    // ------------------------------
     // 1) Country 리스트 구성
-    // -----------------------------------------
+    // ------------------------------
     useEffect(() => {
         if (!trips.length) return;
 
@@ -26,13 +26,14 @@ export function useDestinationFilter() {
         setLoading(false);
     }, [trips]);
 
-    // -----------------------------------------
-    // 2) Destination 리스트 구성 (배열 대응)
-    // -----------------------------------------
+    // ------------------------------
+    // 2) Destination 리스트 구성
+    //    → **배열이든 문자열이든 무조건 문자열 하나씩으로 정규화**
+    // ------------------------------
     useEffect(() => {
         if (!trips.length) return;
 
-        let target =
+        const target =
             selectedCountry === "전체"
                 ? trips
                 : trips.filter(t => t.country === selectedCountry);
@@ -40,12 +41,24 @@ export function useDestinationFilter() {
         const destSet = new Set();
 
         target.forEach(t => {
-            if (Array.isArray(t.destination)) {
-                t.destination.forEach(d => {
-                    if (d) destSet.add(d);
+            const rawDest = t.destination;
+
+            // CASE 1: null/undefined/빈값 → skip
+            if (!rawDest) return;
+
+            // CASE 2: 배열 형태
+            if (Array.isArray(rawDest)) {
+                rawDest.forEach(d => {
+                    if (typeof d === "string" && d.trim()) {
+                        destSet.add(d.trim());
+                    }
                 });
-            } else {
-                if (t.destination) destSet.add(t.destination);
+            }
+            // CASE 3: 문자열 형태
+            else if (typeof rawDest === "string") {
+                if (rawDest.trim()) {
+                    destSet.add(rawDest.trim());
+                }
             }
         });
 
