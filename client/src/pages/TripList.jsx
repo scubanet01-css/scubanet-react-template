@@ -7,6 +7,9 @@ import TripCard from "../components/TripCard/TripCard.jsx";
 import { useDestinationFilter } from "../hooks/useDestinationFilter";
 import axios from "axios";
 
+console.log("🚀 TripList.jsx Loaded at", new Date().toISOString());
+alert("TripList.jsx 실행됨!!!");
+
 
 function TripList() {
 
