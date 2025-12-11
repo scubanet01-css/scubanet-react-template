@@ -26,9 +26,25 @@ function FilterBar({
 
     mode = "home"
 }) {
+    // ✅ destinationList 정규화: 배열(flatten) + 중복 제거 + 정렬
+    const normalizedDestinationList = (() => {
+        const set = new Set();
+
+        (destinationList || []).forEach((d) => {
+            if (Array.isArray(d)) {
+                d.forEach((x) => {
+                    if (x && x !== "전체") set.add(x);
+                });
+            } else if (d && d !== "전체") {
+                set.add(d);
+            }
+        });
+
+        return ["전체", ...Array.from(set).sort()];
+    })();
+
     return (
         <div className="filter-bar-container">
-
             <div className="filter-group">
                 <label>출발일</label>
                 <DatePicker
@@ -56,8 +72,7 @@ function FilterBar({
                     value={selectedDestination}
                     onChange={(e) => onChangeDestination(e.target.value)}
                 >
-
-                    {destinationList.map((d) => (
+                    {normalizedDestinationList.map((d) => (
                         <option key={d}>{d}</option>
                     ))}
                 </select>
@@ -79,7 +94,6 @@ function FilterBar({
                     <option value="deal">할인 상품만</option>
                 </select>
             </div>
-
         </div>
     );
 }
