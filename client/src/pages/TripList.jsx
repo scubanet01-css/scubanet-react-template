@@ -66,7 +66,12 @@ function TripList() {
 
         // Destination
         if (selectedDestination !== "전체") {
-            list = list.filter(t => t.destination === selectedDestination);
+            list = list.filter(t => {
+                return Array.isArray(t.destination)
+                    ? t.destination.includes(selectedDestination)
+                    : t.destination === selectedDestination;
+            });
+
         }
 
         // Boat

@@ -10,28 +10,48 @@ export function useDestinationFilter() {
 
     const [loading, setLoading] = useState(true);
 
-    // 🟢 TripList에서 데이터가 들어오면 Country 리스트 생성
+    // -----------------------------------------
+    // 1) Country 리스트 구성
+    // -----------------------------------------
     useEffect(() => {
         if (!trips.length) return;
 
         const countrySet = new Set(
             trips.map(t => t.country || "Others").filter(Boolean)
         );
-        const sorted = [...countrySet].filter(c => c !== "Others").sort();
-        setCountryList(["전체", ...sorted, "Others"]);
 
+        const sorted = [...countrySet].filter(c => c !== "Others").sort();
+
+        setCountryList(["전체", ...sorted, "Others"]);
         setLoading(false);
     }, [trips]);
 
-    // 🟢 Destination 리스트 생성
+    // -----------------------------------------
+    // 2) Destination 리스트 구성 (배열 대응)
+    // -----------------------------------------
     useEffect(() => {
         if (!trips.length) return;
 
         let target =
-            selectedCountry === "전체" ? trips : trips.filter(t => t.country === selectedCountry);
+            selectedCountry === "전체"
+                ? trips
+                : trips.filter(t => t.country === selectedCountry);
 
-        const destSet = new Set(target.map(t => t.destination || "Others").filter(Boolean));
-        setDestinationList(["전체", ...[...destSet].sort()]);
+        const destSet = new Set();
+
+        target.forEach(t => {
+            if (Array.isArray(t.destination)) {
+                t.destination.forEach(d => {
+                    if (d) destSet.add(d);
+                });
+            } else {
+                if (t.destination) destSet.add(t.destination);
+            }
+        });
+
+        const sortedDest = [...destSet].sort();
+
+        setDestinationList(["전체", ...sortedDest]);
     }, [selectedCountry, trips]);
 
     return {
