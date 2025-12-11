@@ -9,6 +9,7 @@ import axios from "axios";
 
 
 function TripList() {
+    console.log("🔥 destinationList =", destinationList);
     console.log("🔥 TripList 렌더링됨");
     const {
         trips,
