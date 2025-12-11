@@ -110,7 +110,7 @@ const DEST_KEYWORDS = {
     ],
 
     "Solomon Islands": [
-        { destination: "Solomon Islands", keywords: ["solomon", "honiara", "guadalcanal", "munda", "russell", "tec. special", "wwii wreck"] }
+        { destination: "Solomon Islands", keywords: ["solomon", "honiara", "guadalcanal", "munda", "russell", "tec. special", "wwii wreck", "bismarck"] }
     ],
 
     "Oman": [
@@ -139,6 +139,9 @@ const DEST_KEYWORDS = {
 
     "Myanmar": [
         { destination: "Mergui Archipelago", keywords: ["mergui", "burma"] }
+    ],
+    "Papua New Guinea": [
+        { destination: "Papua New Guinea", keywords: ["kimbe", "rabaul", "kavieng", "alotau", "wewak", "madang", "walindi", "new britain", "milne", "bismarck"] }
     ]
 };
 
