@@ -84,6 +84,62 @@ const DEST_KEYWORDS = {
     "Palau": [
         { destination: "Palau", keywords: ["palau", "koror", "malakal"] }
     ],
+
+    "Thailand": [
+        { destination: "Similan & Surin Islands", keywords: ["similan", "surin", "richelieu", "khao lak", "koh bon", "koh tachai"] },
+        { destination: "South Andaman", keywords: ["south andaman", "chalong", "phi phi"] },
+        { destination: "Mergui Archipelago", keywords: ["mergui", "burma banks", "black rock"] },
+        { destination: "Others", keywords: ["thailand"] }
+    ],
+
+    "Ecuador": [
+        { destination: "Galapagos", keywords: ["galapagos", "wolf", "darwin", "baltra", "san cristobal"] }
+    ],
+
+    "Mexico": [
+        { destination: "Socorro", keywords: ["socorro", "revillagigedo"] },
+        { destination: "Sea of Cortez", keywords: ["cortez", "la paz"] },
+        { destination: "Magdalena Bay", keywords: ["mag bay", "magdalena"] }
+    ],
+
+    "Philippines": [
+        { destination: "Tubbataha", keywords: ["tubbataha"] },
+        { destination: "Visayas", keywords: ["visayas", "bohol", "cebu"] },
+        { destination: "Apo & Coron", keywords: ["apo reef", "coron"] },
+        { destination: "Others", keywords: ["philippines"] }
+    ],
+
+    "Solomon Islands": [
+        { destination: "Solomon Islands", keywords: ["solomon", "honiara", "guadalcanal", "munda"] }
+    ],
+
+    "Oman": [
+        { destination: "Oman", keywords: ["oman", "muscat", "musandam"] }
+    ],
+
+    "Costa Rica": [
+        { destination: "Cocos Island", keywords: ["cocos", "puntarenas"] }
+    ],
+
+    "Bahamas": [
+        { destination: "Bahamas", keywords: ["bimini", "nassau", "freeport"] }
+    ],
+
+    "Seychelles": [
+        { destination: "Seychelles", keywords: ["mahe", "praslin", "seychelles"] }
+    ],
+
+    "Sudan": [
+        { destination: "Sudan", keywords: ["sudan", "port sudan"] }
+    ],
+
+    "Marshall Islands": [
+        { destination: "Bikini Atoll", keywords: ["bikini", "kwajalein"] }
+    ],
+
+    "Myanmar": [
+        { destination: "Mergui Archipelago", keywords: ["mergui", "burma"] }
+    ]
 };
 
 // --------------------------------------------------
