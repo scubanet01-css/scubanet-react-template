@@ -13,21 +13,13 @@ console.log("🚀 UTS 변환 스크립트 시작됨");
 // --------------------------------------------------
 const DATA_DIR = "/var/www/scubanet/data";
 
-// 키워드 JSON 경로
+// --------------------------------------------------
+// 2. 키워드 JSON 경로 (DATA_DIR 이후에 선언해야 한다!)
+// --------------------------------------------------
 const PATH_KEYWORDS = path.join(DATA_DIR, "inseanq-keywords.json");
 
-// UTS 변환에 필요한 원본 JSON 경로
-const PATH_AVAIL = path.join(DATA_DIR, "availability-detailed.json");
-const PATH_BOATS = path.join(DATA_DIR, "boats.json");
-const PATH_BOATS_DETAILS = path.join(DATA_DIR, "boats-details.json");
-const PATH_DEST_MAP = path.join(DATA_DIR, "destination-map.json"); // 지금은 안 써도 유지
-
-// 출력 경로
-const DEV_OUT = "/root/scubanet-react-template/client/public/data/uts-trips.json";
-const PROD_OUT = path.join(DATA_DIR, "uts-trips.json");
-
 // --------------------------------------------------
-// 2. 키워드 JSON(inseanq-keywords.json) 로드
+// 3. 키워드 JSON 로드
 // --------------------------------------------------
 if (!fs.existsSync(PATH_KEYWORDS)) {
     console.error("❌ inseanq-keywords.json 파일을 찾을 수 없습니다:", PATH_KEYWORDS);
@@ -37,6 +29,18 @@ if (!fs.existsSync(PATH_KEYWORDS)) {
 const KEYWORDS = JSON.parse(fs.readFileSync(PATH_KEYWORDS, "utf8"));
 const COUNTRY_KEYWORDS = KEYWORDS.country;
 const DEST_KEYWORDS = KEYWORDS.destination;
+
+// --------------------------------------------------
+// 4. 나머지 원본 JSON 경로 설정
+// --------------------------------------------------
+const PATH_AVAIL = path.join(DATA_DIR, "availability-detailed.json");
+const PATH_BOATS = path.join(DATA_DIR, "boats.json");
+const PATH_BOATS_DETAILS = path.join(DATA_DIR, "boats-details.json");
+const PATH_DEST_MAP = path.join(DATA_DIR, "destination-map.json");
+
+// 출력 경로
+const DEV_OUT = "/root/scubanet-react-template/client/public/data/uts-trips.json";
+const PROD_OUT = path.join(DATA_DIR, "uts-trips.json");
 
 // --------------------------------------------------
 // 3. 파일 존재 여부 체크
