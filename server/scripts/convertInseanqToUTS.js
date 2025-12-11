@@ -93,7 +93,7 @@ const DEST_KEYWORDS = {
     ],
 
     "Ecuador": [
-        { destination: "Galapagos", keywords: ["galapagos", "wolf", "darwin", "baltra", "san cristobal"] }
+        { destination: "Galapagos", keywords: ["galapagos", "galapogos", "wolf", "darwin", "baltra", "san cristobal", "agent", "custom"] }
     ],
 
     "Mexico": [
