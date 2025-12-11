@@ -60,11 +60,11 @@ const COUNTRY_KEYWORDS = [
 const DEST_KEYWORDS = {
     "Indonesia": [
         { destination: "Raja Ampat", keywords: ["raja ampat", "sorong", "misool", "fam", "wayag"] },
-        { destination: "Banda Sea", keywords: ["banda", "ambon"] },
+        { destination: "Banda Sea", keywords: ["banda", "ambon", "neira"] },
         { destination: "Komodo", keywords: ["komodo", "labuan bajo"] },
         { destination: "Alor", keywords: ["alor"] },
         { destination: "Halmahera", keywords: ["halmahera", "ternate"] },
-        { destination: "Others", keywords: ["manado", "bunaken", "derawan", "triton", "cenderawasih", "moluccas", "banggai", "lembe", "seram"] }
+        { destination: "Others", keywords: ["manado", "bunaken", "derawan", "triton", "cenderawasih", "moluccas", "banggai", "lembe", "seram", "sangihe", "sulawesi", "maluku", "sumbawa"] }
     ],
 
     "Maldives": [
