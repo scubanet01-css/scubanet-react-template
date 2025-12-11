@@ -86,10 +86,10 @@ const DEST_KEYWORDS = {
     ],
 
     "Thailand": [
-        { destination: "Similan & Surin Islands", keywords: ["similan", "surin", "richelieu", "khao lak", "koh bon", "koh tachai"] },
-        { destination: "South Andaman", keywords: ["south andaman", "chalong", "phi phi"] },
+        { destination: "Similan", keywords: ["similan", "surin", "richelieu", "khao lak", "koh bon", "koh tachai", "best of thailand"] },
+        { destination: "South Andaman", keywords: ["south andaman", "chalong", "phi phi", "southern thailand", "southern explorer"] },
         { destination: "Mergui Archipelago", keywords: ["mergui", "burma banks", "black rock"] },
-        { destination: "Others", keywords: ["thailand"] }
+        { destination: "Others", keywords: ["agent"] }
     ],
 
     "Ecuador": [
