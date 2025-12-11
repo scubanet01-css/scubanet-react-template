@@ -34,7 +34,7 @@ const PROD_OUT = path.join(DATA_DIR, "uts-trips.json");
 // --------------------------------------------------
 const COUNTRY_KEYWORDS = [
     { country: "Indonesia", keywords: ["komodo", "raja", "banda", "lembeh", "ambon", "bali", "alor", "misool", "sorong", "labuan", "halmahera", "ternate", "togean", "bitung", "luwuk", "bajau", "manado", "sangihe", "derawan", "sumbawa", "cenderawasih", "maluku", "triton", "waisai", "kaimana"] },
-    { country: "Maldives", keywords: ["maldives", "ari", "male", "central atolls", "laamu", "addu", "deep south", "far south", "hanifaru", "gan", "kooddoo", "gaafu"] },
+    { country: "Maldives", keywords: ["maldives", "ari", "male", "central atolls", "laamu", "addu", "deep south", "far south", "hanifaru", "gan", "kooddoo", "gaafu", "far north", "deeper south"] },
     { country: "Egypt", keywords: ["red sea", "hurghada", "marsa", "ghalib", "zabargad", "deadalus", "thistlegorm", "brothers"] },
     { country: "Palau", keywords: ["palau", "koror", "malakal"] },
     { country: "Thailand", keywords: ["similan", "phuket", "surin", "ranong", "andaman", "chalong", "thap lamu"] },
