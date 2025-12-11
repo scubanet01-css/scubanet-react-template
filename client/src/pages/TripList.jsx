@@ -9,8 +9,7 @@ import axios from "axios";
 
 
 function TripList() {
-    console.log("🔥 destinationList =", destinationList);
-    console.log("🔥 TripList 렌더링됨");
+
     const {
         trips,
         setTrips,
@@ -22,6 +21,9 @@ function TripList() {
         setSelectedCountry,
         setSelectedDestination
     } = useDestinationFilter();
+
+    console.log("🔥 destinationList =", destinationList);
+    console.log("🔥 TripList 렌더링됨");
 
     // TripList 전용 필터
     const [selectedBoat, setSelectedBoat] = useState("전체");
