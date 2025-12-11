@@ -27,8 +27,9 @@ if (!fs.existsSync(PATH_KEYWORDS)) {
 }
 
 const KEYWORDS = JSON.parse(fs.readFileSync(PATH_KEYWORDS, "utf8"));
-const COUNTRY_KEYWORDS = KEYWORDS.country;
-const DEST_KEYWORDS = KEYWORDS.destination;
+const COUNTRY_KEYWORDS = KEYWORDS.COUNTRY_KEYWORDS;
+const DEST_KEYWORDS = KEYWORDS.DEST_KEYWORDS;
+
 
 // --------------------------------------------------
 // 4. 나머지 원본 JSON 경로 설정
