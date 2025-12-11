@@ -76,7 +76,7 @@ const DEST_KEYWORDS = {
 
     "Egypt": [
         { destination: "Hurghada", keywords: ["hurghada", "thistlegorm", "tiran", "ras muhammad", "red sea wrecks", "north"] },
-        { destination: "BDE Reefs", keywords: ["ghalib", "marsa alam", "daedalus", "brothers", "elphinstone", "st. johns", "bde", "best of the red sea",] },
+        { destination: "BDE Reefs", keywords: ["ghalib", "marsa alam", "daedalus", "brothers", "elphinstone", "st. johns", "BDE", "best of the red sea"] },
         { destination: "Deep South", keywords: ["hamata", "elba", "zabargad", "abu fandira", "southern route"] },
         { destination: "Others", keywords: ["custom", "yoga", "demand", "relax", "sharks", "dolphin", "ultimate"] }
     ],
