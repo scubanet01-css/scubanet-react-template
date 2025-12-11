@@ -279,7 +279,12 @@ try {
         const portName = a.departurePort?.name || "";
 
         const country = detectCountryImproved(productName, portName);
-        const destination = extractDestinationByCountry(country, productName);
+
+        // 🔥 destination 값을 항상 배열 형태로 강제 통일
+        let destination = extractDestinationByCountry(country, productName);
+        if (!Array.isArray(destination)) {
+            destination = destination ? [destination] : [];
+        }
 
         trips.push({
             id: `INQ_${a.id}`,
