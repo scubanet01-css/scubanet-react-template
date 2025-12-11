@@ -3,6 +3,21 @@
  * Inseanq JSON → UTS JSON 변환
  */
 
+// --------------------------------------------------
+// 키워드 JSON 외부 파일 불러오기
+// --------------------------------------------------
+const PATH_KEYWORDS = path.join(DATA_DIR, "inseanq-keywords.json");
+
+if (!fs.existsSync(PATH_KEYWORDS)) {
+    console.error("❌ inseanq-keywords.json 파일을 찾을 수 없습니다:", PATH_KEYWORDS);
+    process.exit(1);
+}
+
+const KEYWORDS = JSON.parse(fs.readFileSync(PATH_KEYWORDS, "utf8"));
+const COUNTRY_KEYWORDS = KEYWORDS.country;
+const DEST_KEYWORDS = KEYWORDS.destination;
+
+
 const fs = require("fs");
 const path = require("path");
 
@@ -30,123 +45,7 @@ const PROD_OUT = path.join(DATA_DIR, "uts-trips.json");
 });
 
 // --------------------------------------------------
-// 3. Country Keyword Rules
-// --------------------------------------------------
-const COUNTRY_KEYWORDS = [
-    { country: "Indonesia", keywords: ["komodo", "raja", "banda", "lembeh", "ambon", "bali", "alor", "misool", "sorong", "labuan", "halmahera", "ternate", "togean", "bitung", "luwuk", "bajau", "manado", "sangihe", "derawan", "sumbawa", "cenderawasih", "maluku", "triton", "waisai", "kaimana"] },
-    { country: "Maldives", keywords: ["maldives", "ari", "male", "central atolls", "laamu", "addu", "deep south", "far south", "hanifaru", "gan", "kooddoo", "gaafu", "far north", "deeper south"] },
-    { country: "Egypt", keywords: ["red sea", "hurghada", "marsa", "ghalib", "zabargad", "deadalus", "thistlegorm", "brothers"] },
-    { country: "Palau", keywords: ["palau", "koror", "malakal"] },
-    { country: "Thailand", keywords: ["similan", "phuket", "surin", "ranong", "andaman", "chalong", "thap lamu"] },
-    { country: "Ecuador", keywords: ["wolf", "darwin", "galapagos", "san cristobal", "baltra"] },
-    { country: "Mexico", keywords: ["socorro", "revillagigedo", "cabo", "guadalupe", "cortez", "mag bay"] },
-    { country: "Philippines", keywords: ["tubbataha", "visayas", "leyte", "cebu", "apu", "mactan", "apo"] },
-    { country: "Solomon Islands", keywords: ["solomon", "honiara", "guadalcanal", "munda", "gizo"] },
-    { country: "Oman", keywords: ["oman", "dibba"] },
-    { country: "Micronesia", keywords: ["truk", "chuuk", "weno"] },
-    { country: "Myanmar", keywords: ["burma", "mergui"] },
-    { country: "Papua New Guinea", keywords: ["kimbe", "rabaul", "kavieng", "alotau", "wewak", "madang", "walindi"] },
-    { country: "Sudan", keywords: ["sudan"] },
-    { country: "Seychelles", keywords: ["seychelles", "eden island"] },
-    { country: "Marshall Islands", keywords: ["bikini", "kwajalein"] },
-    { country: "Chile", keywords: ["punta arenas", "antarctica"] },
-    { country: "Costa Rica", keywords: ["puntarenas", "cocos"] },
-    { country: "Bahamas", keywords: ["nassau", "freeport", "bimini"] },
-];
-
-// --------------------------------------------------
-// 3-B. Destination Keyword Rules
-// --------------------------------------------------
-const DEST_KEYWORDS = {
-    "Indonesia": [
-        { destination: "Raja Ampat", keywords: ["raja ampat", "sorong", "misool", "fam", "wayag"] },
-        { destination: "Banda Sea", keywords: ["banda", "ambon", "neira"] },
-        { destination: "Komodo", keywords: ["komodo", "labuan bajo"] },
-        { destination: "Alor", keywords: ["alor"] },
-        { destination: "Halmahera", keywords: ["halmahera", "ternate"] },
-        { destination: "Others", keywords: ["manado", "bunaken", "derawan", "triton", "cenderawasih", "moluccas", "banggai", "lembe", "seram", "sangihe", "sulawesi", "maluku", "sumbawa"] }
-    ],
-
-    "Maldives": [
-        { destination: "Central Atolls", keywords: ["male", "central atolls", "4 atolls", "best of maldives", "equatorial maldives", "heart of the maldives", "best of the maldives", "special central", "top 12"] },
-        { destination: "Deep South", keywords: ["deep south", "addu", "fuvahmulah", "kooddoo", "gan", "southern atolls", "extreme south atolls", "south maldives", "special south", "deeper south"] },
-        { destination: "Hanifaru & North", keywords: ["hanifaru", "baa", "far north", "great north", "northern atolls", "manta madness"] },
-        { destination: "Others", keywords: ["beyond the blue", "yoga", "family", "fishing", "kite", "surf", "safari", "suvadiva", "swim mania", "learn to dive"] }
-    ],
-
-    "Egypt": [
-        { destination: "Hurghada", keywords: ["hurghada", "thistlegorm", "tiran", "ras muhammad", "red sea wrecks", "north"] },
-        { destination: "BDE Reefs", keywords: ["ghalib", "marsa alam", "daedalus", "brothers", "elphinstone", "st. johns", "bde", "best of the red sea"] },
-        { destination: "Deep South", keywords: ["hamata", "elba", "zabargad", "abu fandira", "southern route"] },
-        { destination: "Others", keywords: ["custom", "yoga", "demand", "relax", "sharks", "dolphin", "ultimate"] }
-    ],
-
-    "Palau": [
-        { destination: "Palau", keywords: ["palau", "koror", "malakal", "spawning"] }
-    ],
-
-    "Thailand": [
-        { destination: "Similan", keywords: ["similan", "surin", "richelieu", "khao lak", "koh bon", "koh tachai", "best of thailand"] },
-        { destination: "South Andaman", keywords: ["south andaman", "chalong", "phi phi", "southern thailand", "southern explorer"] },
-        { destination: "Mergui Archipelago", keywords: ["mergui", "burma banks", "black rock"] },
-        { destination: "Others", keywords: ["agent"] }
-    ],
-
-    "Ecuador": [
-        { destination: "Galapagos", keywords: ["galapagos", "galapogos", "wolf", "darwin", "baltra", "san cristobal", "agent", "custom"] }
-    ],
-
-    "Mexico": [
-        { destination: "Socorro", keywords: ["socorro", "revillagigedo"] },
-        { destination: "Sea of Cortez", keywords: ["cortez", "la paz"] },
-        { destination: "Magdalena Bay", keywords: ["mag bay", "magdalena"] }
-    ],
-
-    "Philippines": [
-        { destination: "Tubbataha", keywords: ["tubbataha"] },
-        { destination: "Visayas", keywords: ["visayas", "bohol", "cebu"] },
-        { destination: "Apo & Coron", keywords: ["apo reef", "coron"] },
-        { destination: "Others", keywords: ["philippines"] }
-    ],
-
-    "Solomon Islands": [
-        { destination: "Solomon Islands", keywords: ["solomon", "honiara", "guadalcanal", "munda", "russell", "tec. special", "wwii wreck"] }
-    ],
-
-    "Oman": [
-        { destination: "Oman", keywords: ["oman", "muscat", "musandam"] }
-    ],
-
-    "Costa Rica": [
-        { destination: "Cocos Island", keywords: ["cocos", "puntarenas"] }
-    ],
-
-    "Bahamas": [
-        { destination: "Bahamas", keywords: ["bimini", "nassau", "freeport"] }
-    ],
-
-    "Seychelles": [
-        { destination: "Seychelles", keywords: ["mahe", "praslin", "seychelles"] }
-    ],
-
-    "Sudan": [
-        { destination: "Sudan", keywords: ["sudan", "port sudan"] }
-    ],
-
-    "Marshall Islands": [
-        { destination: "Bikini Atoll", keywords: ["bikini", "kwajalein"] }
-    ],
-
-    "Myanmar": [
-        { destination: "Mergui Archipelago", keywords: ["mergui", "burma"] }
-    ],
-    "Papua New Guinea": [
-        { destination: "Papua New Guinea", keywords: ["kimbe", "rabaul", "kavieng", "alotau", "wewak", "madang", "walindi", "new britain", "milne", "bismarck", "hanover", "oc10", "witu", "new ireland", "ornis"] }
-    ]
-};
-
-// --------------------------------------------------
-// 4. 함수 정의
+// 3. 함수 정의
 // --------------------------------------------------
 
 function normalizeId(id) {
