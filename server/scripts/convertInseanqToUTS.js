@@ -75,9 +75,10 @@ const DEST_KEYWORDS = {
     ],
 
     "Egypt": [
-        { destination: "Hurghada", keywords: ["hurghada", "thistlegorm", "tiran", "ras muhammad", "red sea wrecks"] },
-        { destination: "BDE Reefs", keywords: ["ghalib", "marsa alam", "deadalus", "brothers", "elphinstone", "st. johns"] },
-        { destination: "Deep South", keywords: ["hamata", "elba", "zabargad"] }
+        { destination: "Hurghada", keywords: ["hurghada", "thistlegorm", "tiran", "ras muhammad", "red sea wrecks", "north"] },
+        { destination: "BDE Reefs", keywords: ["ghalib", "marsa alam", "daedalus", "brothers", "elphinstone", "st. johns", "bde", "best of the red sea",] },
+        { destination: "Deep South", keywords: ["hamata", "elba", "zabargad", "abu fandira", "southern route"] },
+        { destination: "Others", keywords: ["custom", "yoga", "demand", "relax", "sharks", "dolphin", "ultimate"] }
     ],
 
     "Palau": [
@@ -174,18 +175,29 @@ function extractDestinationByCountry(country, productName) {
     const text = (productName || "").toLowerCase();
 
     const rules = DEST_KEYWORDS[country];
+    const matched = [];
+
+    // 1) 키워드 기반 다중 매칭
     if (rules) {
         for (const entry of rules) {
             for (const kw of entry.keywords) {
                 if (text.includes(kw.toLowerCase())) {
-                    return entry.destination;
+                    matched.push(entry.destination);
+                    break; // 동일 destination 중복 방지
                 }
             }
         }
     }
 
+    // 2) 매칭된 destination이 여러 개일 경우 배열로 반환
+    if (matched.length > 0) {
+        return matched.length === 1 ? matched[0] : matched;
+    }
+
+    // 3) 아무 키워드 매칭이 없으면 기본 로직 적용
     return extractDestinationBasic(productName);
 }
+
 
 function extractDestinationBasic(productName) {
     return (productName || "")
