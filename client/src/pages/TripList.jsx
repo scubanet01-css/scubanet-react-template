@@ -24,6 +24,10 @@ function TripList() {
 
     console.log("🔥 destinationList =", destinationList);
     console.log("🔥 TripList 렌더링됨");
+    console.log("📌 trips.length =", trips.length);
+    console.log("📌 countryList =", countryList);
+    console.log("📌 destinationList =", destinationList);
+
 
     // TripList 전용 필터
     const [selectedBoat, setSelectedBoat] = useState("전체");
