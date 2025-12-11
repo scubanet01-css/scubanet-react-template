@@ -280,11 +280,13 @@ try {
 
         const country = detectCountryImproved(productName, portName);
 
-        // 🔥 destination 값을 항상 배열 형태로 강제 통일
         let destination = extractDestinationByCountry(country, productName);
-        if (!Array.isArray(destination)) {
-            destination = destination ? [destination] : [];
+
+        // 🔥 여러 개 매칭되면 대표 목적지 1개만 사용한다
+        if (Array.isArray(destination)) {
+            destination = destination[0];     // 문자열로 변환
         }
+
 
         trips.push({
             id: `INQ_${a.id}`,
