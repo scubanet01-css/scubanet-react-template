@@ -82,7 +82,7 @@ const DEST_KEYWORDS = {
     ],
 
     "Palau": [
-        { destination: "Palau", keywords: ["palau", "koror", "malakal"] }
+        { destination: "Palau", keywords: ["palau", "koror", "malakal", "spawning"] }
     ],
 
     "Thailand": [
