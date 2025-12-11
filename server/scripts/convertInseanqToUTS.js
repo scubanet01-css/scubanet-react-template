@@ -110,7 +110,7 @@ const DEST_KEYWORDS = {
     ],
 
     "Solomon Islands": [
-        { destination: "Solomon Islands", keywords: ["solomon", "honiara", "guadalcanal", "munda"] }
+        { destination: "Solomon Islands", keywords: ["solomon", "honiara", "guadalcanal", "munda", "russell", "tec. special", "wwii wreck"] }
     ],
 
     "Oman": [
