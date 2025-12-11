@@ -69,14 +69,14 @@ const DEST_KEYWORDS = {
 
     "Maldives": [
         { destination: "Central Atolls", keywords: ["male", "central atolls", "4 atolls", "best of maldives", "equatorial maldives", "heart of the maldives", "best of the maldives", "special central", "top 12"] },
-        { destination: "Deep South", keywords: ["deep south", "addu", "fuvahmulah", "Kooddoo", "Gan", "sothern atolls", "extreme south atolls", "south maldives", "special south", "deeper south"] },
+        { destination: "Deep South", keywords: ["deep south", "addu", "fuvahmulah", "kooddoo", "gan", "southern atolls", "extreme south atolls", "south maldives", "special south", "deeper south"] },
         { destination: "Hanifaru & North", keywords: ["hanifaru", "baa", "far north", "great north", "northern atolls", "manta madness"] },
-        { destination: "Ohters", keywords: ["beyond the blue", "yoga", "family", "fishing", "kite", "surf", "safari", "suvadiva", "swim mania", "learn to dive"] }
+        { destination: "Others", keywords: ["beyond the blue", "yoga", "family", "fishing", "kite", "surf", "safari", "suvadiva", "swim mania", "learn to dive"] }
     ],
 
     "Egypt": [
         { destination: "Hurghada", keywords: ["hurghada", "thistlegorm", "tiran", "ras muhammad", "red sea wrecks", "north"] },
-        { destination: "BDE Reefs", keywords: ["ghalib", "marsa alam", "daedalus", "brothers", "elphinstone", "st. johns", "BDE", "best of the red sea"] },
+        { destination: "BDE Reefs", keywords: ["ghalib", "marsa alam", "daedalus", "brothers", "elphinstone", "st. johns", "bde", "best of the red sea"] },
         { destination: "Deep South", keywords: ["hamata", "elba", "zabargad", "abu fandira", "southern route"] },
         { destination: "Others", keywords: ["custom", "yoga", "demand", "relax", "sharks", "dolphin", "ultimate"] }
     ],
@@ -84,73 +84,28 @@ const DEST_KEYWORDS = {
     "Palau": [
         { destination: "Palau", keywords: ["palau", "koror", "malakal"] }
     ],
-
-    "Thailand": [
-        { destination: "Similan", keywords: ["similan", "north andaman", "best of thailand", "thap lamu", "khao lak", "koh bon", "koh tachai", "richelieu rock", "surin"] },
-        { destination: "Burma bank & Mergui", keywords: ["burma banks", "mergui archipelago", "black rock"] },
-        { destination: "South Andaman", keywords: ["southern thailand", "chalong"] }
-    ],
-
-    "Ecuador": [
-        { destination: "Galapagos", keywords: ["galapagos", "baltra", "san cristobal"] }
-    ],
-
-    "Mexico": [
-        { destination: "Socorro", keywords: ["socorro", "revillagigedo"] },
-        { destination: "Sea of Cortez", keywords: ["cortez", "la paz"] },
-        { destination: "Magdalena Bay", keywords: ["mag bay", "magdalena"] }
-    ],
-
-    "Philippines": [
-        { destination: "Tubbataha", keywords: ["tubbataha", "puerto princesa"] },
-        { destination: "Visayas", keywords: ["visayas", "bohol", "cebu"] },
-        { destination: "Apo & Coron", keywords: ["apo reef", "coron"] }
-    ],
-
-    "Solomon Islands": [
-        { destination: "Solomon Islands", keywords: ["solomon", "honiara", "munda"] }
-    ],
-
-    "Oman": [
-        { destination: "Oman", keywords: ["oman", "dibba"] }
-    ],
-
-    "Micronesia": [
-        { destination: "Truk Lagoon", keywords: ["truk", "chuuk", "weno"] }
-    ],
-
-    "Papua New Guinea": [
-        { destination: "Papua New Guinea", keywords: ["kimbe", "rabaul", "kavieng", "alotau", "wewak", "madang", "walindi"] }
-    ],
-
-    "Costa Rica": [
-        { destination: "Cocos Island", keywords: ["cocos"] }
-    ],
-
-    "Bahamas": [
-        { destination: "Bahamas", keywords: ["bimini", "nassau", "freeport"] }
-    ]
 };
 
 // --------------------------------------------------
 // 4. 함수 정의
 // --------------------------------------------------
+
 function normalizeId(id) {
-    if (!id) return "";
-    return String(id).replace(/boat_/i, "").trim();
+    return String(id || "").replace(/boat_/i, "").trim();
 }
 
 function toNumber(val) {
-    if (val === null || val === undefined) return null;
-    const n = Number(String(val).replace(/[^0-9.]/g, ""));
-    return Number.isNaN(n) ? null : n;
+    if (val == null) return null;
+    const num = Number(String(val).replace(/[^0-9.]/g, ""));
+    return Number.isNaN(num) ? null : num;
 }
 
 function loadJsonArray(filePath, label) {
     const raw = fs.readFileSync(filePath, "utf8");
-    let json = JSON.parse(raw);
+    const json = JSON.parse(raw);
+
     if (Array.isArray(json)) return json;
-    if (Array.isArray(json.data)) {
+    if (json && Array.isArray(json.data)) {
         console.log(`ℹ️ ${label}: data 배열 사용`);
         return json.data;
     }
@@ -172,32 +127,25 @@ function detectCountryImproved(productName, portName) {
 // Destination 자동 분류
 // ---------------------------
 function extractDestinationByCountry(country, productName) {
-    const text = (productName || "").toLowerCase();
-
     const rules = DEST_KEYWORDS[country];
+    const text = (productName || "").toLowerCase();
     const matched = [];
 
-    // 1) 키워드 기반 다중 매칭
     if (rules) {
         for (const entry of rules) {
             for (const kw of entry.keywords) {
                 if (text.includes(kw.toLowerCase())) {
                     matched.push(entry.destination);
-                    break; // 동일 destination 중복 방지
+                    break;
                 }
             }
         }
     }
 
-    // 2) 매칭된 destination이 여러 개일 경우 배열로 반환
-    if (matched.length > 0) {
-        return matched.length === 1 ? matched[0] : matched;
-    }
-
-    // 3) 아무 키워드 매칭이 없으면 기본 로직 적용
+    if (matched.length === 1) return matched[0];
+    if (matched.length > 1) return matched;
     return extractDestinationBasic(productName);
 }
-
 
 function extractDestinationBasic(productName) {
     return (productName || "")
@@ -213,23 +161,28 @@ function getBoatInfo(avail, boats, boatDetails) {
     const id = normalizeId(avail.boat?.id);
     if (!id) return null;
 
-    return boatDetails.find((b) => normalizeId(b.id) === id)
-        || boats.find((b) => normalizeId(b.id) === id)
-        || null;
+    return (
+        boatDetails.find((b) => normalizeId(b.id) === id) ||
+        boats.find((b) => normalizeId(b.id) === id) ||
+        null
+    );
 }
 
 function normalizeRatePlanEntry(ratePlan, cabinTypeId, occ, kind) {
     const price = toNumber(occ.price);
     const parentPrice = toNumber(occ.parentPrice);
-
     let discountPercent = 0;
-    if (price !== null && parentPrice > 0) {
+
+    if (price != null && parentPrice > 0) {
         discountPercent = Math.round((1 - price / parentPrice) * 1000) / 10;
     }
 
-    const n = (ratePlan.name || "").toLowerCase();
+    const name = (ratePlan.name || "").toLowerCase();
     const isGroup =
-        n.includes("group") || n.includes("charter") || n.includes("pax") || n.includes("exclusive");
+        name.includes("group") ||
+        name.includes("charter") ||
+        name.includes("pax") ||
+        name.includes("exclusive");
 
     return {
         ratePlanId: ratePlan.id,
@@ -248,7 +201,6 @@ function buildCabins(avail) {
     const types = avail.spaces?.cabinTypes || [];
     const retail = avail.ratePlansRetail || [];
     const charter = avail.ratePlansCharter || [];
-
     const cabins = [];
 
     function collectForType(typeId) {
@@ -310,7 +262,16 @@ try {
 
     console.log("🔄 변환 시작");
 
-    const trips = availability.map((a) => {
+    // --------------------------
+    // ★ NEW: Trip 중복 제거 Set
+    // --------------------------
+    const seenIds = new Set();
+    const trips = [];
+
+    for (const a of availability) {
+        if (seenIds.has(a.id)) continue;
+        seenIds.add(a.id);
+
         const boat = getBoatInfo(a, boats, boatDetails) || a.boat || null;
 
         const productName = a.product?.name || "";
@@ -320,7 +281,7 @@ try {
         const country = detectCountryImproved(productName, portName);
         const destination = extractDestinationByCountry(country, productName);
 
-        return {
+        trips.push({
             id: `INQ_${a.id}`,
             source: "inseanq",
             tripType: "liveaboard",
@@ -350,8 +311,10 @@ try {
             },
 
             cabins: buildCabins(a),
-        };
-    });
+        });
+    }
+
+    console.log(`🧹 중복 제거 완료 → 최종 Trip 수: ${trips.length}`);
 
     console.log("💾 저장 시작");
 

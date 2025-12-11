@@ -30,6 +30,7 @@ function TripList() {
     console.log("📌 trips.length =", trips.length);
     console.log("📌 countryList =", countryList);
     console.log("📌 destinationList =", destinationList);
+    console.log("🔥 TripList 함수 실행됨 at", Date.now());
 
 
     // TripList 전용 필터
