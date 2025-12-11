@@ -3,11 +3,32 @@
  * Inseanq JSON → UTS JSON 변환
  */
 
+const fs = require("fs");
+const path = require("path");
+
+console.log("🚀 UTS 변환 스크립트 시작됨");
+
 // --------------------------------------------------
-// 키워드 JSON 외부 파일 불러오기
+// 1. 기본 경로 설정
 // --------------------------------------------------
+const DATA_DIR = "/var/www/scubanet/data";
+
+// 키워드 JSON 경로
 const PATH_KEYWORDS = path.join(DATA_DIR, "inseanq-keywords.json");
 
+// UTS 변환에 필요한 원본 JSON 경로
+const PATH_AVAIL = path.join(DATA_DIR, "availability-detailed.json");
+const PATH_BOATS = path.join(DATA_DIR, "boats.json");
+const PATH_BOATS_DETAILS = path.join(DATA_DIR, "boats-details.json");
+const PATH_DEST_MAP = path.join(DATA_DIR, "destination-map.json"); // 지금은 안 써도 유지
+
+// 출력 경로
+const DEV_OUT = "/root/scubanet-react-template/client/public/data/uts-trips.json";
+const PROD_OUT = path.join(DATA_DIR, "uts-trips.json");
+
+// --------------------------------------------------
+// 2. 키워드 JSON(inseanq-keywords.json) 로드
+// --------------------------------------------------
 if (!fs.existsSync(PATH_KEYWORDS)) {
     console.error("❌ inseanq-keywords.json 파일을 찾을 수 없습니다:", PATH_KEYWORDS);
     process.exit(1);
@@ -17,27 +38,8 @@ const KEYWORDS = JSON.parse(fs.readFileSync(PATH_KEYWORDS, "utf8"));
 const COUNTRY_KEYWORDS = KEYWORDS.country;
 const DEST_KEYWORDS = KEYWORDS.destination;
 
-
-const fs = require("fs");
-const path = require("path");
-
-console.log("🚀 UTS 변환 스크립트 시작됨");
-
 // --------------------------------------------------
-// 1. 경로 설정
-// --------------------------------------------------
-const DATA_DIR = "/var/www/scubanet/data";
-
-const PATH_AVAIL = path.join(DATA_DIR, "availability-detailed.json");
-const PATH_BOATS = path.join(DATA_DIR, "boats.json");
-const PATH_BOATS_DETAILS = path.join(DATA_DIR, "boats-details.json");
-const PATH_DEST_MAP = path.join(DATA_DIR, "destination-map.json");
-
-const DEV_OUT = "/root/scubanet-react-template/client/public/data/uts-trips.json";
-const PROD_OUT = path.join(DATA_DIR, "uts-trips.json");
-
-// --------------------------------------------------
-// 2. 파일 체크
+// 3. 파일 존재 여부 체크
 // --------------------------------------------------
 [PATH_AVAIL, PATH_BOATS, PATH_BOATS_DETAILS, PATH_DEST_MAP].forEach((p) => {
     if (!fs.existsSync(p)) console.error("❌ 파일 없음:", p);
@@ -45,9 +47,8 @@ const PROD_OUT = path.join(DATA_DIR, "uts-trips.json");
 });
 
 // --------------------------------------------------
-// 3. 함수 정의
+// 4. 공통 유틸 함수
 // --------------------------------------------------
-
 function normalizeId(id) {
     return String(id || "").replace(/boat_/i, "").trim();
 }
@@ -94,14 +95,19 @@ function extractDestinationByCountry(country, productName) {
             for (const kw of entry.keywords) {
                 if (text.includes(kw.toLowerCase())) {
                     matched.push(entry.destination);
-                    break;
+                    break; // 동일 destination 중복 방지
                 }
             }
         }
     }
 
+    // 1개만 매칭: 그대로 문자열 반환
     if (matched.length === 1) return matched[0];
-    if (matched.length > 1) return matched;
+
+    // 여러 개 매칭: 우선은 첫 번째만 사용 (나중에 멀티 디스플레이가 필요하면 배열로 유지)
+    if (matched.length > 1) return matched[0];
+
+    // 아무것도 안 맞으면 기본 파서
     return extractDestinationBasic(productName);
 }
 
@@ -220,9 +226,7 @@ try {
 
     console.log("🔄 변환 시작");
 
-    // --------------------------
-    // ★ NEW: Trip 중복 제거 Set
-    // --------------------------
+    // 중복 Trip 제거용 Set
     const seenIds = new Set();
     const trips = [];
 
@@ -237,14 +241,12 @@ try {
         const portName = a.departurePort?.name || "";
 
         const country = detectCountryImproved(productName, portName);
-
         let destination = extractDestinationByCountry(country, productName);
 
-        // 🔥 여러 개 매칭되면 대표 목적지 1개만 사용한다
+        // 혹시라도 배열이 들어오면 대표값 하나만 사용 (지금 구조는 문자열로만 쓰기)
         if (Array.isArray(destination)) {
-            destination = destination[0];     // 문자열로 변환
+            destination = destination[0];
         }
-
 
         trips.push({
             id: `INQ_${a.id}`,
@@ -282,7 +284,6 @@ try {
     console.log(`🧹 중복 제거 완료 → 최종 Trip 수: ${trips.length}`);
 
     console.log("💾 저장 시작");
-
     fs.writeFileSync(PROD_OUT, JSON.stringify(trips, null, 2), "utf8");
     fs.writeFileSync(DEV_OUT, JSON.stringify(trips, null, 2), "utf8");
 
