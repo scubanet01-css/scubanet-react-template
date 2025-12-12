@@ -59,7 +59,8 @@ function getFOCLabel(trip) {
             // 5+1 패턴 탐지
             const match = name.match(/(\d+\s*\+\s*\d+)/);
             if (match) {
-                return match[1].replace(/\s+/g, ""); // 공백 제거한 5+1
+                const numbers = match[1].replace(/\s+/g, "");
+                return `${numbers} FOC`;
             }
 
             // "foc" 단독 사용인 경우
