@@ -27,40 +27,39 @@ function InstructorList() {
   const itemsPerPage = 20;
   const [startDate, endDate] = dateRange;
 
-  // ------------------------------------------------------
-  // ⭐ 1. UTS Trips(JSON) 로드
-  // ------------------------------------------------------
+  // -----------------------------
+  // 1) UTS JSON 로드 (TripList와 동일 구조)
+  // -----------------------------
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await axios.get("/data/uts-trips.json");
-        const raw = Array.isArray(res.data) ? res.data : [];
+        const raw = Array.isArray(res.data) ? res.data : res.data.data || [];
 
-        // 좌석이 1개라도 있는 Trip만 표시
-        const available = raw.filter(
+        // 좌석 있는 상품만 (TripList 기준과 동일)
+        const withSeats = raw.filter(
           (t) => Number(t?.spaces?.available || 0) > 0
         );
 
-        setTrips(available);
+        setTrips(withSeats);
 
-        // ------------------------------------------------------
-        // Country 목록 구성
-        // ------------------------------------------------------
-        const sortedCountries = Array.from(
-          new Set(available.map((t) => t.country).filter(Boolean))
-        ).sort((a, b) => a.localeCompare(b));
-
+        // Country 목록
+        const countrySet = new Set(
+          withSeats.map((t) => t.country).filter(Boolean)
+        );
+        const sortedCountries = Array.from(countrySet).sort((a, b) =>
+          a.localeCompare(b)
+        );
         setCountryList(["전체", ...sortedCountries]);
 
-        // ------------------------------------------------------
-        // Boat 목록 구성
-        // ------------------------------------------------------
-        const boatSet = Array.from(
-          new Set(available.map((t) => t.boatName).filter(Boolean))
-        ).sort();
-
-        setBoats(["전체", ...boatSet]);
-
+        // Boat 목록
+        const boatSet = new Set(
+          withSeats.map((t) => t.boatName).filter(Boolean)
+        );
+        const sortedBoats = Array.from(boatSet).sort((a, b) =>
+          a.localeCompare(b)
+        );
+        setBoats(["전체", ...sortedBoats]);
       } catch (err) {
         console.error("❌ InstructorList 데이터 오류:", err);
       } finally {
@@ -71,106 +70,97 @@ function InstructorList() {
     fetchData();
   }, []);
 
-  // ------------------------------------------------------
-  // ⭐ 2. Country 선택 시 Destination 목록 자동 구성
-  // ------------------------------------------------------
+  // -----------------------------
+  // 2) Country 선택에 따른 Destination 리스트 갱신
+  // -----------------------------
   useEffect(() => {
     if (!trips.length) {
       setDestinationList(["전체"]);
       return;
     }
 
-    let dests = [];
+    let destSet;
 
     if (selectedCountry === "전체") {
-      dests = Array.from(
-        new Set(trips.map((t) => t.destination).filter(Boolean))
-      ).sort((a, b) => a.localeCompare(b));
-
-      setDestinationList(["전체", ...dests]);
-      return;
+      destSet = new Set(trips.map((t) => t.destination).filter(Boolean));
+    } else {
+      destSet = new Set(
+        trips
+          .filter((t) => t.country === selectedCountry)
+          .map((t) => t.destination)
+          .filter(Boolean)
+      );
     }
 
-    // 특정 국가 선택 시 해당 국가의 Destination만 추출
-    const subset = trips.filter((t) => t.country === selectedCountry);
-
-    dests = Array.from(
-      new Set(subset.map((t) => t.destination).filter(Boolean))
-    ).sort((a, b) => a.localeCompare(b));
-
-    setDestinationList(["전체", ...dests]);
+    const sorted = Array.from(destSet).sort((a, b) => a.localeCompare(b));
+    setDestinationList(["전체", ...sorted]);
   }, [selectedCountry, trips]);
 
-  // ------------------------------------------------------
-  // ⭐ 3. 스페셜 필터 관련 로직 (UTS JSON 기준)
-  // ------------------------------------------------------
-  function hasSpecialGroup(trip) {
-    // groups / charter / FOC 등
-    return trip.cabins?.some((cb) =>
-      cb.ratePlans?.some((rp) => {
-        const name = (rp.ratePlanName || "").toLowerCase();
-        return (
-          name.includes("group") ||
-          name.includes("charter") ||
-          name.includes("foc") ||
-          rp.isInstructorOnly === true
-        );
-      })
-    );
-  }
-
-  function hasDiscount(trip) {
-    // discount/off/promo/special 등을 포함하는 요금제 탐색
-    return trip.cabins?.some((cb) =>
-      cb.ratePlans?.some((rp) => {
-        const name = (rp.ratePlanName || "").toLowerCase();
-        return (
-          name.includes("discount") ||
-          name.includes("off") ||
-          name.includes("promo") ||
-          name.includes("special") ||
-          name.includes("early")
-        );
-      })
-    );
-  }
-
-  function isFullCharter(trip) {
-    const s = trip.spaces || {};
-    const total = Number(s.available + s.booked + s.holding);
-    if (!total) return false;
-    return s.available === total;
-  }
-
-  // ------------------------------------------------------
-  // ⭐ 4. 필터링 (UTS 구조 기준으로 재작성)
-  // ------------------------------------------------------
+  // -----------------------------
+  // 3) Instructor 전용 필터 로직
+  //    - specialType = group / discount / charter
+  // -----------------------------
   const filteredTrips = useMemo(() => {
     let list = [...trips];
 
+    // Country 필터
     if (selectedCountry !== "전체") {
       list = list.filter((t) => t.country === selectedCountry);
     }
 
+    // Destination 필터
     if (selectedDestination !== "전체") {
       list = list.filter((t) => t.destination === selectedDestination);
     }
 
+    // Boat 필터
     if (selectedBoat !== "전체") {
       list = list.filter((t) => t.boatName === selectedBoat);
     }
 
-    // ⭐ Instructor 전용 스페셜 필터
+    // Instructor 전용 special 필터
     if (specialType !== "전체") {
-      if (specialType === "group") {
-        list = list.filter((t) => hasSpecialGroup(t));
-      }
-      if (specialType === "discount") {
-        list = list.filter((t) => hasDiscount(t));
-      }
-      if (specialType === "charter") {
-        list = list.filter((t) => isFullCharter(t));
-      }
+      list = list.filter((trip) => {
+        const cabins = trip.cabins || [];
+        const allRates = cabins.flatMap((c) => c.ratePlans || []);
+        const names = allRates.map((rp) =>
+          (rp.ratePlanName || rp.name || "").toLowerCase()
+        );
+
+        // ① 그룹 / FOC / 차터 성격 (강사용 오퍼)
+        if (specialType === "group") {
+          return (
+            allRates.some((rp) => rp.isInstructorOnly) ||
+            names.some(
+              (n) =>
+                n.includes("group") ||
+                n.includes("charter") ||
+                n.includes("foc")
+            )
+          );
+        }
+
+        // ② 퍼블릭 할인상품 (할인율 있는 경우)
+        if (specialType === "discount") {
+          return allRates.some(
+            (rp) => Number(rp.discountPercent || 0) > 0
+          );
+        }
+
+        // ③ 풀차터 가능상품 (좌석이 전부 비어있을 때)
+        if (specialType === "charter") {
+          const s = trip.spaces || {};
+          const available = Number(s.available || 0);
+          const total =
+            Number(s.available || 0) +
+            Number(s.booked || 0) +
+            Number(s.holding || 0);
+
+          return total > 0 && available === total;
+        }
+
+        return true;
+      });
     }
 
     // 날짜 필터
@@ -195,12 +185,15 @@ function InstructorList() {
     endDate,
   ]);
 
-  // ------------------------------------------------------
-  // ⭐ 5. 페이지네이션
-  // ------------------------------------------------------
+  // -----------------------------
+  // 4) 페이지네이션
+  // -----------------------------
   const totalPages = Math.ceil(filteredTrips.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentTrips = filteredTrips.slice(startIndex, startIndex + itemsPerPage);
+  const currentTrips = filteredTrips.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   if (loading) return <p>데이터 불러오는 중...</p>;
 
