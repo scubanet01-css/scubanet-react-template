@@ -46,19 +46,29 @@ function getNights(start, end) {
     }
 }
 
-// ✔ 강사용 FOC 여부 검사
-function hasFOC(trip) {
-    if (!trip.cabins) return false;
+// ⭐ NEW: FOC 조건 추출 (예: "5+1", "8+1", "10+2")
+function getFOCLabel(trip) {
+    if (!trip.cabins) return null;
 
     for (const cabin of trip.cabins) {
-        if (!cabin.ratePlans) continue;
+        if (!Array.isArray(cabin.ratePlans)) continue;
 
         for (const rp of cabin.ratePlans) {
             const name = (rp.ratePlanName || rp.name || "").toLowerCase();
-            if (name.includes("foc")) return true;
+
+            // 5+1 패턴 탐지
+            const match = name.match(/(\d+\s*\+\s*\d+)/);
+            if (match) {
+                return match[1].replace(/\s+/g, ""); // 공백 제거한 5+1
+            }
+
+            // "foc" 단독 사용인 경우
+            if (name.includes("foc")) {
+                return "FOC";
+            }
         }
     }
-    return false;
+    return null;
 }
 
 export default function TripCard({ trip, mode = "public" }) {
@@ -76,7 +86,8 @@ export default function TripCard({ trip, mode = "public" }) {
         displayPrice &&
         Number(displayPrice) < Number(strikePrice);
 
-    const showFOCBadge = mode === "instructor" && hasFOC(trip);
+    // ⭐ 인스트럭터 모드일 때만 FOC 표시
+    const focLabel = mode === "instructor" ? getFOCLabel(trip) : null;
 
     return (
         <div className="trip-card">
@@ -100,10 +111,9 @@ export default function TripCard({ trip, mode = "public" }) {
                     <span className="offer-badge">{discountPercent}% OFF</span>
                 )}
 
-                {showFOCBadge && (
-                    <span className="offer-foc-badge">FOC</span>
+                {focLabel && (
+                    <span className="offer-foc-badge">{focLabel}</span>
                 )}
-
             </div>
 
             {/* ✔ 금액 */}
