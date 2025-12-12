@@ -36,14 +36,13 @@ function InstructorList() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("/data/availability-detailed.json");
+        const res = await axios.get("/data/uts-trips.json");
+
         const raw = Array.isArray(res.data) ? res.data : res.data.data || [];
 
-        const available = raw.filter(t => Number(t?.spaces?.availableSpaces || 0) > 0);
+        const available = raw.filter(t => Number(t?.spaces?.available || 0) > 0);
 
-        const normalized = available.map(normalizeTrip);
-
-        setTrips(normalized);
+        setTrips(available);
 
         // ⭐ Country 목록 구성 (Home과 동일)
         const sorted = ALL_COUNTRIES
