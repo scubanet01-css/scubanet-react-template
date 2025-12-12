@@ -46,7 +46,22 @@ function getNights(start, end) {
     }
 }
 
-export default function TripCard({ trip }) {
+// ✔ 강사용 FOC 여부 검사
+function hasFOC(trip) {
+    if (!trip.cabins) return false;
+
+    for (const cabin of trip.cabins) {
+        if (!cabin.ratePlans) continue;
+
+        for (const rp of cabin.ratePlans) {
+            const name = (rp.ratePlanName || rp.name || "").toLowerCase();
+            if (name.includes("foc")) return true;
+        }
+    }
+    return false;
+}
+
+export default function TripCard({ trip, mode = "public" }) {
     const navigate = useNavigate();
     const seats = getSeatCounts(trip);
 
@@ -61,6 +76,8 @@ export default function TripCard({ trip }) {
         displayPrice &&
         Number(displayPrice) < Number(strikePrice);
 
+    const showFOCBadge = mode === "instructor" && hasFOC(trip);
+
     return (
         <div className="trip-card">
 
@@ -72,15 +89,21 @@ export default function TripCard({ trip }) {
                 <br />
                 <small>
                     {trip.startDate} ~ {trip.endDate} (
-                    {getNights(trip.startDate, trip.endDate)})
+                    {getNights(trip.startDate, trip.endDate)} )
                 </small>
             </div>
 
-            {/* ✔ 할인 배지 */}
-            <div className="trip-badge">
+            {/* ✔ 할인 + FOC 배지 */}
+            <div className="trip-badge instructor-offer-wrapper">
+
                 {hasDiscount && (
                     <span className="offer-badge">{discountPercent}% OFF</span>
                 )}
+
+                {showFOCBadge && (
+                    <span className="offer-foc-badge">FOC</span>
+                )}
+
             </div>
 
             {/* ✔ 금액 */}
