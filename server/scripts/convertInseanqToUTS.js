@@ -220,7 +220,11 @@ function buildCabins(avail) {
             !c.type.toLowerCase().includes("deck") &&
             !c.name.toLowerCase().includes("deck")
     );
-    return cabins;
+    return cabins.filter(
+        (c) =>
+            !c.type.toLowerCase().includes("deck") &&
+            !c.name.toLowerCase().includes("deck")
+    );
 }
 
 // --------------------------------------------------
