@@ -215,11 +215,6 @@ function buildCabins(avail) {
     // ----------------------------------------------------
     // 🚫 여기 추가: Deck Space 제거 (기존 기능 100% 보존)
     // ----------------------------------------------------
-    cabins = cabins.filter(
-        (c) =>
-            !c.type.toLowerCase().includes("deck") &&
-            !c.name.toLowerCase().includes("deck")
-    );
     return cabins.filter(
         (c) =>
             !c.type.toLowerCase().includes("deck") &&
