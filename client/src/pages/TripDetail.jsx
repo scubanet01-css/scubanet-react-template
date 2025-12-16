@@ -51,15 +51,20 @@ function TripDetail() {
 
         const trips = Array.isArray(tripRes) ? tripRes : tripRes.data || [];
 
-        const foundTrip = trips.find(
-          (t) => String(t.id) === String(tripId)
+        const foundTrip = trips.find((t) =>
+          String(t.id) === String(tripId) ||
+          String(t.tripId) === String(tripId) ||
+          String(t.providerTripId) === String(tripId)
         );
 
 
-        if (!foundTrip) {
-          console.warn("❌ Trip not found for id:", tripId);
 
+        if (!foundTrip) {
+          console.warn("❌ Trip not found for id:", tripId, {
+            sample: trips[0],
+          });
         }
+
 
         const boatDetails = boatDetailsRes.data || boatDetailsRes;
         const boatBasics = boatBasicRes.data || boatBasicRes;
