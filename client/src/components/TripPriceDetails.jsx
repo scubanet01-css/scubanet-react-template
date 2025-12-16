@@ -2,16 +2,34 @@
 import React from "react";
 import "./TripPriceDetails.css";
 
+/**
+ * ✅ item 안전 출력 헬퍼
+ */
+function renderItem(item) {
+    if (typeof item === "string") return item;
+
+    if (typeof item === "object" && item !== null) {
+        return (
+            item.name ||
+            item.title ||
+            item.description ||
+            JSON.stringify(item)
+        );
+    }
+
+    return "";
+}
+
 function TripPriceDetails({ trip }) {
     /**
      * UTS 기준:
-     * - 현재 trip 안에 포함/불포함/추가요금이 구조화되어 있지 않을 수 있음
-     * - 향후 확장 대비해 방어적으로 처리
+     * - trip 내부에 포함/추가요금이 없을 수도 있음
+     * - object / string 혼재 가능
      */
 
-    const included = trip?.included || [];
-    const mandatory = trip?.mandatoryFees || [];
-    const extra = trip?.extraFees || [];
+    const included = Array.isArray(trip?.included) ? trip.included : [];
+    const mandatory = Array.isArray(trip?.mandatoryFees) ? trip.mandatoryFees : [];
+    const extra = Array.isArray(trip?.extraFees) ? trip.extraFees : [];
 
     const hasAny =
         included.length > 0 ||
@@ -37,7 +55,7 @@ function TripPriceDetails({ trip }) {
                     <ul>
                         {included.length ? (
                             included.map((item, i) => (
-                                <li key={i}>✔ {item}</li>
+                                <li key={i}>✔ {renderItem(item)}</li>
                             ))
                         ) : (
                             <li>포함 항목 정보 없음</li>
@@ -51,7 +69,7 @@ function TripPriceDetails({ trip }) {
                     <ul>
                         {mandatory.length ? (
                             mandatory.map((item, i) => (
-                                <li key={i}>💲 {item}</li>
+                                <li key={i}>💲 {renderItem(item)}</li>
                             ))
                         ) : (
                             <li>필수 추가요금 없음</li>
@@ -65,7 +83,7 @@ function TripPriceDetails({ trip }) {
                     <ul>
                         {extra.length ? (
                             extra.map((item, i) => (
-                                <li key={i}>➕ {item}</li>
+                                <li key={i}>➕ {renderItem(item)}</li>
                             ))
                         ) : (
                             <li>추가비용 없음</li>
