@@ -1,36 +1,41 @@
 import React from "react";
 import "./TripSummaryHeader.css";
 
-// ✅ 안전 출력 헬퍼
-function renderText(value) {
-    if (typeof value === "string") return value;
-
-    if (typeof value === "object" && value !== null) {
-        return (
-            value.text ||
-            value.name ||
-            value.description ||
-            JSON.stringify(value)
-        );
+function calcNights(start, end) {
+    try {
+        const s = new Date(start);
+        const e = new Date(end);
+        const diff = Math.round((e - s) / (1000 * 60 * 60 * 24));
+        return Number.isFinite(diff) && diff > 0 ? diff : null;
+    } catch {
+        return null;
     }
-
-    return "";
 }
 
-function TripSummaryHeader({ trip, boatDetail, navigate, scrollTo, goBooking }) {
-    const boatName = trip?.boat?.name || "보트명 미등록";
-    const tripName = trip?.product?.name || "Trip 정보 없음";
+function TripSummaryHeader({ trip, scrollTo, goBooking }) {
+    // ✅ UTS 기준
+    const boatName = trip?.boatName || "보트명 미등록";
+    const tripName = trip?.title || "Trip 정보 없음";
+
     const start = trip?.startDate || "-";
     const end = trip?.endDate || "-";
+    const nights = trip?.nights ?? calcNights(start, end) ?? "-";
+
     const depPort = trip?.departurePort?.name || "출발지 미등록";
     const arrPort = trip?.arrivalPort?.name || "도착지 미등록";
-    const nights = trip?.nights ?? 7;
-    const maxGuests = boatDetail?.capacity || boatDetail?.maxOccupancy || 0;
 
+    // ✅ (UTS에 명확한 필드가 없으면 기본 문구)
     const minDiveOrReq =
         trip?.requirements ||
-        boatDetail?.additionalInfo ||
+        trip?.minRequirements ||
         "최소 다이브 로그/자격 요건 정보 없음";
+
+    // ✅ UTS에 최대 인원 필드가 없을 수 있으니 방어
+    const maxGuests =
+        trip?.maxGuests ??
+        trip?.capacity ??
+        trip?.spaces?.total ??
+        0;
 
     return (
         <div className="trip-summary-header">
@@ -47,13 +52,13 @@ function TripSummaryHeader({ trip, boatDetail, navigate, scrollTo, goBooking }) 
                 </p>
 
                 <div className="trip-meta">
-                    <span>🧭 {renderText(minDiveOrReq)}</span>
-                    {maxGuests > 0 && <span>👥 최대 {maxGuests}명</span>}
+                    <span>🧭 {minDiveOrReq}</span>
+                    {Number(maxGuests) > 0 && <span>👥 최대 {maxGuests}명</span>}
                 </div>
             </div>
 
             <div className="trip-summary-actions">
-                <button className="btn-outline" onClick={() => scrollTo("price")}>
+                <button className="btn-outline" onClick={() => scrollTo?.("price")}>
                     상세정보
                 </button>
                 <button className="btn-primary" onClick={goBooking}>

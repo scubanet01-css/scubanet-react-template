@@ -2,39 +2,37 @@
 import React from "react";
 import "./TripPriceDetails.css";
 
-/**
- * ✅ item 안전 출력 헬퍼
- */
-function renderItem(item) {
-    if (typeof item === "string") return item;
-
-    if (typeof item === "object" && item !== null) {
-        return (
-            item.name ||
-            item.title ||
-            item.description ||
-            JSON.stringify(item)
-        );
+function toStringList(val) {
+    // 배열/문자열/객체 혼합 입력이 와도 "문자열 배열"로 정규화
+    if (!val) return [];
+    if (Array.isArray(val)) {
+        return val
+            .map((x) => {
+                if (typeof x === "string") return x;
+                if (typeof x === "number") return String(x);
+                if (x && typeof x === "object") return x.name || x.title || JSON.stringify(x);
+                return "";
+            })
+            .filter(Boolean);
     }
-
-    return "";
+    if (typeof val === "string") return [val];
+    if (typeof val === "number") return [String(val)];
+    if (typeof val === "object") return [val.name || val.title || JSON.stringify(val)];
+    return [];
 }
 
 function TripPriceDetails({ trip }) {
     /**
-     * UTS 기준:
-     * - trip 내부에 포함/추가요금이 없을 수도 있음
-     * - object / string 혼재 가능
+     * ✅ UTS 기준(현재):
+     * - 포함/불포함/추가요금이 trip에 구조화되어 없을 수 있음
+     * - 그래서 “있으면 보여주고, 없으면 안내”만 확실히 동작하게 방어
      */
 
-    const included = Array.isArray(trip?.included) ? trip.included : [];
-    const mandatory = Array.isArray(trip?.mandatoryFees) ? trip.mandatoryFees : [];
-    const extra = Array.isArray(trip?.extraFees) ? trip.extraFees : [];
+    const included = toStringList(trip?.included);
+    const mandatory = toStringList(trip?.mandatoryFees || trip?.mandatoryExtraCosts || trip?.mandatory);
+    const extra = toStringList(trip?.extraFees || trip?.extras || trip?.extra);
 
-    const hasAny =
-        included.length > 0 ||
-        mandatory.length > 0 ||
-        extra.length > 0;
+    const hasAny = included.length > 0 || mandatory.length > 0 || extra.length > 0;
 
     if (!hasAny) {
         return (
@@ -54,9 +52,7 @@ function TripPriceDetails({ trip }) {
                     <h3>Included</h3>
                     <ul>
                         {included.length ? (
-                            included.map((item, i) => (
-                                <li key={i}>✔ {renderItem(item)}</li>
-                            ))
+                            included.map((item, i) => <li key={i}>✔ {item}</li>)
                         ) : (
                             <li>포함 항목 정보 없음</li>
                         )}
@@ -68,9 +64,7 @@ function TripPriceDetails({ trip }) {
                     <h3>Obligatory surcharges</h3>
                     <ul>
                         {mandatory.length ? (
-                            mandatory.map((item, i) => (
-                                <li key={i}>💲 {renderItem(item)}</li>
-                            ))
+                            mandatory.map((item, i) => <li key={i}>💲 {item}</li>)
                         ) : (
                             <li>필수 추가요금 없음</li>
                         )}
@@ -82,9 +76,7 @@ function TripPriceDetails({ trip }) {
                     <h3>Extra cost</h3>
                     <ul>
                         {extra.length ? (
-                            extra.map((item, i) => (
-                                <li key={i}>➕ {renderItem(item)}</li>
-                            ))
+                            extra.map((item, i) => <li key={i}>➕ {item}</li>)
                         ) : (
                             <li>추가비용 없음</li>
                         )}

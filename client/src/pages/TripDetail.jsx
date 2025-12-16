@@ -1,21 +1,23 @@
-// ✅ TripDetail.jsx (UTS 적용 안정 버전)
+// ✅ TripDetail.jsx (UTS 단독 기준 안정 버전)
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+
 import TripImageGallery from "../components/TripImageGallery";
 import TripSummaryHeader from "../components/TripSummaryHeader";
 import TripPriceDetails from "../components/TripPriceDetails";
+
 import "./TripDetail.css";
 import { formatCurrency } from "../utils/formatCurrency";
 import { getCurrencyForTrip } from "../utils/currencyUtils";
 
 function TripDetail() {
-  const { id: tripId } = useParams(); // ✅ 문자열 ID 그대로 사용
+  const { id: tripId } = useParams(); // ✅ UTS id는 "INQ_23260" 같은 문자열
   const navigate = useNavigate();
 
   const [trip, setTrip] = useState(null);
-  const [boatDetail, setBoatDetail] = useState(null);
-  const [boatBasic, setBoatBasic] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // ✅ 객실(=cabinType)별 이미지 인덱스
   const [indices, setIndices] = useState([]);
 
   const refs = {
@@ -24,12 +26,12 @@ function TripDetail() {
     price: useRef(null),
   };
 
-  const scrollTo = (key) =>
-    refs[key]?.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollTo = (key) => refs[key]?.current?.scrollIntoView({ behavior: "smooth" });
 
   const role = localStorage.getItem("role");
 
   const goBooking = () => {
+    if (!trip) return;
     if (role === "instructor") {
       navigate(`/instructor/${trip.id}`, { state: { trip } });
     } else {
@@ -38,63 +40,23 @@ function TripDetail() {
   };
 
   // ===============================
-  // ✅ UTS 기준 데이터 로딩
+  // ✅ UTS Trip 데이터 로딩 (boats.json/boats-details.json 제거)
   // ===============================
   useEffect(() => {
     async function loadData() {
       try {
-        const [tripRes, boatDetailsRes, boatBasicRes] = await Promise.all([
-          fetch("/data/uts-trips.json").then((r) => r.json()),
-          fetch("/data/boats-details.json").then((r) => r.json()),
-          fetch("/data/boats.json").then((r) => r.json()),
-        ]);
+        const tripRes = await fetch("/data/uts-trips.json").then((r) => r.json());
+        const trips = Array.isArray(tripRes) ? tripRes : tripRes?.data || [];
 
-        const trips = Array.isArray(tripRes) ? tripRes : tripRes.data || [];
-
-        const foundTrip = trips.find((t) =>
-          String(t.id) === String(tripId) ||
-          String(t.tripId) === String(tripId) ||
-          String(t.providerTripId) === String(tripId)
-        );
-
-
-
-        if (!foundTrip) {
-          console.warn("❌ Trip not found for id:", tripId, {
-            sample: trips[0],
-          });
-        }
-
-
-        const boatDetails = boatDetailsRes.data || boatDetailsRes;
-        const boatBasics = boatBasicRes.data || boatBasicRes;
-
-        const boatId = foundTrip?.boat?.id;
-
-        const foundBoatDetail = boatId
-          ? boatDetails.find((b) => String(b.id) === String(boatId))
-          : null;
-
-        const foundBoatBasic = boatId
-          ? boatBasics.find((b) => String(b.id) === String(boatId))
-          : null;
-
+        const foundTrip = trips.find((t) => String(t.id) === String(tripId));
         setTrip(foundTrip || null);
-        setBoatDetail(foundBoatDetail || null);
-        setBoatBasic(foundBoatBasic || null);
 
-        // ✅ 객실 이미지 인덱스 초기화 (중복 제거 기준 유지)
-        const uniqueNames = [];
-        const filtered = (foundBoatBasic?.cabinTypes || []).filter((c) => {
-          const key = c.name.trim().toLowerCase();
-          if (uniqueNames.includes(key)) return false;
-          uniqueNames.push(key);
-          return true;
-        });
-        setIndices(Array(filtered.length).fill(0));
-
+        // ✅ 객실 타입 목록(중복 제거) 기반으로 indices 초기화
+        const cabinTypes = buildCabinTypes(foundTrip);
+        setIndices(Array(cabinTypes.length).fill(0));
       } catch (e) {
         console.error("🚨 TripDetail load error:", e);
+        setTrip(null);
       } finally {
         setIsLoading(false);
       }
@@ -103,26 +65,74 @@ function TripDetail() {
     loadData();
   }, [tripId]);
 
+  // ===============================
+  // ✅ UTS cabins -> "객실 타입" 단위로 묶기 (name/type 기준)
+  // ===============================
+  function buildCabinTypes(t) {
+    const cabins = Array.isArray(t?.cabins) ? t.cabins : [];
+    const map = new Map();
 
+    for (const cab of cabins) {
+      const key = String(cab?.type || cab?.name || "").trim();
+      if (!key) continue;
+
+      if (!map.has(key)) {
+        map.set(key, {
+          name: key,
+          description: cab?.description || "",
+          images: [],
+          cabins: [],
+        });
+      }
+
+      const bucket = map.get(key);
+      bucket.cabins.push(cab);
+
+      // 이미지 합치기
+      const imgs = Array.isArray(cab?.images) ? cab.images : [];
+      for (const img of imgs) {
+        if (typeof img === "string" && img.trim()) bucket.images.push({ image: img });
+        else if (img?.image) bucket.images.push({ image: img.image });
+      }
+
+      // 설명 보강
+      if (!bucket.description && cab?.description) bucket.description = cab.description;
+    }
+
+    // 이미지 중복 제거
+    for (const bucket of map.values()) {
+      const seen = new Set();
+      bucket.images = bucket.images.filter((x) => {
+        const u = String(x?.image || "");
+        if (!u || seen.has(u)) return false;
+        seen.add(u);
+        return true;
+      });
+    }
+
+    return Array.from(map.values());
+  }
 
   // ===============================
-  // ✅ 객실 가격 (UTS 기준)
+  // ✅ 객실 타입의 최저가(UTS cabins[].ratePlans 기반)
   // ===============================
-  const findCabinPrice = (cabinName) => {
-    if (!trip?.ratePlansRetail?.length) return null;
+  function findCabinTypeLowestPrice(cabinTypeName) {
+    const cabins = Array.isArray(trip?.cabins) ? trip.cabins : [];
+    const matched = cabins.filter((c) => String(c?.type || c?.name || "").trim() === String(cabinTypeName).trim());
 
-    for (const plan of trip.ratePlansRetail) {
-      for (const type of plan.cabinTypes || []) {
-        if (type.name === cabinName && type.occupancy?.[0]?.price) {
-          return {
-            plan: plan.name,
-            price: type.occupancy[0].price,
-          };
+    let best = null; // { planName, price }
+    for (const cab of matched) {
+      const rps = Array.isArray(cab?.ratePlans) ? cab.ratePlans : [];
+      for (const rp of rps) {
+        const price = rp?.price;
+        if (price == null) continue;
+        if (!best || Number(price) < Number(best.price)) {
+          best = { planName: rp?.ratePlanName || rp?.name || "Rate", price };
         }
       }
     }
-    return null;
-  };
+    return best;
+  }
 
   const changeImage = (idx, dir, total) => {
     setIndices((prev) => {
@@ -136,25 +146,25 @@ function TripDetail() {
   if (!trip) return <div>⚠ 여행 정보를 찾을 수 없습니다.</div>;
 
   const currency = getCurrencyForTrip(trip);
+  const cabinTypes = buildCabinTypes(trip);
 
-  // ✅ 객실 중복 제거 유지
-  const uniqueNames = new Set();
-  const filteredCabins = (boatBasic?.cabinTypes || []).filter((cab) => {
-    const key = cab.name.trim().toLowerCase();
-    if (uniqueNames.has(key)) return false;
-    uniqueNames.add(key);
-    return true;
-  });
+  // ===============================
+  // ✅ Trip 이미지(UTS images.cover/gallery) -> TripImageGallery 포맷으로 변환
+  // ===============================
+  const cover = trip?.images?.cover || "";
+  const gallery = Array.isArray(trip?.images?.gallery) ? trip.images.gallery : [];
+
+  const overviewImages = [
+    ...(cover ? [{ url: cover, caption: trip?.boatName || "" }] : []),
+    ...gallery
+      .map((u) => (typeof u === "string" ? u : u?.url || u?.image))
+      .filter(Boolean)
+      .map((u) => ({ url: u, caption: trip?.boatName || "" })),
+  ];
 
   return (
     <div className="trip-detail-container">
-      <TripSummaryHeader
-        trip={trip}
-        boatDetail={boatDetail}
-        navigate={navigate}
-        scrollTo={scrollTo}
-        goBooking={goBooking}
-      />
+      <TripSummaryHeader trip={trip} scrollTo={scrollTo} goBooking={goBooking} />
 
       <section className="trip-detail-actions" style={{ marginTop: "20px" }}>
         <button
@@ -174,39 +184,30 @@ function TripDetail() {
         </button>
       </section>
 
-      {/* ✅ 보트 사진 */}
+      {/* ✅ 보트/트립 사진 (UTS) */}
       <section ref={refs.overview} className="trip-section trip-overview">
         <h2>보트사진</h2>
-        <TripImageGallery
-          images={(boatDetail?.media || []).map((m) => ({
-            url: m.image,
-            caption: m.title || boatDetail?.name,
-          }))}
-          layoutImage={boatDetail?.deckPlans?.[0]?.image}
-        />
+        <TripImageGallery images={overviewImages} layoutImage={null} />
       </section>
 
-      {/* ✅ 객실 정보 */}
+      {/* ✅ 객실 섹션 (UTS cabinTypes) */}
       <section ref={refs.cabins} className="trip-section trip-cabins">
         <h2>객실 정보</h2>
 
-        {filteredCabins.map((cab, i) => {
-          const images = cab.media || [];
-          const priceInfo = findCabinPrice(cab.name);
+        {cabinTypes.map((cabType, i) => {
+          const images = Array.isArray(cabType?.images) ? cabType.images : [];
+          const priceInfo = findCabinTypeLowestPrice(cabType.name);
           const currentIndex = indices[i] || 0;
 
           return (
-            <div key={i} className="cabin-card" style={{ marginBottom: "50px" }}>
-              <h3>{cab.name}</h3>
-              <p style={{ color: "#666" }}>
-                {cab.deck?.name || ""} · {cab.quantity || 1} Cabins
-              </p>
+            <div key={cabType.name || i} className="cabin-card" style={{ marginBottom: "50px" }}>
+              <h3>{cabType.name}</h3>
 
               {images.length > 0 ? (
-                <div style={{ position: "relative", maxWidth: "600px" }}>
+                <div style={{ position: "relative", maxWidth: "600px", display: "inline-block" }}>
                   <img
-                    src={images[currentIndex].image}
-                    alt={cab.name}
+                    src={images[currentIndex]?.image}
+                    alt={`${cabType.name} ${currentIndex + 1}`}
                     style={{
                       width: "100%",
                       borderRadius: "10px",
@@ -214,10 +215,15 @@ function TripDetail() {
                       objectFit: "cover",
                     }}
                   />
+
                   {images.length > 1 && (
                     <>
-                      <button onClick={() => changeImage(i, -1, images.length)} className="arrow-btn left">‹</button>
-                      <button onClick={() => changeImage(i, 1, images.length)} className="arrow-btn right">›</button>
+                      <button onClick={() => changeImage(i, -1, images.length)} className="arrow-btn left">
+                        ‹
+                      </button>
+                      <button onClick={() => changeImage(i, 1, images.length)} className="arrow-btn right">
+                        ›
+                      </button>
                       <div className="index-badge">
                         {currentIndex + 1}/{images.length}
                       </div>
@@ -228,12 +234,11 @@ function TripDetail() {
                 <p>등록된 이미지 없음</p>
               )}
 
-              <p style={{ marginTop: "10px" }}>{cab.description || "설명 없음"}</p>
+              <p style={{ marginTop: "10px" }}>{cabType.description || "설명 없음"}</p>
 
               {priceInfo ? (
                 <p>
-                  <strong>{priceInfo.plan}</strong> —{" "}
-                  {formatCurrency(priceInfo.price, currency)}
+                  <strong>{priceInfo.planName}</strong> — {formatCurrency(priceInfo.price, currency)}
                 </p>
               ) : (
                 <p>가격 정보 없음</p>
@@ -243,11 +248,10 @@ function TripDetail() {
         })}
       </section>
 
-      {/* ✅ 상세 가격 */}
+      {/* ✅ 상세가격 (UTS trip 기준) */}
       <section ref={refs.price} className="trip-section trip-price">
         <h2>상세가격 (Price details)</h2>
         <TripPriceDetails trip={trip} />
-
       </section>
     </div>
   );
