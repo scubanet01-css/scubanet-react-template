@@ -238,7 +238,8 @@ function TripDetail() {
       {/* ✅ 상세 가격 */}
       <section ref={refs.price} className="trip-section trip-price">
         <h2>상세가격 (Price details)</h2>
-        <TripPriceDetails boatDetail={boatDetail} />
+        <TripPriceDetails trip={trip} />
+
       </section>
     </div>
   );

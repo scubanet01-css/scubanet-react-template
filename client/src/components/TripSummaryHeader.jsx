@@ -2,19 +2,60 @@ import React from "react";
 import "./TripSummaryHeader.css";
 
 function TripSummaryHeader({ trip, boatDetail, navigate, scrollTo, goBooking }) {
-    // ✅ 데이터 방어 + 가공
-    const boatName = trip?.boat?.name || "보트명 미등록";
-    const tripName = trip?.product?.name || "Trip 정보 없음";
+    // ===============================
+    // ✅ UTS 기준 데이터 매핑
+    // ===============================
+
+    // 보트명
+    const boatName =
+        trip?.boatName ||
+        boatDetail?.name ||
+        "보트명 미등록";
+
+    // 트립명 / 루트명
+    const tripName =
+        trip?.title ||
+        trip?.routeName ||
+        "Trip 정보 없음";
+
+    // 일정
     const start = trip?.startDate || "-";
     const end = trip?.endDate || "-";
-    const depPort = trip?.departurePort?.name || "출발지 미등록";
-    const arrPort = trip?.arrivalPort?.name || "도착지 미등록";
-    const nights = trip?.nights ?? 7;
-    const maxGuests = boatDetail?.capacity || boatDetail?.maxOccupancy || 0;
 
-    // ✅ 최소 다이브/자격 요건 (데이터에 있으면 교체)
+    // 박수
+    const nights =
+        trip?.nights ??
+        (trip?.startDate && trip?.endDate
+            ? Math.round(
+                (new Date(trip.endDate) - new Date(trip.startDate)) /
+                (1000 * 60 * 60 * 24)
+            )
+            : "-");
+
+    // 출발 / 도착 항구
+    const depPort =
+        trip?.departurePortName ||
+        trip?.departurePort ||
+        boatDetail?.departurePort ||
+        "출발지 미등록";
+
+    const arrPort =
+        trip?.arrivalPortName ||
+        trip?.arrivalPort ||
+        boatDetail?.arrivalPort ||
+        "도착지 미등록";
+
+    // 최대 인원
+    const maxGuests =
+        trip?.maxGuests ||
+        boatDetail?.capacity ||
+        boatDetail?.maxOccupancy ||
+        0;
+
+    // 최소 다이빙 요건 / 특이사항
     const minDiveOrReq =
         trip?.requirements ||
+        boatDetail?.requirements ||
         boatDetail?.additionalInfo ||
         "최소 다이브 로그/자격 요건 정보 없음";
 
@@ -39,7 +80,10 @@ function TripSummaryHeader({ trip, boatDetail, navigate, scrollTo, goBooking }) 
             </div>
 
             <div className="trip-summary-actions">
-                <button className="btn-outline" onClick={() => scrollTo("price")}>
+                <button
+                    className="btn-outline"
+                    onClick={() => scrollTo("price")}
+                >
                     상세정보
                 </button>
                 <button

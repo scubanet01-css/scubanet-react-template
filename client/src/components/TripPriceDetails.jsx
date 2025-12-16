@@ -1,24 +1,44 @@
-// ✅ TripPriceDetails.jsx
+// src/components/TripPriceDetails.jsx
 import React from "react";
 import "./TripPriceDetails.css";
 
-function TripPriceDetails({ boatDetail }) {
-    const price = boatDetail?.priceDetails;
+function TripPriceDetails({ trip }) {
+    /**
+     * UTS 기준:
+     * - 현재 trip 안에 포함/불포함/추가요금이 구조화되어 있지 않을 수 있음
+     * - 향후 확장 대비해 방어적으로 처리
+     */
 
-    if (!price) {
-        return <p>요금제 및 상세정보는 곧 추가됩니다.</p>;
+    const included = trip?.included || [];
+    const mandatory = trip?.mandatoryFees || [];
+    const extra = trip?.extraFees || [];
+
+    const hasAny =
+        included.length > 0 ||
+        mandatory.length > 0 ||
+        extra.length > 0;
+
+    if (!hasAny) {
+        return (
+            <p style={{ color: "#666", marginTop: "10px" }}>
+                요금 포함/추가 비용 정보는 곧 업데이트될 예정입니다.
+            </p>
+        );
     }
 
     return (
         <div className="trip-price-section">
             <h2>Price details</h2>
+
             <div className="price-grid">
                 {/* ✅ 포함 항목 */}
                 <div className="price-column">
                     <h3>Included</h3>
                     <ul>
-                        {price.included?.length ? (
-                            price.included.map((item, i) => <li key={i}>✔ {item}</li>)
+                        {included.length ? (
+                            included.map((item, i) => (
+                                <li key={i}>✔ {item}</li>
+                            ))
                         ) : (
                             <li>포함 항목 정보 없음</li>
                         )}
@@ -29,20 +49,24 @@ function TripPriceDetails({ boatDetail }) {
                 <div className="price-column">
                     <h3>Obligatory surcharges</h3>
                     <ul>
-                        {price.mandatory?.length ? (
-                            price.mandatory.map((item, i) => <li key={i}>💲 {item}</li>)
+                        {mandatory.length ? (
+                            mandatory.map((item, i) => (
+                                <li key={i}>💲 {item}</li>
+                            ))
                         ) : (
                             <li>필수 추가요금 없음</li>
                         )}
                     </ul>
                 </div>
 
-                {/* ✅ 추가비용 */}
+                {/* ✅ 선택 추가비용 */}
                 <div className="price-column">
                     <h3>Extra cost</h3>
                     <ul>
-                        {price.extra?.length ? (
-                            price.extra.map((item, i) => <li key={i}>➕ {item}</li>)
+                        {extra.length ? (
+                            extra.map((item, i) => (
+                                <li key={i}>➕ {item}</li>
+                            ))
                         ) : (
                             <li>추가비용 없음</li>
                         )}
