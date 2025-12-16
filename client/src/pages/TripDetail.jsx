@@ -43,37 +43,36 @@ function TripDetail() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [utsRes, boatDetailsRes, boatBasicRes] = await Promise.all([
+        const [tripRes, boatDetailsRes, boatBasicRes] = await Promise.all([
           fetch("/data/uts-trips.json").then((r) => r.json()),
           fetch("/data/boats-details.json").then((r) => r.json()),
           fetch("/data/boats.json").then((r) => r.json()),
         ]);
 
-        const trips = Array.isArray(utsRes) ? utsRes : utsRes.data || [];
+        const trips = Array.isArray(tripRes) ? tripRes : tripRes.data || [];
+
         const foundTrip = trips.find(
-          (t) => String(t.id) === String(tripId)
+          (t) => String(t.id) === String(id)
         );
 
         if (!foundTrip) {
-          setTrip(null);
-          setIsLoading(false);
-          return;
+          console.warn("❌ Trip not found for id:", id);
         }
-
-        const boatId = foundTrip.boatId || foundTrip.boat?.id;
 
         const boatDetails = boatDetailsRes.data || boatDetailsRes;
         const boatBasics = boatBasicRes.data || boatBasicRes;
 
-        const foundBoatDetail = boatDetails.find(
-          (b) => String(b.id) === String(boatId)
-        );
+        const boatId = foundTrip?.boat?.id;
 
-        const foundBoatBasic = boatBasics.find(
-          (b) => String(b.id) === String(boatId)
-        );
+        const foundBoatDetail = boatId
+          ? boatDetails.find((b) => String(b.id) === String(boatId))
+          : null;
 
-        setTrip(foundTrip);
+        const foundBoatBasic = boatId
+          ? boatBasics.find((b) => String(b.id) === String(boatId))
+          : null;
+
+        setTrip(foundTrip || null);
         setBoatDetail(foundBoatDetail || null);
         setBoatBasic(foundBoatBasic || null);
 
@@ -86,16 +85,17 @@ function TripDetail() {
           return true;
         });
         setIndices(Array(filtered.length).fill(0));
+
       } catch (e) {
-        console.error("🚨 TripDetail UTS 로드 오류:", e);
-        setTrip(null);
+        console.error("🚨 TripDetail load error:", e);
       } finally {
         setIsLoading(false);
       }
     }
 
     loadData();
-  }, [tripId]);
+  }, [id]);
+
 
   // ===============================
   // ✅ 객실 가격 (UTS 기준)
