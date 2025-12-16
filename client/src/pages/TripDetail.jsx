@@ -52,11 +52,13 @@ function TripDetail() {
         const trips = Array.isArray(tripRes) ? tripRes : tripRes.data || [];
 
         const foundTrip = trips.find(
-          (t) => String(t.id) === String(id)
+          (t) => String(t.id) === String(tripId)
         );
 
+
         if (!foundTrip) {
-          console.warn("❌ Trip not found for id:", id);
+          console.warn("❌ Trip not found for id:", tripId);
+
         }
 
         const boatDetails = boatDetailsRes.data || boatDetailsRes;
@@ -94,7 +96,8 @@ function TripDetail() {
     }
 
     loadData();
-  }, [id]);
+  }, [tripId]);
+
 
 
   // ===============================
