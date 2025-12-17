@@ -118,6 +118,9 @@ function AdminBoatAssets() {
         URL.revokeObjectURL(url);
     }
 
+    console.log("AdminBoatAssets EXPORT VERSION LOADED");
+
+
     return (
         <div style={{ padding: 24, maxWidth: 1000 }}>
             <h2>Boat Assets Admin</h2>
