@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 
+console.log("AdminBoatAssets mounted");
+
+
 /**
  * 1차 목적:
  * - 관리자 입력 → boats-assets.json 구조 state로 생성
@@ -26,8 +29,8 @@ function AdminBoatAssets() {
     /* ---------------- Hero ---------------- */
 
     function handleHeroUpload(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+        const file = e.target.files && e.target.files[0];
+        if (!file || !vesselId) return;
 
         setHeroImage({
             id: `${vesselId}_hero_01`,
@@ -38,18 +41,26 @@ function AdminBoatAssets() {
         });
     }
 
+
     /* ---------------- Cabin ---------------- */
 
-    function addCabin() {
-        setCabins([
-            ...cabins,
-            {
-                cabinTypeCode: "STANDARD",
-                cabinName: "",
-                images: []
-            }
-        ]);
+    function addCabinImage(cabinIndex, file) {
+        if (!file || !vesselId) return;
+
+        const updated = [...cabins];
+
+        updated[cabinIndex].images.push({
+            id: `${vesselId}_${updated[cabinIndex].cabinTypeCode}_${Date.now()}`,
+            file,
+            preview: URL.createObjectURL(file),
+            title: "",
+            tags: [],
+            order: updated[cabinIndex].images.length + 1
+        });
+
+        setCabins(updated);
     }
+
 
     function updateCabin(index, field, value) {
         const updated = [...cabins];
