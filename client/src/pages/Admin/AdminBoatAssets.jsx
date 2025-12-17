@@ -16,20 +16,12 @@ const CABIN_TYPE_OPTIONS = [
 ];
 
 function AdminBoatAssets() {
-    /* =========================
-       State
-    ========================= */
-
     const [vesselId, setVesselId] = useState("");
     const [vesselName, setVesselName] = useState("");
-
     const [heroImage, setHeroImage] = useState(null);
     const [cabins, setCabins] = useState([]);
 
-    /* =========================
-       Hero
-    ========================= */
-
+    /* Hero */
     function handleHeroUpload(e) {
         const file = e.target.files?.[0];
         if (!file || !vesselId) return;
@@ -42,10 +34,7 @@ function AdminBoatAssets() {
         });
     }
 
-    /* =========================
-       Cabin
-    ========================= */
-
+    /* Cabin */
     function addCabin() {
         setCabins([
             ...cabins,
@@ -67,7 +56,6 @@ function AdminBoatAssets() {
         if (!file || !vesselId) return;
 
         const updated = [...cabins];
-
         updated[cabinIndex].images.push({
             id: `${vesselId}_${updated[cabinIndex].cabinTypeCode}_${Date.now()}`,
             file,
@@ -75,14 +63,10 @@ function AdminBoatAssets() {
             tags: [],
             order: updated[cabinIndex].images.length + 1
         });
-
         setCabins(updated);
     }
 
-    /* =========================
-       JSON 생성
-    ========================= */
-
+    /* JSON 생성 */
     function generatePreviewJSON() {
         if (!vesselId) return null;
 
@@ -116,10 +100,7 @@ function AdminBoatAssets() {
         };
     }
 
-    /* =========================
-       Export
-    ========================= */
-
+    /* Export */
     function handleExportJSON() {
         const data = generatePreviewJSON();
         if (!data) return;
@@ -137,15 +118,10 @@ function AdminBoatAssets() {
         URL.revokeObjectURL(url);
     }
 
-    /* =========================
-       Render
-    ========================= */
-
     return (
         <div style={{ padding: 24, maxWidth: 1000 }}>
             <h2>Boat Assets Admin</h2>
 
-            {/* 선박 정보 */}
             <section>
                 <h3>선박 정보</h3>
                 <input
@@ -161,50 +137,31 @@ function AdminBoatAssets() {
                 />
             </section>
 
-            {/* Hero */}
             <section style={{ marginTop: 24 }}>
                 <h3>대표 이미지 (Hero)</h3>
                 <input type="file" accept="image/*" onChange={handleHeroUpload} />
-                {heroImage && (
-                    <div style={{ marginTop: 8 }}>
-                        선택된 파일: <strong>{heroImage.file.name}</strong>
-                    </div>
-                )}
+                {heroImage && <div>선택된 파일: {heroImage.file.name}</div>}
             </section>
 
-            {/* Cabins */}
             <section style={{ marginTop: 24 }}>
                 <h3>객실 이미지</h3>
                 <button onClick={addCabin}>+ 객실 타입 추가</button>
 
                 {cabins.map((cabin, index) => (
-                    <div
-                        key={index}
-                        style={{
-                            border: "1px solid #ccc",
-                            padding: 16,
-                            marginTop: 12
-                        }}
-                    >
+                    <div key={index} style={{ border: "1px solid #ccc", padding: 16, marginTop: 12 }}>
                         <select
                             value={cabin.cabinTypeCode}
-                            onChange={e =>
-                                updateCabin(index, "cabinTypeCode", e.target.value)
-                            }
+                            onChange={e => updateCabin(index, "cabinTypeCode", e.target.value)}
                         >
                             {CABIN_TYPE_OPTIONS.map(opt => (
-                                <option key={opt} value={opt}>
-                                    {opt}
-                                </option>
+                                <option key={opt} value={opt}>{opt}</option>
                             ))}
                         </select>
 
                         <input
                             placeholder="객실 이름"
                             value={cabin.cabinName}
-                            onChange={e =>
-                                updateCabin(index, "cabinName", e.target.value)
-                            }
+                            onChange={e => updateCabin(index, "cabinName", e.target.value)}
                             style={{ marginLeft: 8 }}
                         />
 
@@ -212,13 +169,11 @@ function AdminBoatAssets() {
                             <input
                                 type="file"
                                 accept="image/*"
-                                onChange={e =>
-                                    addCabinImage(index, e.target.files?.[0])
-                                }
+                                onChange={e => addCabinImage(index, e.target.files?.[0])}
                             />
                         </div>
 
-                        <ul style={{ marginTop: 8 }}>
+                        <ul>
                             {cabin.images.map(img => (
                                 <li key={img.id}>{img.file.name}</li>
                             ))}
@@ -227,22 +182,13 @@ function AdminBoatAssets() {
                 ))}
             </section>
 
-            {/* Export */}
             {vesselId && (
                 <section style={{ marginTop: 32 }}>
                     <button onClick={handleExportJSON}>
                         boats-assets.json 다운로드
                     </button>
 
-                    <pre
-                        style={{
-                            background: "#f5f5f5",
-                            padding: 16,
-                            marginTop: 12,
-                            maxHeight: 400,
-                            overflow: "auto"
-                        }}
-                    >
+                    <pre style={{ background: "#f5f5f5", padding: 16, marginTop: 12 }}>
                         {JSON.stringify(generatePreviewJSON(), null, 2)}
                     </pre>
                 </section>
