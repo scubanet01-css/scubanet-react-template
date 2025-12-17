@@ -1,12 +1,9 @@
 import React, { useState } from "react";
 
-console.log("AdminBoatAssets mounted");
-
-
 /**
- * 1차 목적:
- * - 관리자 입력 → boats-assets.json 구조 state로 생성
- * - 실제 파일 저장은 다음 단계
+ * 목적:
+ * - 관리자 입력 → boats-assets.json 구조를 state로 생성
+ * - 파일은 아직 저장하지 않고 구조 검증만 수행
  */
 
 const CABIN_TYPE_OPTIONS = [
@@ -19,30 +16,46 @@ const CABIN_TYPE_OPTIONS = [
 ];
 
 function AdminBoatAssets() {
+    /* ---------------- State ---------------- */
+
     const [vesselId, setVesselId] = useState("");
     const [vesselName, setVesselName] = useState("");
 
     const [heroImage, setHeroImage] = useState(null);
-
     const [cabins, setCabins] = useState([]);
 
     /* ---------------- Hero ---------------- */
 
     function handleHeroUpload(e) {
-        const file = e.target.files && e.target.files[0];
+        const file = e.target.files?.[0];
         if (!file || !vesselId) return;
 
         setHeroImage({
             id: `${vesselId}_hero_01`,
             file,
-            preview: URL.createObjectURL(file),
             title: vesselName,
             description: ""
         });
     }
 
-
     /* ---------------- Cabin ---------------- */
+
+    function addCabin() {
+        setCabins([
+            ...cabins,
+            {
+                cabinTypeCode: "STANDARD",
+                cabinName: "",
+                images: []
+            }
+        ]);
+    }
+
+    function updateCabin(index, field, value) {
+        const updated = [...cabins];
+        updated[index][field] = value;
+        setCabins(updated);
+    }
 
     function addCabinImage(cabinIndex, file) {
         if (!file || !vesselId) return;
@@ -52,32 +65,11 @@ function AdminBoatAssets() {
         updated[cabinIndex].images.push({
             id: `${vesselId}_${updated[cabinIndex].cabinTypeCode}_${Date.now()}`,
             file,
-            preview: URL.createObjectURL(file),
             title: "",
             tags: [],
             order: updated[cabinIndex].images.length + 1
         });
 
-        setCabins(updated);
-    }
-
-
-    function updateCabin(index, field, value) {
-        const updated = [...cabins];
-        updated[index][field] = value;
-        setCabins(updated);
-    }
-
-    function addCabinImage(cabinIndex, file) {
-        const updated = [...cabins];
-        updated[cabinIndex].images.push({
-            id: `${vesselId}_${cabins[cabinIndex].cabinTypeCode}_${Date.now()}`,
-            file,
-            preview: URL.createObjectURL(file),
-            title: "",
-            tags: [],
-            order: updated[cabinIndex].images.length + 1
-        });
         setCabins(updated);
     }
 
@@ -118,6 +110,7 @@ function AdminBoatAssets() {
         };
     }
 
+    /* ---------------- Render ---------------- */
 
     return (
         <div style={{ padding: 24, maxWidth: 1000 }}>
@@ -144,12 +137,8 @@ function AdminBoatAssets() {
                 <h3>대표 이미지 (Hero)</h3>
                 <input type="file" accept="image/*" onChange={handleHeroUpload} />
                 {heroImage && (
-                    <div>
-                        <img
-                            src={heroImage.preview}
-                            alt="hero preview"
-                            style={{ width: 300, marginTop: 10 }}
-                        />
+                    <div style={{ marginTop: 8 }}>
+                        선택된 파일: <strong>{heroImage.file.name}</strong>
                     </div>
                 )}
             </section>
@@ -195,39 +184,36 @@ function AdminBoatAssets() {
                                 type="file"
                                 accept="image/*"
                                 onChange={e =>
-                                    addCabinImage(index, e.target.files[0])
+                                    addCabinImage(index, e.target.files?.[0])
                                 }
                             />
                         </div>
 
-                        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                        <ul style={{ marginTop: 8 }}>
                             {cabin.images.map(img => (
-                                <img
-                                    key={img.id}
-                                    src={img.preview}
-                                    alt=""
-                                    style={{ width: 120 }}
-                                />
+                                <li key={img.id}>{img.file.name}</li>
                             ))}
-                        </div>
+                        </ul>
                     </div>
                 ))}
             </section>
 
             {/* JSON Preview */}
-            <section style={{ marginTop: 32 }}>
-                <h3>boats-assets.json 미리보기</h3>
-                <pre
-                    style={{
-                        background: "#f5f5f5",
-                        padding: 16,
-                        maxHeight: 400,
-                        overflow: "auto"
-                    }}
-                >
-                    {JSON.stringify(generatePreviewJSON(), null, 2)}
-                </pre>
-            </section>
+            {vesselId && (
+                <section style={{ marginTop: 32 }}>
+                    <h3>boats-assets.json 미리보기</h3>
+                    <pre
+                        style={{
+                            background: "#f5f5f5",
+                            padding: 16,
+                            maxHeight: 400,
+                            overflow: "auto"
+                        }}
+                    >
+                        {JSON.stringify(generatePreviewJSON(), null, 2)}
+                    </pre>
+                </section>
+            )}
         </div>
     );
 }
