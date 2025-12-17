@@ -19,6 +19,8 @@ import InstructorBooking from './pages/Instructor/InstructorBooking';
 import InstructorConfirm from './pages/Instructor/InstructorConfirm';
 import InstructorMyBooking from './pages/Instructor/InstructorMyBooking';
 
+import AdminBoatAssets from "./pages/Admin/AdminBoatAssets";
+
 import { AuthProvider } from './hooks/useAuth';
 
 function App() {
@@ -104,6 +106,12 @@ function App() {
 
 
         </Routes>
+        {/* 관리자 - 보트 자산 관리 */}
+        <Route
+          path="/admin/boats/assets"
+          element={<AdminBoatAssets />}
+        />
+
       </Router>
     </AuthProvider>
   );
