@@ -84,12 +84,14 @@ function AdminBoatAssets() {
     /* ---------------- Preview JSON ---------------- */
 
     function generatePreviewJSON() {
+        if (!vesselId) return null;
+
         return {
             vesselId,
             vesselName,
             lastUpdated: new Date().toISOString().slice(0, 10),
             assets: {
-                hero: heroImage
+                hero: heroImage && heroImage.file
                     ? {
                         id: heroImage.id,
                         url: `/assets/vessels/${vesselId}/hero/${heroImage.file.name}`,
@@ -102,17 +104,20 @@ function AdminBoatAssets() {
                 cabins: cabins.map(c => ({
                     cabinTypeCode: c.cabinTypeCode,
                     cabinName: c.cabinName,
-                    images: c.images.map(img => ({
-                        id: img.id,
-                        url: `/assets/vessels/${vesselId}/cabins/${c.cabinTypeCode}/${img.file.name}`,
-                        title: img.title,
-                        tags: img.tags,
-                        order: img.order
-                    }))
+                    images: c.images
+                        .filter(img => img.file)
+                        .map(img => ({
+                            id: img.id,
+                            url: `/assets/vessels/${vesselId}/cabins/${c.cabinTypeCode}/${img.file.name}`,
+                            title: img.title,
+                            tags: img.tags,
+                            order: img.order
+                        }))
                 }))
             }
         };
     }
+
 
     return (
         <div style={{ padding: 24, maxWidth: 1000 }}>
