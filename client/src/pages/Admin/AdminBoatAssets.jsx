@@ -2,9 +2,8 @@ import React, { useState } from "react";
 
 /**
  * AdminBoatAssets
- * 목적:
  * - 관리자 입력 → boats-assets.json 구조 생성
- * - 아직 파일 저장/미리보기는 하지 않음
+ * - Export 버튼으로 JSON 다운로드
  */
 
 const CABIN_TYPE_OPTIONS = [
@@ -81,7 +80,7 @@ function AdminBoatAssets() {
     }
 
     /* =========================
-       JSON Preview
+       JSON 생성
     ========================= */
 
     function generatePreviewJSON() {
@@ -115,6 +114,27 @@ function AdminBoatAssets() {
                 }))
             }
         };
+    }
+
+    /* =========================
+       Export
+    ========================= */
+
+    function handleExportJSON() {
+        const data = generatePreviewJSON();
+        if (!data) return;
+
+        const blob = new Blob(
+            [JSON.stringify(data, null, 2)],
+            { type: "application/json;charset=utf-8;" }
+        );
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `boats-assets-${vesselId}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
     }
 
     /* =========================
@@ -180,7 +200,7 @@ function AdminBoatAssets() {
                         </select>
 
                         <input
-                            placeholder="객실 이름 (예: Deluxe Cabin)"
+                            placeholder="객실 이름"
                             value={cabin.cabinName}
                             onChange={e =>
                                 updateCabin(index, "cabinName", e.target.value)
@@ -207,14 +227,18 @@ function AdminBoatAssets() {
                 ))}
             </section>
 
-            {/* JSON Preview */}
+            {/* Export */}
             {vesselId && (
                 <section style={{ marginTop: 32 }}>
-                    <h3>boats-assets.json 미리보기</h3>
+                    <button onClick={handleExportJSON}>
+                        boats-assets.json 다운로드
+                    </button>
+
                     <pre
                         style={{
                             background: "#f5f5f5",
                             padding: 16,
+                            marginTop: 12,
                             maxHeight: 400,
                             overflow: "auto"
                         }}
