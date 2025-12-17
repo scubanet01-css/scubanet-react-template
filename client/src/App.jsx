@@ -105,13 +105,14 @@ function App() {
           />
 
 
-        </Routes>
-        {/* 관리자 - 보트 자산 관리 */}
-        <Route
-          path="/admin/boats/assets"
-          element={<AdminBoatAssets />}
-        />
 
+          {/* 관리자 - 보트 자산 관리 */}
+          <Route
+            path="/admin/boats/assets"
+            element={<AdminBoatAssets />}
+          />
+
+        </Routes>
       </Router>
     </AuthProvider>
   );
