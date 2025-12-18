@@ -8,7 +8,7 @@ const fs = require('fs');
 const bodyParser = require('body-parser');
 const generateInvoicePDF = require('./utils/generateInvoicePDF');
 const sendInvoiceEmail = require('./utils/sendInvoiceEmail'); // ✅ 이메일 모듈 추가
-const invoiceRoutes = require("./routes/invoiceRoutes");
+// const invoiceRoutes = require("./routes/invoiceRoutes");
 const adminBoatAssetsRoutes = require("./routes/adminBoatAssets");
 
 const app = express();
@@ -22,7 +22,7 @@ const API_KEY = 'fa031783567788e568d8010a488a6c0f9cb860d0';
 app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 app.use(express.json()); // ✅ POST 요청의 body를 읽을 수 있게 함
 app.use(bodyParser.json());
-app.use("/api", invoiceRoutes);
+//app.use("/api", invoiceRoutes);
 app.use("/admin/api/boats-assets", adminBoatAssetsRoutes);
 
 app.use("/data", express.static("/root/data"));
