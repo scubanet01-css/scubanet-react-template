@@ -1,10 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 /**
- * AdminBoatAssets (UTS 기반 최종본)
- * - /data/uts-trips.json fetch
- * - vesselId 기준 선박 선택
- * - 이미지 자산 → boats-assets.json Export
+ * AdminBoatAssets (서버 저장 최종본)
+ * - UTS 기반 vesselId 선택
+ * - 이미지 메타데이터 → 서버 저장
  */
 
 const CABIN_TYPE_OPTIONS = [
@@ -17,9 +16,6 @@ const CABIN_TYPE_OPTIONS = [
 ];
 
 function AdminBoatAssets() {
-    /* =========================
-       State
-    ========================= */
     const [utsTrips, setUtsTrips] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -28,6 +24,8 @@ function AdminBoatAssets() {
 
     const [heroImage, setHeroImage] = useState(null);
     const [cabins, setCabins] = useState([]);
+
+    const [saveStatus, setSaveStatus] = useState("");
 
     /* =========================
        Load UTS Trips
@@ -46,11 +44,10 @@ function AdminBoatAssets() {
     }, []);
 
     /* =========================
-       Vessel options (중복 제거)
+       Vessel Options
     ========================= */
     const vesselOptions = useMemo(() => {
         const map = new Map();
-
         utsTrips.forEach(t => {
             if (t.vesselId && !map.has(t.vesselId)) {
                 map.set(t.vesselId, {
@@ -59,25 +56,18 @@ function AdminBoatAssets() {
                 });
             }
         });
-
         return Array.from(map.values());
     }, [utsTrips]);
 
-    /* =========================
-       Vessel select
-    ========================= */
     function handleVesselSelect(e) {
-        const selected = vesselOptions.find(
-            v => v.vesselId === e.target.value
-        );
+        const selected = vesselOptions.find(v => v.vesselId === e.target.value);
         if (!selected) return;
 
         setVesselId(selected.vesselId);
         setBoatName(selected.boatName);
-
-        // 선박 변경 시 초기화 (안전)
         setHeroImage(null);
         setCabins([]);
+        setSaveStatus("");
     }
 
     /* =========================
@@ -100,14 +90,9 @@ function AdminBoatAssets() {
     ========================= */
     function addCabin() {
         if (!vesselId) return;
-
         setCabins([
             ...cabins,
-            {
-                cabinTypeCode: "STANDARD",
-                cabinName: "",
-                images: []
-            }
+            { cabinTypeCode: "STANDARD", cabinName: "", images: [] }
         ]);
     }
 
@@ -119,7 +104,6 @@ function AdminBoatAssets() {
 
     function addCabinImage(cabinIndex, file) {
         if (!file || !vesselId) return;
-
         const updated = [...cabins];
         updated[cabinIndex].images.push({
             id: `${vesselId}_${updated[cabinIndex].cabinTypeCode}_${Date.now()}`,
@@ -132,9 +116,9 @@ function AdminBoatAssets() {
     }
 
     /* =========================
-       JSON 생성
+       Payload 생성
     ========================= */
-    function generatePreviewJSON() {
+    function buildPayload() {
         if (!vesselId) return null;
 
         return {
@@ -168,40 +152,45 @@ function AdminBoatAssets() {
     }
 
     /* =========================
-       Export
+       Save to Server
     ========================= */
-    function handleExportJSON() {
-        const data = generatePreviewJSON();
-        if (!data) {
-            alert("UTS 선박을 먼저 선택하세요.");
+    async function handleSaveToServer() {
+        const payload = buildPayload();
+        if (!payload) {
+            alert("선박을 먼저 선택하세요.");
             return;
         }
 
-        const blob = new Blob(
-            [JSON.stringify(data, null, 2)],
-            { type: "application/json;charset=utf-8;" }
-        );
+        setSaveStatus("저장 중...");
 
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `boats-assets-${vesselId}.json`;
-        link.click();
-        URL.revokeObjectURL(url);
+        try {
+            const res = await fetch("/api/admin/boats-assets", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await res.json();
+
+            if (result.success) {
+                setSaveStatus(`✅ 저장 완료 (${payload.vesselId})`);
+            } else {
+                setSaveStatus("❌ 저장 실패");
+            }
+        } catch (err) {
+            console.error(err);
+            setSaveStatus("❌ 서버 오류");
+        }
     }
 
-    /* =========================
-       Render
-    ========================= */
     if (loading) {
         return <div style={{ padding: 24 }}>UTS 데이터 로딩 중...</div>;
     }
 
     return (
         <div style={{ padding: 24, maxWidth: 1000 }}>
-            <h2>Boat Assets Admin (UTS 기반)</h2>
+            <h2>Boat Assets Admin (서버 저장)</h2>
 
-            {/* Vessel select */}
             <section>
                 <h3>UTS 선박 선택</h3>
                 <select value={vesselId} onChange={handleVesselSelect}>
@@ -212,52 +201,22 @@ function AdminBoatAssets() {
                         </option>
                     ))}
                 </select>
-
-                {vesselId && (
-                    <div style={{ marginTop: 8, fontSize: 14, color: "#555" }}>
-                        <div><strong>vesselId:</strong> {vesselId}</div>
-                        <div><strong>boatName:</strong> {boatName}</div>
-                    </div>
-                )}
             </section>
 
-            {/* Hero */}
             <section style={{ marginTop: 24 }}>
                 <h3>대표 이미지 (Hero)</h3>
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleHeroUpload}
-                    disabled={!vesselId}
-                />
-                {heroImage && (
-                    <div style={{ marginTop: 8 }}>
-                        선택된 파일: <strong>{heroImage.file.name}</strong>
-                    </div>
-                )}
+                <input type="file" accept="image/*" onChange={handleHeroUpload} />
             </section>
 
-            {/* Cabins */}
             <section style={{ marginTop: 24 }}>
                 <h3>객실 이미지</h3>
-                <button onClick={addCabin} disabled={!vesselId}>
-                    + 객실 타입 추가
-                </button>
+                <button onClick={addCabin}>+ 객실 타입 추가</button>
 
                 {cabins.map((cabin, index) => (
-                    <div
-                        key={index}
-                        style={{
-                            border: "1px solid #ccc",
-                            padding: 16,
-                            marginTop: 12
-                        }}
-                    >
+                    <div key={index} style={{ border: "1px solid #ccc", padding: 16, marginTop: 12 }}>
                         <select
                             value={cabin.cabinTypeCode}
-                            onChange={e =>
-                                updateCabin(index, "cabinTypeCode", e.target.value)
-                            }
+                            onChange={e => updateCabin(index, "cabinTypeCode", e.target.value)}
                         >
                             {CABIN_TYPE_OPTIONS.map(opt => (
                                 <option key={opt} value={opt}>{opt}</option>
@@ -267,9 +226,7 @@ function AdminBoatAssets() {
                         <input
                             placeholder="객실 이름"
                             value={cabin.cabinName}
-                            onChange={e =>
-                                updateCabin(index, "cabinName", e.target.value)
-                            }
+                            onChange={e => updateCabin(index, "cabinName", e.target.value)}
                             style={{ marginLeft: 8 }}
                         />
 
@@ -277,13 +234,11 @@ function AdminBoatAssets() {
                             <input
                                 type="file"
                                 accept="image/*"
-                                onChange={e =>
-                                    addCabinImage(index, e.target.files?.[0])
-                                }
+                                onChange={e => addCabinImage(index, e.target.files?.[0])}
                             />
                         </div>
 
-                        <ul style={{ marginTop: 8 }}>
+                        <ul>
                             {cabin.images.map(img => (
                                 <li key={img.id}>{img.file.name}</li>
                             ))}
@@ -292,24 +247,12 @@ function AdminBoatAssets() {
                 ))}
             </section>
 
-            {/* Export + Preview */}
             {vesselId && (
                 <section style={{ marginTop: 32 }}>
-                    <button onClick={handleExportJSON}>
-                        boats-assets.json 다운로드
+                    <button onClick={handleSaveToServer}>
+                        서버에 저장
                     </button>
-
-                    <pre
-                        style={{
-                            background: "#f5f5f5",
-                            padding: 16,
-                            marginTop: 12,
-                            maxHeight: 400,
-                            overflow: "auto"
-                        }}
-                    >
-                        {JSON.stringify(generatePreviewJSON(), null, 2)}
-                    </pre>
+                    <div style={{ marginTop: 8 }}>{saveStatus}</div>
                 </section>
             )}
         </div>
