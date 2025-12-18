@@ -25,7 +25,8 @@ if (!fs.existsSync(ASSETS_DIR)) {
 // --------------------------------------------------
 // POST /api/admin/boats-assets
 // --------------------------------------------------
-router.post("/admin/boats-assets", (req, res) => {
+router.post("/", (req, res) => {
+
 
     try {
         const body = req.body;
