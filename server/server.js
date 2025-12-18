@@ -1,3 +1,5 @@
+console.log("🔥 RUNNING SERVER FILE:", __filename);
+
 const express = require('express');
 const { exec } = require('child_process');
 const cors = require('cors');

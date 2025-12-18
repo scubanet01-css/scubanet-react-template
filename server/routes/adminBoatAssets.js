@@ -1,6 +1,3 @@
-
-console.log("🔥 RUNNING SERVER FILE:", __filename);
-
 /**
  * POST /api/admin/boats-assets
  * - AdminBoatAssets.jsx에서 전달된 JSON을
