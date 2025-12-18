@@ -4,6 +4,9 @@
  * - vesselId 기준으로 서버에 저장
  */
 
+console.log("✅ adminBoatAssets router loaded");
+
+
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
