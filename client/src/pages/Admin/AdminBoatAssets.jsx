@@ -152,7 +152,7 @@ function AdminBoatAssets() {
     }
 
     /* =========================
-       Save to Server
+       Save to Server (FIXED)
     ========================= */
     async function handleSaveToServer() {
         const payload = buildPayload();
@@ -164,11 +164,16 @@ function AdminBoatAssets() {
         setSaveStatus("저장 중...");
 
         try {
-            const res = await fetch("/api/admin/boats-assets", {
+            const res = await fetch("/admin/api/boats-assets", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
+
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(`서버 오류 ${res.status}: ${text}`);
+            }
 
             const result = await res.json();
 
@@ -178,8 +183,8 @@ function AdminBoatAssets() {
                 setSaveStatus("❌ 저장 실패");
             }
         } catch (err) {
-            console.error(err);
-            setSaveStatus("❌ 서버 오류");
+            console.error("서버 저장 실패:", err);
+            setSaveStatus("❌ 서버 오류 (콘솔 확인)");
         }
     }
 
@@ -213,13 +218,20 @@ function AdminBoatAssets() {
                 <button onClick={addCabin}>+ 객실 타입 추가</button>
 
                 {cabins.map((cabin, index) => (
-                    <div key={index} style={{ border: "1px solid #ccc", padding: 16, marginTop: 12 }}>
+                    <div
+                        key={index}
+                        style={{ border: "1px solid #ccc", padding: 16, marginTop: 12 }}
+                    >
                         <select
                             value={cabin.cabinTypeCode}
-                            onChange={e => updateCabin(index, "cabinTypeCode", e.target.value)}
+                            onChange={e =>
+                                updateCabin(index, "cabinTypeCode", e.target.value)
+                            }
                         >
                             {CABIN_TYPE_OPTIONS.map(opt => (
-                                <option key={opt} value={opt}>{opt}</option>
+                                <option key={opt} value={opt}>
+                                    {opt}
+                                </option>
                             ))}
                         </select>
 
@@ -234,7 +246,9 @@ function AdminBoatAssets() {
                             <input
                                 type="file"
                                 accept="image/*"
-                                onChange={e => addCabinImage(index, e.target.files?.[0])}
+                                onChange={e =>
+                                    addCabinImage(index, e.target.files?.[0])
+                                }
                             />
                         </div>
 
