@@ -23,7 +23,7 @@ app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 app.use(express.json()); // ✅ POST 요청의 body를 읽을 수 있게 함
 app.use(bodyParser.json());
 app.use("/api", invoiceRoutes);
-app.use("/api/boats-assets", adminBoatAssetsRoutes);
+app.use("/admin/api/boats-assets", adminBoatAssetsRoutes);
 
 app.use("/data", express.static("/root/data"));
 app.use('/images', express.static('root/data/images'));
