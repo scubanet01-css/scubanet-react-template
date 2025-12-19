@@ -18,25 +18,26 @@ function ensureDir(dirPath) {
     }
 }
 
+const BASE_DIR = "/var/www/scubanet/assets/vessels";
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const { vesselId, bucket, sub } = req.body;
 
         if (!vesselId || !bucket) {
-            return cb(new Error("vesselId 또는 bucket 누락"), null);
+            return cb(new Error("vesselId 또는 bucket 누락"));
         }
 
-        const baseDir = "/var/www/scubanet/assets/vessels";
         const targetDir = sub
-            ? path.join(baseDir, vesselId, bucket, sub)
-            : path.join(baseDir, vesselId, bucket);
+            ? path.join(BASE_DIR, vesselId, bucket, sub)
+            : path.join(BASE_DIR, vesselId, bucket);
 
         ensureDir(targetDir);
         cb(null, targetDir);
     },
 
     filename: (req, file, cb) => {
-        // 파일명은 React에서 이미 정해진 이름을 그대로 사용
+        // React에서 이미 파일명 결정
         cb(null, file.originalname);
     },
 });
@@ -44,25 +45,23 @@ const storage = multer.diskStorage({
 const upload = multer({
     storage,
     limits: {
-        fileSize: 20 * 1024 * 1024, // 20MB (리사이즈 후라 충분)
+        fileSize: 20 * 1024 * 1024, // 20MB
     },
 });
 
 /**
  * POST /admin/api/boats-assets/upload
- * form-data:
- * - vesselId
- * - bucket
- * - sub (optional)
- * - file
  */
 router.post(
-    "/admin/api/boats-assets/upload",
+    "/upload",
     upload.single("file"),
     (req, res) => {
         try {
             if (!req.file) {
-                return res.status(400).json({ success: false, message: "파일 없음" });
+                return res.status(400).json({
+                    success: false,
+                    message: "파일이 업로드되지 않았습니다.",
+                });
             }
 
             const { vesselId, bucket, sub } = req.body;
