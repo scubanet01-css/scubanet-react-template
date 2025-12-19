@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { resizeImage } from "../utils/imageResize";
+import { resizeImage } from "../../utils/imageResize";
 
 async function uploadImageToServer({
     vesselId,
