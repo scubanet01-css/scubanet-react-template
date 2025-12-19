@@ -10,7 +10,6 @@ const generateInvoicePDF = require('./utils/generateInvoicePDF');
 const sendInvoiceEmail = require('./utils/sendInvoiceEmail'); // ✅ 이메일 모듈 추가
 const invoiceRoutes = require("./routes/invoiceRoutes");
 const adminBoatAssetsRoutes = require("./routes/adminBoatAssets");
-const adminBoatAssetsUploadRoutes = require("./routes/adminBoatAssets");
 const app = express();
 const port = 3002;
 
