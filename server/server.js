@@ -10,7 +10,7 @@ const generateInvoicePDF = require('./utils/generateInvoicePDF');
 const sendInvoiceEmail = require('./utils/sendInvoiceEmail'); // ✅ 이메일 모듈 추가
 const invoiceRoutes = require("./routes/invoiceRoutes");
 const adminBoatAssetsRoutes = require("./routes/adminBoatAssets");
-const adminBoatAssetsUploadRoutes = require("./routes/adminBoatAssetsUpload");
+const adminBoatAssetsUploadRoutes = require("./routes/adminBoatAssets");
 const app = express();
 const port = 3002;
 
@@ -24,7 +24,6 @@ app.use(express.json()); // ✅ POST 요청의 body를 읽을 수 있게 함
 app.use(bodyParser.json());
 app.use("/api", invoiceRoutes);
 app.use("/admin/api/boats-assets", adminBoatAssetsRoutes);
-app.use(adminBoatAssetsUploadRoutes);
 app.post("/__debug_post_test__", (req, res) => {
   res.json({ ok: true });
 });
