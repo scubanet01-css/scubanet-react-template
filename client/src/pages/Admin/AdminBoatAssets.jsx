@@ -1,4 +1,31 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { resizeImage } from "../utils/imageResize";
+
+async function uploadImageToServer({
+    vesselId,
+    bucket,
+    sub,
+    file,
+}) {
+    const formData = new FormData();
+    formData.append("vesselId", vesselId);
+    formData.append("bucket", bucket);
+    if (sub) formData.append("sub", sub);
+    formData.append("file", file);
+
+    const res = await fetch("/admin/api/boats-assets/upload", {
+        method: "POST",
+        body: formData,
+    });
+
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text);
+    }
+
+    return await res.json();
+}
+
 
 /**
  * AdminBoatAssets (Refactored Full Schema)
@@ -228,22 +255,22 @@ function AdminBoatAssets() {
     // Hero
     // -------------------------------
     async function handleHeroUpload(e) {
-        const raw = e.target.files?.[0];
-        if (!raw || !vesselId) return;
+        const original = e.target.files?.[0];
+        if (!original || !vesselId) return;
 
-        const file = await resizeImageFile(raw, { maxWidth: 2000, maxHeight: 2000, quality: 0.9 });
-        const preview = makePreviewUrl(file);
+        const resized = await resizeImage(original, 1600, 0.8);
 
         setHeroImage({
             id: `${vesselId}_hero_01`,
-            file,
-            preview,
+            file: resized,                      // ✅ resized
+            preview: URL.createObjectURL(resized),
             title: boatName || "",
-            description: "", // Hero만 간단 설명 유지(선택)
+            description: "",
             order: 1,
             isPrimary: true,
         });
     }
+
 
     function updateHero(field, value) {
         if (!heroImage) return;
@@ -291,33 +318,24 @@ function AdminBoatAssets() {
         });
     }
 
-    async function uploadDeckPlanImage(index, rawFile) {
-        if (!rawFile || !vesselId) return;
+    async function uploadDeckPlanImage(index, original) {
+        if (!original || !vesselId) return;
 
-        const file = await resizeImageFile(rawFile, { maxWidth: 2000, maxHeight: 2000, quality: 0.9 });
+        const resized = await resizeImage(original, 1600, 0.8);
+        const updated = [...deckPlans];
+        const deck = updated[index];
 
-        setDeckPlans((prev) => {
-            const updated = [...prev];
-            const deck = updated[index];
+        updated[index].image = {
+            id: `${vesselId}_deck_${deck.deckCode}_${Date.now()}`,
+            file: resized,
+            preview: URL.createObjectURL(resized),
+            title: `${deck.deckName} Plan`,
+            order: deck.order || index + 1,
+        };
 
-            // 기존 preview 정리
-            revokePreview(deck?.image);
-
-            const preview = makePreviewUrl(file);
-
-            updated[index] = {
-                ...deck,
-                image: {
-                    id: `${vesselId}_deck_${deck.deckCode}_${Date.now()}`,
-                    file,
-                    preview,
-                    title: deck.deckName ? `${deck.deckName} Plan` : `${deck.deckCode} Plan`,
-                    order: deck.order || index + 1,
-                },
-            };
-            return updated;
-        });
+        setDeckPlans(updated);
     }
+
 
     function updateDeckPlanImageTitle(index, title) {
         setDeckPlans((prev) => {
@@ -373,39 +391,24 @@ function AdminBoatAssets() {
         });
     }
 
-    async function addCabinImage(cabinIndex, rawFile) {
-        if (!rawFile || !vesselId) return;
+    async function addCabinImage(cabinIndex, original) {
+        if (!original || !vesselId) return;
 
-        const file = await resizeImageFile(rawFile, { maxWidth: 1600, maxHeight: 1600, quality: 0.88 });
+        const resized = await resizeImage(original, 1600, 0.8);
+        const updated = [...cabins];
 
-        setCabins((prev) => {
-            const updated = [...prev];
-            const cabin = updated[cabinIndex];
-
-            const preview = makePreviewUrl(file);
-            const order = (cabin.images?.length || 0) + 1;
-
-            const defaultTitle =
-                cabin.cabinName?.trim()
-                    ? cabin.cabinName.trim()
-                    : `${cabin.cabinTypeCode} Cabin`;
-
-            const nextImg = {
-                id: `${vesselId}_cabin_${cabin.cabinTypeCode}_${Date.now()}`,
-                file,
-                preview,
-                title: defaultTitle, // 최소입력: Title은 자동 세팅 + 필요 시 수정만
-                order,
-            };
-
-            updated[cabinIndex] = {
-                ...cabin,
-                images: [...(cabin.images || []), nextImg],
-            };
-
-            return updated;
+        updated[cabinIndex].images.push({
+            id: `${vesselId}_cabin_${updated[cabinIndex].cabinTypeCode}_${Date.now()}`,
+            file: resized,
+            preview: URL.createObjectURL(resized),
+            title: "",
+            tagsText: "",
+            order: updated[cabinIndex].images.length + 1,
         });
+
+        setCabins(updated);
     }
+
 
     function updateCabinImage(cabinIndex, imageIndex, field, value) {
         setCabins((prev) => {
@@ -864,15 +867,121 @@ function AdminBoatAssets() {
     // Save to Server
     // -------------------------------
     async function handleSaveToServer() {
-        const payload = buildPayload();
-        if (!payload) {
+        if (!vesselId) {
             alert("선박을 먼저 선택하세요.");
             return;
         }
 
-        setSaveStatus("저장 중...");
+        setSaveStatus("이미지 처리 중...");
 
         try {
+            /* =========================
+               1. Hero Image
+            ========================= */
+            if (heroImage?.file) {
+                const resizedHero = await resizeImage(heroImage.file, 2000, 0.85);
+
+                await uploadImageToServer({
+                    vesselId,
+                    bucket: "hero",
+                    file: resizedHero,
+                });
+            }
+
+            /* =========================
+               2. Deck Plans
+            ========================= */
+            for (const deck of deckPlans) {
+                if (!deck.image?.file) continue;
+
+                const resized = await resizeImage(deck.image.file, 2000, 0.85);
+
+                await uploadImageToServer({
+                    vesselId,
+                    bucket: "deck-plans",
+                    sub: deck.deckCode,
+                    file: resized,
+                });
+            }
+
+            /* =========================
+               3. Cabins
+            ========================= */
+            for (const cabin of cabins) {
+                for (const img of cabin.images || []) {
+                    if (!img.file) continue;
+
+                    const resized = await resizeImage(img.file, 1600, 0.8);
+
+                    await uploadImageToServer({
+                        vesselId,
+                        bucket: "cabins",
+                        sub: cabin.cabinTypeCode,
+                        file: resized,
+                    });
+                }
+            }
+
+            /* =========================
+               4. Facilities
+            ========================= */
+            for (const fac of facilities) {
+                for (const img of fac.images || []) {
+                    if (!img.file) continue;
+
+                    const resized = await resizeImage(img.file, 1600, 0.8);
+
+                    await uploadImageToServer({
+                        vesselId,
+                        bucket: "facilities",
+                        sub: fac.facilityType,
+                        file: resized,
+                    });
+                }
+            }
+
+            /* =========================
+               5. Tenders
+            ========================= */
+            for (const t of tenders) {
+                for (const img of t.images || []) {
+                    if (!img.file) continue;
+
+                    const resized = await resizeImage(img.file, 1600, 0.8);
+
+                    await uploadImageToServer({
+                        vesselId,
+                        bucket: "tenders",
+                        file: resized,
+                    });
+                }
+            }
+
+            /* =========================
+               6. Food
+            ========================= */
+            for (const f of food) {
+                for (const img of f.images || []) {
+                    if (!img.file) continue;
+
+                    const resized = await resizeImage(img.file, 1600, 0.8);
+
+                    await uploadImageToServer({
+                        vesselId,
+                        bucket: "food",
+                        sub: f.foodType,
+                        file: resized,
+                    });
+                }
+            }
+
+            /* =========================
+               7. JSON 메타데이터 저장
+            ========================= */
+            setSaveStatus("메타데이터 저장 중...");
+
+            const payload = buildPayload();
+
             const res = await fetch("/admin/api/boats-assets", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -880,22 +989,17 @@ function AdminBoatAssets() {
             });
 
             if (!res.ok) {
-                const text = await res.text();
-                throw new Error(`서버 오류 ${res.status}: ${text}`);
+                throw new Error(await res.text());
             }
 
-            const result = await res.json();
+            setSaveStatus("✅ 이미지 + 메타데이터 저장 완료");
 
-            if (result.success) {
-                setSaveStatus(`✅ 저장 완료 (${payload.vesselId})`);
-            } else {
-                setSaveStatus(`❌ 저장 실패: ${result.message || ""}`);
-            }
         } catch (err) {
-            console.error("서버 저장 실패:", err);
-            setSaveStatus("❌ 서버 오류 (콘솔 확인)");
+            console.error(err);
+            setSaveStatus("❌ 저장 중 오류 발생 (콘솔 확인)");
         }
     }
+
 
     const previewJson = useMemo(() => buildPayload(), [
         vesselId,
