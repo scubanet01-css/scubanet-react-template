@@ -1,68 +1,90 @@
-/**
- * POST /api/admin/boats-assets
- * - AdminBoatAssets.jsx에서 전달된 JSON을
- * - vesselId 기준으로 서버에 저장
- */
-
-console.log("✅ adminBoatAssets router loaded");
-
-
 const express = require("express");
+const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 
 const router = express.Router();
 
-// 저장 루트
-const DATA_ROOT = "/var/www/scubanet/data";
-const ASSETS_DIR = path.join(DATA_ROOT, "boats-assets");
+/**
+ * 업로드 규칙
+ * - vesselId (required)
+ * - bucket: hero | deck-plans | cabins | facilities | tenders | food
+ * - sub: 선택 (cabins=DELUXE, deck-plans=MAIN_DECK 등)
+ */
 
-// 디렉토리 보장
-if (!fs.existsSync(ASSETS_DIR)) {
-    fs.mkdirSync(ASSETS_DIR, { recursive: true });
+function ensureDir(dirPath) {
+    if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+    }
 }
 
-// --------------------------------------------------
-// POST /api/admin/boats-assets
-// --------------------------------------------------
-router.post("/", (req, res) => {
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const { vesselId, bucket, sub } = req.body;
 
-
-    try {
-        const body = req.body;
-
-        if (!body || !body.vesselId) {
-            return res.status(400).json({
-                success: false,
-                message: "vesselId가 없습니다."
-            });
+        if (!vesselId || !bucket) {
+            return cb(new Error("vesselId 또는 bucket 누락"), null);
         }
 
-        const vesselId = body.vesselId;
+        const baseDir = "/var/www/scubanet/assets/vessels";
+        const targetDir = sub
+            ? path.join(baseDir, vesselId, bucket, sub)
+            : path.join(baseDir, vesselId, bucket);
 
-        // 파일 경로
-        const filePath = path.join(ASSETS_DIR, `${vesselId}.json`);
+        ensureDir(targetDir);
+        cb(null, targetDir);
+    },
 
-        // 서버 저장
-        fs.writeFileSync(
-            filePath,
-            JSON.stringify(body, null, 2),
-            "utf8"
-        );
-
-        return res.json({
-            success: true,
-            vesselId,
-            savedTo: filePath
-        });
-
-    } catch (err) {
-        console.error("❌ boats-assets 저장 오류:", err);
-        return res.status(500).json({
-            success: false,
-            message: "서버 저장 중 오류 발생"
-        });
-    }
+    filename: (req, file, cb) => {
+        // 파일명은 React에서 이미 정해진 이름을 그대로 사용
+        cb(null, file.originalname);
+    },
 });
+
+const upload = multer({
+    storage,
+    limits: {
+        fileSize: 20 * 1024 * 1024, // 20MB (리사이즈 후라 충분)
+    },
+});
+
+/**
+ * POST /admin/api/boats-assets/upload
+ * form-data:
+ * - vesselId
+ * - bucket
+ * - sub (optional)
+ * - file
+ */
+router.post(
+    "/admin/api/boats-assets/upload",
+    upload.single("file"),
+    (req, res) => {
+        try {
+            if (!req.file) {
+                return res.status(400).json({ success: false, message: "파일 없음" });
+            }
+
+            const { vesselId, bucket, sub } = req.body;
+
+            const savedPath = req.file.path.replace("/var/www/scubanet", "");
+
+            res.json({
+                success: true,
+                vesselId,
+                bucket,
+                sub: sub || null,
+                filename: req.file.originalname,
+                savedPath,
+            });
+        } catch (err) {
+            console.error("❌ 업로드 실패:", err);
+            res.status(500).json({
+                success: false,
+                message: "이미지 업로드 중 오류 발생",
+            });
+        }
+    }
+);
 
 module.exports = router;
