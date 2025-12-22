@@ -83,6 +83,10 @@ function TripDetail() {
       if (!trip) return;
 
       const vesselId = getVesselId(trip);
+
+      console.log("🛳 Trip vesselId:", vesselId);
+      console.log("📦 boatAssets URL:", `${BOAT_ASSETS_JSON_BASE}/${vesselId}.json`);
+
       if (!vesselId) {
         setBoatAssets(null);
         return;
