@@ -86,4 +86,43 @@ router.post(
     }
 );
 
+/**
+ * POST /admin/api/boats-assets
+ * JSON 메타데이터 저장
+ */
+router.post("/", (req, res) => {
+    try {
+        const payload = req.body;
+
+        if (!payload?.vesselId) {
+            return res.status(400).json({
+                success: false,
+                message: "vesselId 누락",
+            });
+        }
+
+        const saveDir = `/var/www/scubanet/data/boats-assets`;
+        if (!fs.existsSync(saveDir)) {
+            fs.mkdirSync(saveDir, { recursive: true });
+        }
+
+        const filePath = path.join(saveDir, `${payload.vesselId}.json`);
+
+        fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), "utf8");
+
+        res.json({
+            success: true,
+            vesselId: payload.vesselId,
+            savedPath: filePath.replace("/var/www/scubanet", ""),
+        });
+    } catch (err) {
+        console.error("❌ boats-assets JSON 저장 실패:", err);
+        res.status(500).json({
+            success: false,
+            message: "boats-assets JSON 저장 중 서버 오류",
+        });
+    }
+});
+
+
 module.exports = router;
