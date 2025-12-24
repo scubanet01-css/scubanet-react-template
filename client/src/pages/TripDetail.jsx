@@ -226,173 +226,140 @@ function TripDetail() {
   }
 
   // ===============================
-  // ✅ 섹션별 데이터 (memo)
+  // ✅ 섹션별 데이터 (memo) – boats-assets 구조 반영 최종본
   // ===============================
   const vesselId = useMemo(() => getVesselId(trip), [trip]);
   const currency = useMemo(() => getCurrencyForTrip(trip), [trip]);
 
-  // 1) Hero (Admin 우선, 없으면 UTS cover)
-  const heroImageUrl = useMemo(() => {
-    const adminHeroFilename =
-      boatAssets?.hero?.filename ||
-      boatAssets?.hero?.image?.filename ||
-      boatAssets?.hero?.imageFilename ||
-      null;
+  // boats-assets 핵심 루트
+  const assets = boatAssets?.assets || null;
 
-    if (adminHeroFilename && vesselId) {
-      return buildAssetUrl(vesselId, "hero", null, adminHeroFilename);
-    }
+  /* ===============================
+     1) Hero (Admin 우선, 없으면 UTS cover)
+  =============================== */
+  const heroImageUrl = useMemo(() => {
+    // Admin hero는 이미 url 완성형
+    const adminHeroUrl = assets?.hero?.url || null;
+    if (adminHeroUrl) return adminHeroUrl;
 
     // fallback: UTS cover
-    const cover = trip?.images?.cover || "";
-    return cover || null;
-  }, [boatAssets, trip, vesselId]);
+    return trip?.images?.cover || null;
+  }, [assets, trip]);
 
-  // 2) Overview Gallery (UTS gallery 중심 + Hero 포함)
+  /* ===============================
+     2) Overview Gallery (Hero + UTS gallery)
+  =============================== */
   const overviewImages = useMemo(() => {
-    const gallery = Array.isArray(trip?.images?.gallery) ? trip.images.gallery : [];
-    const normalized = gallery
-      .map((u) => (typeof u === "string" ? u : u?.url || u?.image))
-      .filter(Boolean)
-      .map((u) => ({ url: u, caption: trip?.boatName || "" }));
+    const list = [];
 
-    const hero = heroImageUrl ? [{ url: heroImageUrl, caption: trip?.boatName || "" }] : [];
-    // hero를 맨 앞에 붙이되, 중복 url 제거
-    const seen = new Set();
-    const all = [...hero, ...normalized].filter((x) => {
-      if (!x?.url) return false;
-      if (seen.has(x.url)) return false;
-      seen.add(x.url);
-      return true;
-    });
-    return all;
-  }, [trip, heroImageUrl]);
-
-  // 3) Deck Plans (Admin)
-  const deckPlans = useMemo(() => {
-    const list = Array.isArray(boatAssets?.deckPlans)
-      ? boatAssets.deckPlans
-      : Array.isArray(boatAssets?.["deck-plans"])
-        ? boatAssets["deck-plans"]
-        : [];
-
-    // 기대 형태:
-    // - { deckCode, title, image: { filename } }
-    // - { deckCode, title, filename }
-    // - { deckCode, imageFilename }
-    return list
-      .map((d) => {
-        const deckCode = d?.deckCode || d?.code || d?.deck || "";
-        const title = d?.title || d?.name || deckCode || "DECK";
-        const filename =
-          d?.image?.filename ||
-          d?.image?.originalname ||
-          d?.filename ||
-          d?.imageFilename ||
-          null;
-
-        const url = filename ? buildAssetUrl(vesselId, "deck-plans", deckCode, filename) : null;
-
-        return {
-          deckCode,
-          title,
-          url,
-          filename,
-        };
-      })
-      .filter((x) => x.deckCode && x.url);
-  }, [boatAssets, vesselId]);
-
-  // 4) Facilities (Admin)
-  const facilities = useMemo(() => {
-    const list = Array.isArray(boatAssets?.facilities) ? boatAssets.facilities : [];
-    // 기대 형태:
-    // - { facilityType, title, images:[{filename,title,order}] }
-    return list
-      .map((f) => {
-        const facilityType = f?.facilityType || f?.type || "";
-        const title = f?.title || facilityType || "FACILITY";
-
-        const images = (Array.isArray(f?.images) ? f.images : [])
-          .map((img) => {
-            const filename = img?.filename || img?.originalname || img?.name || null;
-            const url = filename
-              ? buildAssetUrl(vesselId, "facilities", facilityType, filename)
-              : null;
-
-            return {
-              ...img,
-              filename,
-              url,
-            };
-          })
-          .filter((x) => x.url)
-          .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
-
-        return { facilityType, title, images };
-      })
-      .filter((x) => x.facilityType && x.images.length > 0);
-  }, [boatAssets, vesselId]);
-
-  // 5) Cabins (UTS cabinTypes + Admin cabin images merge)
-  const cabinTypes = useMemo(() => {
-    const utsCabinTypes = buildCabinTypes(trip);
-
-    const adminCabins = Array.isArray(boatAssets?.cabins)
-      ? boatAssets.cabins
-      : [];
-
-    // admin 기대 형태:
-    // - { cabinTypeCode, title, images:[{filename,title,order}] }
-    // - 또는 { cabinTypeCode, images:[...] }
-    const adminMap = new Map();
-    for (const c of adminCabins) {
-      const code = String(c?.cabinTypeCode || c?.code || c?.name || "").trim();
-      if (!code) continue;
-
-      const images = (Array.isArray(c?.images) ? c.images : [])
-        .map((img) => {
-          const filename = img?.filename || img?.originalname || img?.name || null;
-          const url = filename
-            ? buildAssetUrl(vesselId, "cabins", code, filename)
-            : null;
-
-          return {
-            ...img,
-            filename,
-            url,
-          };
-        })
-        .filter((x) => x.url)
-        .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
-
-      adminMap.set(normalizeKey(code), {
-        cabinTypeCode: code,
-        title: c?.title || code,
-        description: c?.description || "",
-        images,
+    if (heroImageUrl) {
+      list.push({
+        url: heroImageUrl,
+        caption: trip?.boatName || "",
       });
     }
 
-    // UTS 타입명과 admin cabinTypeCode가 다를 수 있으니
-    // 1) 완전일치 시도 (normalizeKey)
-    // 2) 실패하면 UTS 이미지를 그대로 사용 (fallback)
+    const gallery = Array.isArray(trip?.images?.gallery)
+      ? trip.images.gallery
+      : [];
+
+    for (const g of gallery) {
+      const url = typeof g === "string" ? g : g?.url || g?.image;
+      if (!url) continue;
+      if (list.find((x) => x.url === url)) continue;
+
+      list.push({
+        url,
+        caption: trip?.boatName || "",
+      });
+    }
+
+    return list;
+  }, [trip, heroImageUrl]);
+
+  /* ===============================
+     3) Deck Plans (Admin)
+  =============================== */
+  const deckPlans = useMemo(() => {
+    const list = Array.isArray(assets?.deckPlans)
+      ? assets.deckPlans
+      : [];
+
+    return list
+      .map((d) => ({
+        deckCode: d?.deckCode || "",
+        title: d?.deckName || d?.deckCode || "DECK",
+        url: d?.image?.url || null,
+        order: d?.order ?? 9999,
+      }))
+      .filter((x) => x.deckCode && x.url)
+      .sort((a, b) => a.order - b.order);
+  }, [assets]);
+
+  /* ===============================
+     4) Facilities (Admin)
+  =============================== */
+  const facilities = useMemo(() => {
+    const list = Array.isArray(assets?.facilities)
+      ? assets.facilities
+      : [];
+
+    return list
+      .map((f) => ({
+        facilityType: f?.facilityType || "",
+        title: f?.name || f?.facilityType || "FACILITY",
+        images: (Array.isArray(f?.images) ? f.images : [])
+          .map((img) => ({
+            url: img?.url || null,
+            title: img?.title || "",
+            order: img?.order ?? 9999,
+          }))
+          .filter((img) => img.url)
+          .sort((a, b) => a.order - b.order),
+      }))
+      .filter((f) => f.facilityType && f.images.length > 0);
+  }, [assets]);
+
+  /* ===============================
+     5) Cabins (UTS + Admin merge)
+  =============================== */
+  const cabinTypes = useMemo(() => {
+    const utsCabinTypes = buildCabinTypes(trip);
+
+    const adminCabins = Array.isArray(assets?.cabins)
+      ? assets.cabins
+      : [];
+
+    const adminMap = new Map();
+
+    for (const c of adminCabins) {
+      const code = normalizeKey(c?.cabinTypeCode);
+      if (!code) continue;
+
+      adminMap.set(code, {
+        title: c?.cabinName || c?.cabinTypeCode,
+        images: (Array.isArray(c?.images) ? c.images : [])
+          .map((img) => ({
+            url: img?.url || null,
+            title: img?.title || "",
+            order: img?.order ?? 9999,
+          }))
+          .filter((img) => img.url)
+          .sort((a, b) => a.order - b.order),
+      });
+    }
+
     return utsCabinTypes.map((uts) => {
-      const key = normalizeKey(uts?.name);
+      const key = normalizeKey(uts.name);
       const admin = adminMap.get(key);
 
-      // Admin 이미지가 있으면 그걸 사용, 없으면 UTS 이미지 (string url)
-      if (admin?.images?.length) {
-        return {
-          ...uts,
-          adminImages: admin.images, // [{url, filename,...}]
-          adminDescription: admin.description || "",
-          adminTitle: admin.title || "",
-        };
-      }
-      return { ...uts, adminImages: [] };
+      return {
+        ...uts,
+        adminImages: admin?.images || [],
+        adminTitle: admin?.title || "",
+      };
     });
-  }, [trip, boatAssets, vesselId]);
+  }, [trip, assets]);
 
   function normalizeKey(s) {
     return String(s || "")
