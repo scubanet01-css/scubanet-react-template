@@ -1,4 +1,4 @@
-// ✅ TripDetail.jsx (UTS + Admin Boat Assets 통합 버전)
+// ✅ TripDetail.jsx (UTS + Admin Boat Assets 통합 버전: FIXED)
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
@@ -10,7 +10,6 @@ import "./TripDetail.css";
 import { formatCurrency } from "../utils/formatCurrency";
 import { getCurrencyForTrip } from "../utils/currencyUtils";
 
-const ASSET_BASE = "/assets/vessels";          // 이미지 파일들 (nginx로 바로 서빙)
 const BOAT_ASSETS_JSON_BASE = "/data/boats-assets"; // 메타데이터 JSON (nginx로 서빙)
 
 function TripDetail() {
@@ -32,6 +31,7 @@ function TripDetail() {
     cabins: useRef(null),
     facilities: useRef(null),
     price: useRef(null),
+    adminCabinsExtra: useRef(null),
   };
 
   const scrollTo = (key) =>
@@ -76,17 +76,12 @@ function TripDetail() {
 
   // ===============================
   // ✅ 2) Admin Boat Assets JSON 로딩
-  //    - trip 로딩 후 vesselId 얻어서 /data/boats-assets/{vesselId}.json
   // ===============================
   useEffect(() => {
     async function loadBoatAssets() {
       if (!trip) return;
 
       const vesselId = getVesselId(trip);
-
-      console.log("🛳 Trip vesselId:", vesselId);
-      console.log("📦 boatAssets URL:", `${BOAT_ASSETS_JSON_BASE}/${vesselId}.json`);
-
       if (!vesselId) {
         setBoatAssets(null);
         return;
@@ -95,10 +90,12 @@ function TripDetail() {
       setAssetsLoading(true);
       try {
         const url = `${BOAT_ASSETS_JSON_BASE}/${vesselId}.json`;
+        console.log("🛳 Trip vesselId:", vesselId);
+        console.log("📦 boatAssets URL:", url);
+
         const res = await fetch(url);
 
         if (!res.ok) {
-          // 아직 관리자가 저장 안 했거나 파일이 없는 경우는 정상 상황일 수 있음
           console.warn("⚠ boatAssets JSON not found:", url, res.status);
           setBoatAssets(null);
           return;
@@ -202,8 +199,6 @@ function TripDetail() {
 
   // ===============================
   // ✅ vesselId 결정 규칙
-  //    - trip.vesselId 가 있으면 최우선
-  //    - 없으면 boatId/boat.id 등도 대비
   // ===============================
   function getVesselId(t) {
     return (
@@ -216,35 +211,30 @@ function TripDetail() {
     );
   }
 
-  // ===============================
-  // ✅ Admin Assets → URL 생성 유틸
-  // ===============================
-  function buildAssetUrl(vesselId, bucket, sub, filename) {
-    if (!vesselId || !bucket || !filename) return null;
-    const base = `${ASSET_BASE}/${vesselId}/${bucket}`;
-    return sub ? `${base}/${sub}/${filename}` : `${base}/${filename}`;
+  function normalizeKey(s) {
+    return String(s || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_]+/g, "");
   }
 
   // ===============================
-  // ✅ 섹션별 데이터 (memo) – boats-assets 구조 반영 최종본
+  // ✅ 섹션별 데이터 (memo) – boats-assets 구조 반영
   // ===============================
   const vesselId = useMemo(() => getVesselId(trip), [trip]);
   const currency = useMemo(() => getCurrencyForTrip(trip), [trip]);
 
-  // boats-assets 핵심 루트
-  const assets = boatAssets?.assets || null;
+  // ⭐️ 여기가 핵심: assets 루트 고정
+  const assets = useMemo(() => boatAssets?.assets || {}, [boatAssets]);
 
   /* ===============================
      1) Hero (Admin 우선, 없으면 UTS cover)
   =============================== */
   const heroImageUrl = useMemo(() => {
-    // Admin Hero 우선
-    if (boatAssets?.assets?.hero?.url) {
-      return boatAssets.assets.hero.url;
-    }
-    // fallback: UTS cover
+    if (assets?.hero?.url) return assets.hero.url;
     return trip?.images?.cover || null;
-  }, [boatAssets, trip]);
+  }, [assets, trip]);
 
   /* ===============================
      2) Overview Gallery (Hero + UTS gallery)
@@ -253,25 +243,15 @@ function TripDetail() {
     const list = [];
 
     if (heroImageUrl) {
-      list.push({
-        url: heroImageUrl,
-        caption: trip?.boatName || "",
-      });
+      list.push({ url: heroImageUrl, caption: trip?.boatName || "" });
     }
 
-    const gallery = Array.isArray(trip?.images?.gallery)
-      ? trip.images.gallery
-      : [];
-
+    const gallery = Array.isArray(trip?.images?.gallery) ? trip.images.gallery : [];
     for (const g of gallery) {
       const url = typeof g === "string" ? g : g?.url || g?.image;
       if (!url) continue;
-      if (list.find((x) => x.url === url)) continue;
-
-      list.push({
-        url,
-        caption: trip?.boatName || "",
-      });
+      if (list.some((x) => x.url === url)) continue;
+      list.push({ url, caption: trip?.boatName || "" });
     }
 
     return list;
@@ -279,11 +259,10 @@ function TripDetail() {
 
   /* ===============================
      3) Deck Plans (Admin)
+     - 실제 스키마: assets.deckPlans[].image.url
   =============================== */
   const deckPlans = useMemo(() => {
-    const list = Array.isArray(assets?.deckPlans)
-      ? boatAssets.assets.deckPlans
-      : [];
+    const list = Array.isArray(assets?.deckPlans) ? assets.deckPlans : [];
 
     return list
       .map((d) => ({
@@ -298,11 +277,10 @@ function TripDetail() {
 
   /* ===============================
      4) Facilities (Admin)
+     - 실제 스키마: assets.facilities[].images[].url
   =============================== */
   const facilities = useMemo(() => {
-    const list = Array.isArray(assets?.facilities)
-      ? assets.facilities
-      : [];
+    const list = Array.isArray(assets?.facilities) ? assets.facilities : [];
 
     return list
       .map((f) => ({
@@ -322,22 +300,24 @@ function TripDetail() {
 
   /* ===============================
      5) Cabins (UTS + Admin merge)
+     - 주의: UTS 객실명(Deluxe Twin)과 Admin cabinTypeCode(STANDARD)가 다를 수 있음
+     - 따라서:
+       A) 일치할 때만 merge (기존 방식)
+       B) 불일치로 인해 누락되는 Admin cabin 이미지는 아래 "Admin Cabin Gallery(추가)" 섹션으로 별도 표시
   =============================== */
   const cabinTypes = useMemo(() => {
     const utsCabinTypes = buildCabinTypes(trip);
-
-    const adminCabins = Array.isArray(assets?.cabins)
-      ? assets.cabins
-      : [];
+    const adminCabins = Array.isArray(assets?.cabins) ? assets.cabins : [];
 
     const adminMap = new Map();
-
     for (const c of adminCabins) {
-      const code = normalizeKey(c?.cabinTypeCode);
+      const codeRaw = c?.cabinTypeCode || "";
+      const code = normalizeKey(codeRaw);
       if (!code) continue;
 
       adminMap.set(code, {
-        title: c?.cabinName || c?.cabinTypeCode,
+        codeRaw,
+        title: c?.cabinName || c?.cabinTypeCode || "",
         images: (Array.isArray(c?.images) ? c.images : [])
           .map((img) => ({
             url: img?.url || null,
@@ -361,13 +341,24 @@ function TripDetail() {
     });
   }, [trip, assets]);
 
-  function normalizeKey(s) {
-    return String(s || "")
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, "_")
-      .replace(/[^a-z0-9_]+/g, "");
-  }
+  // ✅ (B) Admin cabinTypeCode가 UTS랑 안 맞아도 보여주기 위한 "추가 섹션" 데이터
+  const adminCabinsExtra = useMemo(() => {
+    const list = Array.isArray(assets?.cabins) ? assets.cabins : [];
+    return list
+      .map((c) => ({
+        cabinTypeCode: c?.cabinTypeCode || "",
+        deckCode: c?.deckCode || "",
+        images: (Array.isArray(c?.images) ? c.images : [])
+          .map((img) => ({
+            url: img?.url || null,
+            title: img?.title || "",
+            order: img?.order ?? 9999,
+          }))
+          .filter((img) => img.url)
+          .sort((a, b) => a.order - b.order),
+      }))
+      .filter((x) => x.cabinTypeCode && x.images.length > 0);
+  }, [assets]);
 
   // cabinTypes 길이가 바뀌면 indices도 맞춰줌
   useEffect(() => {
@@ -411,13 +402,13 @@ function TripDetail() {
         )}
       </section>
 
-      {/* ✅ 히어로/보트사진 (Admin Hero 우선 + UTS 갤러리) */}
+      {/* ✅ 히어로/보트사진 */}
       <section ref={refs.overview} className="trip-section trip-overview">
         <h2>히어로 / 보트사진</h2>
         <TripImageGallery images={overviewImages} layoutImage={null} />
       </section>
 
-      {/* ✅ 덱 플랜 (Admin) */}
+      {/* ✅ 덱 플랜 */}
       <section ref={refs.deckplans} className="trip-section trip-deckplans">
         <h2>Deck Plans (덱 플랜)</h2>
 
@@ -437,18 +428,14 @@ function TripDetail() {
         )}
       </section>
 
-      {/* ✅ 객실 섹션 (UTS 객실 타입 + Admin 객실 이미지 merge) */}
+      {/* ✅ 객실 섹션 (UTS + Admin merge: 이름이 일치할 때만 merge) */}
       <section ref={refs.cabins} className="trip-section trip-cabins">
         <h2>객실 정보</h2>
 
         {cabinTypes.map((cabType, i) => {
-          // Admin 이미지가 있으면 그걸 사용
           const adminImgs = Array.isArray(cabType?.adminImages) ? cabType.adminImages : [];
           const utsImgs = Array.isArray(cabType?.images) ? cabType.images : [];
 
-          // 통일된 images 배열로 구성
-          // - Admin: {url}
-          // - UTS: {image}
           const images = adminImgs.length
             ? adminImgs.map((x) => ({ src: x.url, label: x.title || cabType.name }))
             : utsImgs.map((x) => ({ src: x.image, label: cabType.name }));
@@ -456,10 +443,7 @@ function TripDetail() {
           const priceInfo = findCabinTypeLowestPrice(cabType.name);
           const currentIndex = indices[i] || 0;
 
-          const desc =
-            cabType?.adminDescription ||
-            cabType?.description ||
-            "설명 없음";
+          const desc = cabType?.description || "설명 없음";
 
           return (
             <div key={cabType.name || i} className="cabin-card" style={{ marginBottom: "50px" }}>
@@ -509,7 +493,7 @@ function TripDetail() {
 
               {adminImgs.length > 0 && (
                 <p style={{ color: "#2a7", marginTop: 6, fontSize: 13 }}>
-                  (객실 이미지는 Admin Assets 기준으로 표시 중)
+                  (객실 이미지는 Admin Assets 기준으로 표시 중: 이름 매칭 성공)
                 </p>
               )}
             </div>
@@ -517,7 +501,7 @@ function TripDetail() {
         })}
       </section>
 
-      {/* ✅ 공용시설 (Admin) */}
+      {/* ✅ 공용시설 */}
       <section ref={refs.facilities} className="trip-section facilities-section">
         <h2>공용 시설</h2>
 
@@ -543,7 +527,34 @@ function TripDetail() {
         )}
       </section>
 
-      {/* ✅ 상세가격 (UTS trip 기준) */}
+      {/* ✅ (추가) Admin Cabins 갤러리: UTS 이름과 cabinTypeCode가 달라도 Admin 업로드 이미지가 사라지지 않도록 */}
+      {adminCabinsExtra.length > 0 && (
+        <section ref={refs.adminCabinsExtra} className="trip-section trip-cabins">
+          <h2>객실 이미지 (Admin 업로드 기준)</h2>
+          <p style={{ color: "#666", marginTop: -8 }}>
+            (UTS 객실명과 Admin cabinTypeCode가 달라서 매칭이 실패하는 경우, 여기에서라도 항상 보여줍니다.)
+          </p>
+
+          {adminCabinsExtra.map((c) => (
+            <div key={`${c.cabinTypeCode}_${c.deckCode}`} className="facility-group">
+              <h3>
+                {c.cabinTypeCode} {c.deckCode ? `(${c.deckCode})` : ""}
+              </h3>
+
+              <div className="facility-grid">
+                {c.images.map((img, idx) => (
+                  <figure key={idx} className="facility-card">
+                    <img src={img.url} alt={img.title || c.cabinTypeCode} loading="lazy" />
+                    {img.title && <figcaption>{img.title}</figcaption>}
+                  </figure>
+                ))}
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {/* ✅ 상세가격 */}
       <section ref={refs.price} className="trip-section trip-price">
         <h2>상세가격 (Price details)</h2>
         <TripPriceDetails trip={trip} />
