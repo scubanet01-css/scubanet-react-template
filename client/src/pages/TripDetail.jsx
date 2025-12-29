@@ -238,13 +238,13 @@ function TripDetail() {
      1) Hero (Admin 우선, 없으면 UTS cover)
   =============================== */
   const heroImageUrl = useMemo(() => {
-    // Admin hero는 이미 url 완성형
-    const adminHeroUrl = assets?.hero?.url || null;
-    if (adminHeroUrl) return adminHeroUrl;
-
+    // Admin Hero 우선
+    if (boatAssets?.assets?.hero?.url) {
+      return boatAssets.assets.hero.url;
+    }
     // fallback: UTS cover
     return trip?.images?.cover || null;
-  }, [assets, trip]);
+  }, [boatAssets, trip]);
 
   /* ===============================
      2) Overview Gallery (Hero + UTS gallery)
@@ -282,7 +282,7 @@ function TripDetail() {
   =============================== */
   const deckPlans = useMemo(() => {
     const list = Array.isArray(assets?.deckPlans)
-      ? assets.deckPlans
+      ? boatAssets.assets.deckPlans
       : [];
 
     return list
