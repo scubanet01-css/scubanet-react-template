@@ -1,8 +1,7 @@
-// ✅ TripDetail.jsx (UTS + Admin Boat Assets 통합 버전: FIXED)
+// ✅ TripDetail.jsx (UTS + Admin Boat Assets 최종 정리 버전)
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-import TripImageGallery from "../components/TripImageGallery";
 import TripSummaryHeader from "../components/TripSummaryHeader";
 import TripPriceDetails from "../components/TripPriceDetails";
 
@@ -10,7 +9,7 @@ import "./TripDetail.css";
 import { formatCurrency } from "../utils/formatCurrency";
 import { getCurrencyForTrip } from "../utils/currencyUtils";
 
-const BOAT_ASSETS_JSON_BASE = "/data/boats-assets"; // 메타데이터 JSON (nginx로 서빙)
+const BOAT_ASSETS_JSON_BASE = "/data/boats-assets"; // nginx가 서빙하는 메타데이터 JSON
 
 function TripDetail() {
   const { id: tripId } = useParams();
@@ -31,7 +30,6 @@ function TripDetail() {
     cabins: useRef(null),
     facilities: useRef(null),
     price: useRef(null),
-    adminCabinsExtra: useRef(null),
   };
 
   const scrollTo = (key) =>
@@ -54,13 +52,14 @@ function TripDetail() {
   useEffect(() => {
     async function loadTrip() {
       try {
-        const tripRes = await fetch("/data/uts-trips.json").then((r) => r.json());
+        const tripRes = await fetch("/data/uts-trips.json").then((r) =>
+          r.json()
+        );
         const trips = Array.isArray(tripRes) ? tripRes : tripRes?.data || [];
 
         const foundTrip = trips.find((t) => String(t.id) === String(tripId));
         setTrip(foundTrip || null);
 
-        // 객실 타입 목록 기반 indices 초기화 (trip 기반 우선)
         const cabinTypes = buildCabinTypes(foundTrip);
         setIndices(Array(cabinTypes.length).fill(0));
       } catch (e) {
@@ -82,17 +81,18 @@ function TripDetail() {
       if (!trip) return;
 
       const vesselId = getVesselId(trip);
+      console.log("🛳 Trip vesselId:", vesselId);
+
       if (!vesselId) {
         setBoatAssets(null);
         return;
       }
 
+      const url = `${BOAT_ASSETS_JSON_BASE}/${vesselId}.json`;
+      console.log("📦 boatAssets URL:", url);
+
       setAssetsLoading(true);
       try {
-        const url = `${BOAT_ASSETS_JSON_BASE}/${vesselId}.json`;
-        console.log("🛳 Trip vesselId:", vesselId);
-        console.log("📦 boatAssets URL:", url);
-
         const res = await fetch(url);
 
         if (!res.ok) {
@@ -102,6 +102,9 @@ function TripDetail() {
         }
 
         const json = await res.json();
+        console.log("✅ boatAssets JSON:", json);
+
+        // JSON 전체를 보관 (assets 루트는 아래에서 분리)
         setBoatAssets(json || null);
       } catch (e) {
         console.error("🚨 boatAssets load error:", e);
@@ -139,12 +142,14 @@ function TripDetail() {
 
       const imgs = Array.isArray(cab?.images) ? cab.images : [];
       for (const img of imgs) {
-        if (typeof img === "string" && img.trim()) bucket.images.push({ image: img });
+        if (typeof img === "string" && img.trim())
+          bucket.images.push({ image: img });
         else if (img?.image) bucket.images.push({ image: img.image });
         else if (img?.url) bucket.images.push({ image: img.url });
       }
 
-      if (!bucket.description && cab?.description) bucket.description = cab.description;
+      if (!bucket.description && cab?.description)
+        bucket.description = cab.description;
     }
 
     // 중복 제거
@@ -211,28 +216,22 @@ function TripDetail() {
     );
   }
 
-  function normalizeKey(s) {
-    return String(s || "")
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, "_")
-      .replace(/[^a-z0-9_]+/g, "");
-  }
-
   // ===============================
-  // ✅ 섹션별 데이터 (memo) – boats-assets 구조 반영
+  // ✅ 공통 메모 값
   // ===============================
   const vesselId = useMemo(() => getVesselId(trip), [trip]);
   const currency = useMemo(() => getCurrencyForTrip(trip), [trip]);
 
-  // ⭐️ 여기가 핵심: assets 루트 고정
-  const assets = useMemo(() => boatAssets?.assets || {}, [boatAssets]);
+  // boats-assets 핵심 루트
+  const assets = boatAssets?.assets || null;
 
   /* ===============================
      1) Hero (Admin 우선, 없으면 UTS cover)
   =============================== */
   const heroImageUrl = useMemo(() => {
-    if (assets?.hero?.url) return assets.hero.url;
+    if (assets?.hero?.url) {
+      return assets.hero.url; // 예: "/assets/vessels/vessel_black_pearl/hero/1. Black Pearl.jpg"
+    }
     return trip?.images?.cover || null;
   }, [assets, trip]);
 
@@ -256,7 +255,7 @@ function TripDetail() {
     for (const g of gallery) {
       const url = typeof g === "string" ? g : g?.url || g?.image;
       if (!url) continue;
-      if (list.find((x) => x.src === url)) continue;
+      if (list.find((x) => x.src === url)) continue; // 중복 제거
 
       list.push({
         src: url,
@@ -264,13 +263,12 @@ function TripDetail() {
       });
     }
 
+    console.log("🖼 overviewImages:", list);
     return list;
   }, [trip, heroImageUrl]);
 
-
   /* ===============================
      3) Deck Plans (Admin)
-     - 실제 스키마: assets.deckPlans[].image.url
   =============================== */
   const deckPlans = useMemo(() => {
     const list = Array.isArray(assets?.deckPlans) ? assets.deckPlans : [];
@@ -288,7 +286,6 @@ function TripDetail() {
 
   /* ===============================
      4) Facilities (Admin)
-     - 실제 스키마: assets.facilities[].images[].url
   =============================== */
   const facilities = useMemo(() => {
     const list = Array.isArray(assets?.facilities) ? assets.facilities : [];
@@ -311,24 +308,19 @@ function TripDetail() {
 
   /* ===============================
      5) Cabins (UTS + Admin merge)
-     - 주의: UTS 객실명(Deluxe Twin)과 Admin cabinTypeCode(STANDARD)가 다를 수 있음
-     - 따라서:
-       A) 일치할 때만 merge (기존 방식)
-       B) 불일치로 인해 누락되는 Admin cabin 이미지는 아래 "Admin Cabin Gallery(추가)" 섹션으로 별도 표시
   =============================== */
   const cabinTypes = useMemo(() => {
     const utsCabinTypes = buildCabinTypes(trip);
     const adminCabins = Array.isArray(assets?.cabins) ? assets.cabins : [];
 
     const adminMap = new Map();
+
     for (const c of adminCabins) {
-      const codeRaw = c?.cabinTypeCode || "";
-      const code = normalizeKey(codeRaw);
+      const code = normalizeKey(c?.cabinTypeCode);
       if (!code) continue;
 
       adminMap.set(code, {
-        codeRaw,
-        title: c?.cabinName || c?.cabinTypeCode || "",
+        title: c?.cabinName || c?.cabinTypeCode,
         images: (Array.isArray(c?.images) ? c.images : [])
           .map((img) => ({
             url: img?.url || null,
@@ -352,31 +344,21 @@ function TripDetail() {
     });
   }, [trip, assets]);
 
-  // ✅ (B) Admin cabinTypeCode가 UTS랑 안 맞아도 보여주기 위한 "추가 섹션" 데이터
-  const adminCabinsExtra = useMemo(() => {
-    const list = Array.isArray(assets?.cabins) ? assets.cabins : [];
-    return list
-      .map((c) => ({
-        cabinTypeCode: c?.cabinTypeCode || "",
-        deckCode: c?.deckCode || "",
-        images: (Array.isArray(c?.images) ? c.images : [])
-          .map((img) => ({
-            url: img?.url || null,
-            title: img?.title || "",
-            order: img?.order ?? 9999,
-          }))
-          .filter((img) => img.url)
-          .sort((a, b) => a.order - b.order),
-      }))
-      .filter((x) => x.cabinTypeCode && x.images.length > 0);
-  }, [assets]);
+  function normalizeKey(s) {
+    return String(s || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_]+/g, "");
+  }
 
   // cabinTypes 길이가 바뀌면 indices도 맞춰줌
   useEffect(() => {
     if (!Array.isArray(cabinTypes)) return;
     setIndices((prev) => {
       const next = Array(cabinTypes.length).fill(0);
-      for (let i = 0; i < Math.min(prev.length, next.length); i++) next[i] = prev[i] || 0;
+      for (let i = 0; i < Math.min(prev.length, next.length); i++)
+        next[i] = prev[i] || 0;
       return next;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -387,7 +369,11 @@ function TripDetail() {
 
   return (
     <div className="trip-detail-container">
-      <TripSummaryHeader trip={trip} scrollTo={scrollTo} goBooking={goBooking} />
+      <TripSummaryHeader
+        trip={trip}
+        scrollTo={scrollTo}
+        goBooking={goBooking}
+      />
 
       <section className="trip-detail-actions" style={{ marginTop: "20px" }}>
         <button
@@ -413,7 +399,7 @@ function TripDetail() {
         )}
       </section>
 
-      {/* ✅ 히어로/보트사진 */}
+      {/* ✅ 히어로/보트사진 (Admin Hero 우선 + UTS 갤러리) */}
       <section ref={refs.overview} className="trip-section trip-overview">
         <h2>히어로 / 보트사진</h2>
 
@@ -462,8 +448,7 @@ function TripDetail() {
         )}
       </section>
 
-
-      {/* ✅ 덱 플랜 */}
+      {/* ✅ 덱 플랜 (Admin) */}
       <section ref={refs.deckplans} className="trip-section trip-deckplans">
         <h2>Deck Plans (덱 플랜)</h2>
 
@@ -483,29 +468,52 @@ function TripDetail() {
         )}
       </section>
 
-      {/* ✅ 객실 섹션 (UTS + Admin merge: 이름이 일치할 때만 merge) */}
+      {/* ✅ 객실 섹션 (UTS 객실 타입 + Admin 객실 이미지 merge) */}
       <section ref={refs.cabins} className="trip-section trip-cabins">
         <h2>객실 정보</h2>
 
         {cabinTypes.map((cabType, i) => {
-          const adminImgs = Array.isArray(cabType?.adminImages) ? cabType.adminImages : [];
-          const utsImgs = Array.isArray(cabType?.images) ? cabType.images : [];
+          const adminImgs = Array.isArray(cabType?.adminImages)
+            ? cabType.adminImages
+            : [];
+          const utsImgs = Array.isArray(cabType?.images)
+            ? cabType.images
+            : [];
 
           const images = adminImgs.length
-            ? adminImgs.map((x) => ({ src: x.url, label: x.title || cabType.name }))
-            : utsImgs.map((x) => ({ src: x.image, label: cabType.name }));
+            ? adminImgs.map((x) => ({
+              src: x.url,
+              label: x.title || cabType.name,
+            }))
+            : utsImgs.map((x) => ({
+              src: x.image,
+              label: cabType.name,
+            }));
 
           const priceInfo = findCabinTypeLowestPrice(cabType.name);
           const currentIndex = indices[i] || 0;
 
-          const desc = cabType?.description || "설명 없음";
+          const desc =
+            cabType?.adminDescription ||
+            cabType?.description ||
+            "설명 없음";
 
           return (
-            <div key={cabType.name || i} className="cabin-card" style={{ marginBottom: "50px" }}>
+            <div
+              key={cabType.name || i}
+              className="cabin-card"
+              style={{ marginBottom: "50px" }}
+            >
               <h3>{cabType.name}</h3>
 
               {images.length > 0 ? (
-                <div style={{ position: "relative", maxWidth: "600px", display: "inline-block" }}>
+                <div
+                  style={{
+                    position: "relative",
+                    maxWidth: "600px",
+                    display: "inline-block",
+                  }}
+                >
                   <img
                     src={images[currentIndex]?.src}
                     alt={`${cabType.name} ${currentIndex + 1}`}
@@ -520,10 +528,20 @@ function TripDetail() {
 
                   {images.length > 1 && (
                     <>
-                      <button onClick={() => changeImage(i, -1, images.length)} className="arrow-btn left">
+                      <button
+                        onClick={() =>
+                          changeImage(i, -1, images.length)
+                        }
+                        className="arrow-btn left"
+                      >
                         ‹
                       </button>
-                      <button onClick={() => changeImage(i, 1, images.length)} className="arrow-btn right">
+                      <button
+                        onClick={() =>
+                          changeImage(i, 1, images.length)
+                        }
+                        className="arrow-btn right"
+                      >
                         ›
                       </button>
                       <div className="index-badge">
@@ -540,15 +558,22 @@ function TripDetail() {
 
               {priceInfo ? (
                 <p>
-                  <strong>{priceInfo.planName}</strong> — {formatCurrency(priceInfo.price, currency)}
+                  <strong>{priceInfo.planName}</strong> —{" "}
+                  {formatCurrency(priceInfo.price, currency)}
                 </p>
               ) : (
                 <p style={{ color: "#666" }}>가격 정보 없음</p>
               )}
 
               {adminImgs.length > 0 && (
-                <p style={{ color: "#2a7", marginTop: 6, fontSize: 13 }}>
-                  (객실 이미지는 Admin Assets 기준으로 표시 중: 이름 매칭 성공)
+                <p
+                  style={{
+                    color: "#2a7",
+                    marginTop: 6,
+                    fontSize: 13,
+                  }}
+                >
+                  (객실 이미지는 Admin Assets 기준으로 표시 중)
                 </p>
               )}
             </div>
@@ -556,20 +581,32 @@ function TripDetail() {
         })}
       </section>
 
-      {/* ✅ 공용시설 */}
-      <section ref={refs.facilities} className="trip-section facilities-section">
+      {/* ✅ 공용시설 (Admin) */}
+      <section
+        ref={refs.facilities}
+        className="trip-section facilities-section"
+      >
         <h2>공용 시설</h2>
 
         {facilities.length > 0 ? (
           facilities.map((facility) => (
-            <div key={facility.facilityType} className="facility-group">
+            <div
+              key={facility.facilityType}
+              className="facility-group"
+            >
               <h3>{facility.title || facility.facilityType}</h3>
 
               <div className="facility-grid">
                 {facility.images.map((img, idx) => (
                   <figure key={idx} className="facility-card">
-                    <img src={img.url} alt={img.title || facility.title} loading="lazy" />
-                    {img.title && <figcaption>{img.title}</figcaption>}
+                    <img
+                      src={img.url}
+                      alt={img.title || facility.title}
+                      loading="lazy"
+                    />
+                    {img.title && (
+                      <figcaption>{img.title}</figcaption>
+                    )}
                   </figure>
                 ))}
               </div>
@@ -577,39 +614,13 @@ function TripDetail() {
           ))
         ) : (
           <p style={{ color: "#666" }}>
-            등록된 공용시설 이미지가 없습니다. (Admin에서 Facilities 저장 시 표시됩니다.)
+            등록된 공용시설 이미지가 없습니다. (Admin에서 Facilities
+            저장 시 표시됩니다.)
           </p>
         )}
       </section>
 
-      {/* ✅ (추가) Admin Cabins 갤러리: UTS 이름과 cabinTypeCode가 달라도 Admin 업로드 이미지가 사라지지 않도록 */}
-      {adminCabinsExtra.length > 0 && (
-        <section ref={refs.adminCabinsExtra} className="trip-section trip-cabins">
-          <h2>객실 이미지 (Admin 업로드 기준)</h2>
-          <p style={{ color: "#666", marginTop: -8 }}>
-            (UTS 객실명과 Admin cabinTypeCode가 달라서 매칭이 실패하는 경우, 여기에서라도 항상 보여줍니다.)
-          </p>
-
-          {adminCabinsExtra.map((c) => (
-            <div key={`${c.cabinTypeCode}_${c.deckCode}`} className="facility-group">
-              <h3>
-                {c.cabinTypeCode} {c.deckCode ? `(${c.deckCode})` : ""}
-              </h3>
-
-              <div className="facility-grid">
-                {c.images.map((img, idx) => (
-                  <figure key={idx} className="facility-card">
-                    <img src={img.url} alt={img.title || c.cabinTypeCode} loading="lazy" />
-                    {img.title && <figcaption>{img.title}</figcaption>}
-                  </figure>
-                ))}
-              </div>
-            </div>
-          ))}
-        </section>
-      )}
-
-      {/* ✅ 상세가격 */}
+      {/* ✅ 상세가격 (UTS trip 기준) */}
       <section ref={refs.price} className="trip-section trip-price">
         <h2>상세가격 (Price details)</h2>
         <TripPriceDetails trip={trip} />
