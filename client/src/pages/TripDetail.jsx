@@ -243,19 +243,30 @@ function TripDetail() {
     const list = [];
 
     if (heroImageUrl) {
-      list.push({ url: heroImageUrl, caption: trip?.boatName || "" });
+      list.push({
+        src: heroImageUrl,
+        label: trip?.boatName || "",
+      });
     }
 
-    const gallery = Array.isArray(trip?.images?.gallery) ? trip.images.gallery : [];
+    const gallery = Array.isArray(trip?.images?.gallery)
+      ? trip.images.gallery
+      : [];
+
     for (const g of gallery) {
       const url = typeof g === "string" ? g : g?.url || g?.image;
       if (!url) continue;
-      if (list.some((x) => x.url === url)) continue;
-      list.push({ url, caption: trip?.boatName || "" });
+      if (list.find((x) => x.src === url)) continue;
+
+      list.push({
+        src: url,
+        label: trip?.boatName || "",
+      });
     }
 
     return list;
   }, [trip, heroImageUrl]);
+
 
   /* ===============================
      3) Deck Plans (Admin)
