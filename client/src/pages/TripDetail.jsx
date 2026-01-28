@@ -416,8 +416,52 @@ function TripDetail() {
       {/* ✅ 히어로/보트사진 */}
       <section ref={refs.overview} className="trip-section trip-overview">
         <h2>히어로 / 보트사진</h2>
-        <TripImageGallery images={overviewImages} layoutImage={null} />
+
+        {overviewImages.length > 0 ? (
+          <div style={{ maxWidth: "980px" }}>
+            {/* 메인 히어로 이미지 */}
+            <img
+              src={overviewImages[0].src}
+              alt={overviewImages[0].label || "Hero image"}
+              style={{
+                width: "100%",
+                borderRadius: "12px",
+                objectFit: "cover",
+              }}
+            />
+
+            {/* 서브 썸네일들 (있으면) */}
+            {overviewImages.length > 1 && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  marginTop: "8px",
+                  overflowX: "auto",
+                }}
+              >
+                {overviewImages.slice(1).map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img.src}
+                    alt={img.label || `Gallery ${idx + 2}`}
+                    style={{
+                      width: "120px",
+                      height: "80px",
+                      objectFit: "cover",
+                      borderRadius: "6px",
+                      flex: "0 0 auto",
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <p style={{ color: "#666" }}>등록된 이미지가 없습니다.</p>
+        )}
       </section>
+
 
       {/* ✅ 덱 플랜 */}
       <section ref={refs.deckplans} className="trip-section trip-deckplans">
