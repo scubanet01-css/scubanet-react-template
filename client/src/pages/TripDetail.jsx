@@ -306,6 +306,39 @@ function TripDetail() {
       .filter((f) => f.facilityType && f.images.length > 0);
   }, [assets]);
 
+  // ===============================
+  // 🔧 키 정규화 / 품질 코드 매핑 유틸
+  // ===============================
+  function normalizeKey(s) {
+    return String(s || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_]+/g, "");
+  }
+
+  const CABIN_QUALITIES = [
+    "MASTER SUITE",
+    "JUNIOR SUITE",
+    "SUITE",
+    "DELUXE",
+    "STANDARD",
+  ];
+
+  function getQualityCodeFromName(name) {
+    const s = String(name || "").toUpperCase();
+
+    for (const q of CABIN_QUALITIES) {
+      if (s.includes(q)) {
+        // "MASTER SUITE" -> "MASTER_SUITE"
+        return q.replace(/\s+/g, "_");
+      }
+    }
+
+    // 품질 키워드 못 찾으면 기존 normalizeKey 사용
+    return normalizeKey(name).toUpperCase();
+  }
+
   /* ===============================
      5) Cabins (UTS + Admin merge)
   =============================== */
@@ -341,7 +374,7 @@ function TripDetail() {
 
     // 2) UTS 쪽: cabin type/name에서 품질 코드 추출해서 매칭
     return utsCabinTypes.map((uts) => {
-      const utsLabel = uts?.type || uts?.name;          // "Deluxe Twin" 등
+      const utsLabel = uts?.type || uts?.name; // "Deluxe Twin" 등
       const qualityCode = getQualityCodeFromName(utsLabel); // "DELUXE" 등
 
       const admin = adminMap.get(qualityCode);
@@ -353,37 +386,6 @@ function TripDetail() {
       };
     });
   }, [trip, assets]);
-
-
-  function normalizeKey(s) {
-    return String(s || "")
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, "_")
-      .replace(/[^a-z0-9_]+/g, "");
-  }
-  // 캐빈 품질 코드 기준 매칭용
-  const CABIN_QUALITIES = [
-    "MASTER SUITE",
-    "JUNIOR SUITE",
-    "SUITE",
-    "DELUXE",
-    "STANDARD",
-  ];
-
-  function getQualityCodeFromName(name) {
-    const s = String(name || "").toUpperCase();
-
-    for (const q of CABIN_QUALITIES) {
-      if (s.includes(q)) {
-        // "MASTER SUITE" -> "MASTER_SUITE"
-        return q.replace(/\s+/g, "_");
-      }
-    }
-
-    // 품질 키워드 못 찾으면 기존 normalizeKey 사용
-    return normalizeKey(name).toUpperCase();
-  }
 
   // cabinTypes 길이가 바뀌면 indices도 맞춰줌
   useEffect(() => {
