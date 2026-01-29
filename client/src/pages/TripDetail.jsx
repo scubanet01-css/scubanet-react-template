@@ -311,30 +311,40 @@ function TripDetail() {
   =============================== */
   const cabinTypes = useMemo(() => {
     const utsCabinTypes = buildCabinTypes(trip);
-    const adminCabins = Array.isArray(assets?.cabins) ? assets.cabins : [];
+
+    const adminCabins = Array.isArray(assets?.cabins)
+      ? assets.cabins
+      : [];
 
     const adminMap = new Map();
 
+    // 1) Admin 쪽: cabinTypeCode 를 정규화 코드로 사용
     for (const c of adminCabins) {
-      const code = normalizeKey(c?.cabinTypeCode);
+      const codeRaw = c?.cabinTypeCode || "";
+      const code = String(codeRaw).toUpperCase().replace(/\s+/g, "_");
       if (!code) continue;
 
+      const images = (Array.isArray(c?.images) ? c.images : [])
+        .map((img) => ({
+          url: img?.url || null,
+          title: img?.title || "",
+          order: img?.order ?? 9999,
+        }))
+        .filter((img) => img.url)
+        .sort((a, b) => a.order - b.order);
+
       adminMap.set(code, {
-        title: c?.cabinName || c?.cabinTypeCode,
-        images: (Array.isArray(c?.images) ? c.images : [])
-          .map((img) => ({
-            url: img?.url || null,
-            title: img?.title || "",
-            order: img?.order ?? 9999,
-          }))
-          .filter((img) => img.url)
-          .sort((a, b) => a.order - b.order),
+        title: c?.cabinName || codeRaw,
+        images,
       });
     }
 
+    // 2) UTS 쪽: cabin type/name에서 품질 코드 추출해서 매칭
     return utsCabinTypes.map((uts) => {
-      const key = normalizeKey(uts.name);
-      const admin = adminMap.get(key);
+      const utsLabel = uts?.type || uts?.name;          // "Deluxe Twin" 등
+      const qualityCode = getQualityCodeFromName(utsLabel); // "DELUXE" 등
+
+      const admin = adminMap.get(qualityCode);
 
       return {
         ...uts,
@@ -344,12 +354,35 @@ function TripDetail() {
     });
   }, [trip, assets]);
 
+
   function normalizeKey(s) {
     return String(s || "")
       .trim()
       .toLowerCase()
       .replace(/\s+/g, "_")
       .replace(/[^a-z0-9_]+/g, "");
+  }
+  // 캐빈 품질 코드 기준 매칭용
+  const CABIN_QUALITIES = [
+    "MASTER SUITE",
+    "JUNIOR SUITE",
+    "SUITE",
+    "DELUXE",
+    "STANDARD",
+  ];
+
+  function getQualityCodeFromName(name) {
+    const s = String(name || "").toUpperCase();
+
+    for (const q of CABIN_QUALITIES) {
+      if (s.includes(q)) {
+        // "MASTER SUITE" -> "MASTER_SUITE"
+        return q.replace(/\s+/g, "_");
+      }
+    }
+
+    // 품질 키워드 못 찾으면 기존 normalizeKey 사용
+    return normalizeKey(name).toUpperCase();
   }
 
   // cabinTypes 길이가 바뀌면 indices도 맞춰줌
