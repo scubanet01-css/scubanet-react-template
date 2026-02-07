@@ -79,6 +79,31 @@ function slugify(text) {
         .replace(/_+/g, "_");
 }
 
+/**
+ * ✅ boats-assets JSON 로더
+ *   /var/www/scubanet/data/boats-assets/{vesselId}.json
+ */
+const BOAT_ASSETS_DIR = path.join(DATA_DIR, "boats-assets"); // ✅ NEW
+
+function loadBoatAssetsForVessel(vesselId) {                  // ✅ NEW
+    if (!vesselId) return null;
+
+    try {
+        const filePath = path.join(BOAT_ASSETS_DIR, `${vesselId}.json`);
+        if (!fs.existsSync(filePath)) {
+            // console.warn("⚠ boat-assets JSON 없음:", filePath);
+            return null;
+        }
+
+        const raw = fs.readFileSync(filePath, "utf8");
+        const json = JSON.parse(raw);
+        return json.assets || null;
+    } catch (e) {
+        console.error("❌ boat-assets JSON 로드/파싱 오류:", e);
+        return null;
+    }
+}
+
 function loadJsonArray(filePath, label) {
     const raw = fs.readFileSync(filePath, "utf8");
     const json = JSON.parse(raw);
@@ -147,6 +172,75 @@ function getBoatInfo(avail, boats, boatDetails) {
     );
 }
 
+// --------------------------------------------------
+// 6-A. Cabin 타입 표준화 유틸
+// --------------------------------------------------
+const CABIN_QUALITIES = ["STANDARD", "DELUXE", "SUITE", "BUDGET"];  // ✅ NEW
+const BED_TYPES = ["DOUBLE", "TWIN", "TRIPLE", "QUAD"];             // ✅ NEW
+
+function classifyCabinTypeName(name) {                              // ✅ NEW
+    const s = String(name || "").toUpperCase();
+
+    let quality = "STANDARD";
+    const tags = [];
+    let bedType = null;
+
+    if (s.includes("MASTER")) {
+        quality = "SUITE";
+        tags.push("MASTER");
+    } else if (s.includes("JUNIOR")) {
+        quality = "SUITE";
+        tags.push("JUNIOR");
+    } else if (s.includes("SUITE")) {
+        quality = "SUITE";
+    } else if (s.includes("DELUXE")) {
+        quality = "DELUXE";
+    } else if (s.includes("BUDGET")) {
+        quality = "BUDGET";
+    } else {
+        quality = "STANDARD";
+    }
+
+    if (s.includes("SEA VIEW")) {
+        tags.push("SEA_VIEW");
+    }
+    if (s.includes("OCEAN VIEW")) {
+        tags.push("OCEAN_VIEW");
+    }
+
+    if (s.includes("TRIPLE")) {
+        bedType = "TRIPLE";
+    } else if (s.includes("QUAD")) {
+        bedType = "QUAD";
+    } else if (s.includes("TWIN") && s.includes("DOUBLE")) {
+        bedType = "DOUBLE";
+    } else if (s.includes("TWIN")) {
+        bedType = "TWIN";
+    } else if (s.includes("DOUBLE")) {
+        bedType = "DOUBLE";
+    }
+
+    const parts = [];
+    parts.push(quality);
+
+    if (tags.includes("SEA_VIEW")) parts.push("SEA_VIEW");
+    if (tags.includes("OCEAN_VIEW")) parts.push("OCEAN_VIEW");
+    if (tags.includes("MASTER")) parts.push("MASTER");
+    if (tags.includes("JUNIOR")) parts.push("JUNIOR");
+
+    if (bedType) parts.push(bedType);
+
+    const cabinTypeCode = parts.join("_");
+
+    return {
+        cabinTypeCode,
+        deckCode: null,
+        bedType,
+        quality,
+        tags,
+    };
+}
+
 function normalizeRatePlanEntry(ratePlan, cabinTypeId, occ, kind) {
     const price = toNumber(occ.price);
     const parentPrice = toNumber(occ.parentPrice);
@@ -176,11 +270,29 @@ function normalizeRatePlanEntry(ratePlan, cabinTypeId, occ, kind) {
     };
 }
 
-function buildCabins(avail) {
+function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
     const types = avail.spaces?.cabinTypes || [];
     const retail = avail.ratePlansRetail || [];
     const charter = avail.ratePlansCharter || [];
     const cabins = [];
+
+    // ✅ Admin assets 쪽 cabin 메타데이터 맵
+    const assetCabinMap = new Map();
+    const assetCabins = Array.isArray(boatAssets?.cabins) ? boatAssets.cabins : [];
+
+    assetCabins.forEach((c) => {
+        const code = String(c.cabinTypeCode || "").toUpperCase();
+        if (!code) return;
+
+        assetCabinMap.set(code, {
+            deckCode: c.deckCode || null,
+            bedType: c.bedType || null,
+            quality: c.quality || null,
+            tags: Array.isArray(c.tags) ? c.tags : [],
+            images: Array.isArray(c.images) ? c.images : [],
+            cabinName: c.cabinName || null,
+        });
+    });
 
     function collectForType(typeId) {
         const out = [];
@@ -211,14 +323,32 @@ function buildCabins(avail) {
     types.forEach((ct) => {
         const ratePlans = collectForType(ct.id);
 
+        const classification = classifyCabinTypeName(ct.name);
+        const canonicalCode = classification.cabinTypeCode || null;
+        const assetMeta = canonicalCode
+            ? assetCabinMap.get(canonicalCode.toUpperCase())
+            : null;
+
         ct.cabins?.forEach((c) => {
             cabins.push({
                 cabinId: c.id,
                 name: c.name,
                 type: ct.name,
+
                 remaining: c.availableSpaces ?? 0,
-                images: [],
                 ratePlans,
+
+                images: assetMeta?.images || [],
+
+                deckCode: assetMeta?.deckCode || classification.deckCode || null,
+                bedType: assetMeta?.bedType || classification.bedType || null,
+                quality: assetMeta?.quality || classification.quality || "STANDARD",
+                tags:
+                    (assetMeta?.tags && assetMeta.tags.length
+                        ? assetMeta.tags
+                        : classification.tags) || [],
+
+                canonicalType: canonicalCode,
             });
         });
     });
@@ -264,6 +394,9 @@ try {
             ? `vessel_${slugify(boatName)}`
             : null;
 
+        // ✅ boat-assets JSON 로드
+        const boatAssets = vesselId ? loadBoatAssetsForVessel(vesselId) : null;
+
         const country = detectCountryImproved(productName, portName);
         let destination = extractDestinationByCountry(country, productName);
 
@@ -276,7 +409,7 @@ try {
             source: "inseanq",
             tripType: "liveaboard",
 
-            vesselId,          // 🔥 추가
+            vesselId,
             boatName,
 
             title: `${productName} - ${boatName}`,
@@ -302,7 +435,7 @@ try {
                 holding: a.spaces?.optionSpaces || 0,
             },
 
-            cabins: buildCabins(a),
+            cabins: buildCabins(a, boatAssets),
         });
     }
 
