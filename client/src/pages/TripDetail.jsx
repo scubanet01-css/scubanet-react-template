@@ -352,21 +352,22 @@ function TripDetail() {
 
 
   /* ===============================
-   5) Cabins (UTS + Admin merge)
-=============================== */
+    5) Cabins (UTS + Admin merge)
+    - Admin: quality(DELUXE / SUITE...) + view(SEA_VIEW / MASTER_SEA_VIEW...)
+    - UTS : "Deluxe Twin", "Sea View Cabin", "Master Sea View" 에서 같은 코드를 뽑아 매칭
+ =============================== */
   const cabinTypes = useMemo(() => {
     const utsCabinTypes = buildCabinTypes(trip);
-
     const adminCabins = Array.isArray(assets?.cabins)
       ? assets.cabins
       : [];
 
     const adminMap = new Map();
 
-    // 1) Admin 쪽: 코드 + 이름 둘 다 키로 등록
+    // 1) Admin 쪽을 key → {title, images[]} 로 정리
     for (const c of adminCabins) {
-      const codeKey = normalizeKey(c?.cabinTypeCode);
-      const nameKey = normalizeKey(c?.cabinName);
+      const key = makeAdminCabinKey(c);
+      if (!key) continue;
 
       const images = (Array.isArray(c?.images) ? c.images : [])
         .map((img) => ({
@@ -377,24 +378,21 @@ function TripDetail() {
         .filter((img) => img.url)
         .sort((a, b) => a.order - b.order);
 
-      const entry = {
-        title: c?.cabinName || c?.cabinTypeCode || "",
-        images,
-      };
+      if (!images.length) continue;
 
-      if (codeKey) adminMap.set(codeKey, entry);
-      if (nameKey) adminMap.set(nameKey, entry);
+      // 같은 key가 여러 개면 첫 번째만 사용
+      if (!adminMap.has(key)) {
+        adminMap.set(key, {
+          title: c?.cabinName || c?.cabinTypeCode || "",
+          images,
+        });
+      }
     }
 
-    // 2) UTS 쪽: 이름 → 품질 코드 순서로 매칭
+    // 2) UTS cabin type별로 key를 만들어 adminMap과 매칭
     return utsCabinTypes.map((uts) => {
-      const nameKey = normalizeKey(uts.name);              // "master sea view" → "master_sea_view"
-      const qualityKey = getQualityCodeFromName(uts.name); // DELUXE / SUITE / MASTER_SEA_VIEW ...
-
-      const admin =
-        adminMap.get(nameKey) ||
-        adminMap.get(qualityKey) ||
-        null;
+      const key = makeUtsCabinKey(uts);
+      const admin = key ? adminMap.get(key) : null;
 
       return {
         ...uts,
@@ -403,6 +401,64 @@ function TripDetail() {
       };
     });
   }, [trip, assets]);
+
+  /* ===============================
+     Cabin 매칭용 헬퍼
+  =============================== */
+
+  // 문자열에서 quality + view 뽑아내기
+  function parseCabinAttributes(label, fallbackQuality) {
+    const s = String(label || "").toUpperCase();
+
+    let quality = fallbackQuality ? String(fallbackQuality).toUpperCase() : null;
+    let view = null;
+
+    // --- View 코드 ---
+    if (s.includes("MASTER SEA VIEW")) {
+      view = "MASTER_SEA_VIEW";
+      if (!quality) quality = "SUITE";
+    } else if (s.includes("SEA VIEW")) {
+      view = "SEA_VIEW";
+      if (!quality) quality = "SUITE";
+    } else if (s.includes("OCEAN VIEW")) {
+      view = "OCEAN_VIEW";
+      if (!quality) quality = "SUITE";
+    }
+
+    // --- Quality 코드 (명시된 경우 우선) ---
+    if (s.includes("DELUXE")) {
+      quality = "DELUXE";
+    } else if (s.includes("STANDARD")) {
+      quality = quality || "STANDARD";
+    } else if (s.includes("SUITE")) {
+      quality = "SUITE";
+    } else if (!quality) {
+      // 아무 키워드도 없으면 기본값
+      quality = "STANDARD";
+    }
+
+    return { quality, view };
+  }
+
+  // Admin JSON -> key (quality + view)
+  function makeAdminCabinKey(cabin) {
+    const baseQuality = cabin?.cabinTypeCode || "";
+    const name = cabin?.cabinName || "";
+    const { quality, view } = parseCabinAttributes(name, baseQuality);
+
+    if (!quality && !view) return null;
+    return [quality, view].filter(Boolean).join("__");
+  }
+
+  // UTS cabin type -> key (quality + view)
+  function makeUtsCabinKey(uts) {
+    const label = uts?.name || uts?.type;
+    const { quality, view } = parseCabinAttributes(label, null);
+
+    if (!quality && !view) return null;
+    return [quality, view].filter(Boolean).join("__");
+  }
+
 
   // cabinTypes 길이가 바뀌면 indices도 맞춰줌
   useEffect(() => {
