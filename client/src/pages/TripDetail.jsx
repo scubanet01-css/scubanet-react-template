@@ -328,16 +328,28 @@ function TripDetail() {
   function getQualityCodeFromName(name) {
     const s = String(name || "").toUpperCase();
 
+    // 1) 먼저 'MASTER SEA VIEW' → MASTER 로 인식
+    if (s.includes("MASTER SEA VIEW")) {
+      return "MASTER";
+    }
+
+    // 2) 'SEA VIEW' 가 들어가면 SUITE 로 인식
+    //    (Black Pearl 기준: Sea View Cabin = Main Deck Suite 라고 네가 말해준 사실을 그대로 반영)
+    if (s.includes("SEA VIEW")) {
+      return "SUITE";
+    }
+
+    // 3) 기존 품질 키워드 매칭
     for (const q of CABIN_QUALITIES) {
       if (s.includes(q)) {
-        // "MASTER SUITE" -> "MASTER_SUITE"
         return q.replace(/\s+/g, "_");
       }
     }
 
-    // 품질 키워드 못 찾으면 기존 normalizeKey 사용
+    // 4) 그래도 못 찾으면 기존 fallback 유지
     return normalizeKey(name).toUpperCase();
   }
+
 
   /* ===============================
      5) Cabins (UTS + Admin merge)
