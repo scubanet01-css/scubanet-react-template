@@ -354,12 +354,18 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
     });
 
     // 🚫 Deck Space 제거 (기존 기능 유지)
-    return cabins.filter(
-        (c) =>
-            !c.type.toLowerCase().includes("deck") &&
-            !c.name.toLowerCase().includes("deck")
-    );
+    return cabins.filter((c) => {
+        const type = (c.type || "").toLowerCase();
+        const name = (c.name || "").toLowerCase();
+
+        // "sun deck space", "upper deck space" 같은 진짜 데크 스페이스만 제외
+        const isDeckSpace =
+            type.includes("deck space") || name.includes("deck space");
+
+        return !isDeckSpace;
+    });
 }
+
 
 // --------------------------------------------------
 // 7. 메인 로직
