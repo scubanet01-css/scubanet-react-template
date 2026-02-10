@@ -352,8 +352,8 @@ function TripDetail() {
 
 
   /* ===============================
-     5) Cabins (UTS + Admin merge)
-  =============================== */
+   5) Cabins (UTS + Admin merge)
+=============================== */
   const cabinTypes = useMemo(() => {
     const utsCabinTypes = buildCabinTypes(trip);
 
@@ -363,11 +363,10 @@ function TripDetail() {
 
     const adminMap = new Map();
 
-    // 1) Admin 쪽: cabinTypeCode 를 정규화 코드로 사용
+    // 1) Admin 쪽: 코드 + 이름 둘 다 키로 등록
     for (const c of adminCabins) {
-      const codeRaw = c?.cabinTypeCode || "";
-      const code = String(codeRaw).toUpperCase().replace(/\s+/g, "_");
-      if (!code) continue;
+      const codeKey = normalizeKey(c?.cabinTypeCode);
+      const nameKey = normalizeKey(c?.cabinName);
 
       const images = (Array.isArray(c?.images) ? c.images : [])
         .map((img) => ({
@@ -378,18 +377,24 @@ function TripDetail() {
         .filter((img) => img.url)
         .sort((a, b) => a.order - b.order);
 
-      adminMap.set(code, {
-        title: c?.cabinName || codeRaw,
+      const entry = {
+        title: c?.cabinName || c?.cabinTypeCode || "",
         images,
-      });
+      };
+
+      if (codeKey) adminMap.set(codeKey, entry);
+      if (nameKey) adminMap.set(nameKey, entry);
     }
 
-    // 2) UTS 쪽: cabin type/name에서 품질 코드 추출해서 매칭
+    // 2) UTS 쪽: 이름 → 품질 코드 순서로 매칭
     return utsCabinTypes.map((uts) => {
-      const utsLabel = uts?.type || uts?.name; // "Deluxe Twin" 등
-      const qualityCode = getQualityCodeFromName(utsLabel); // "DELUXE" 등
+      const nameKey = normalizeKey(uts.name);              // "master sea view" → "master_sea_view"
+      const qualityKey = getQualityCodeFromName(uts.name); // DELUXE / SUITE / MASTER_SEA_VIEW ...
 
-      const admin = adminMap.get(qualityCode);
+      const admin =
+        adminMap.get(nameKey) ||
+        adminMap.get(qualityKey) ||
+        null;
 
       return {
         ...uts,
@@ -605,12 +610,13 @@ function TripDetail() {
 
               {priceInfo ? (
                 <p>
-                  <strong>{priceInfo.planName}</strong> —{" "}
-                  {formatCurrency(priceInfo.price, currency)}
+                  <strong>요금제: {priceInfo.planName}</strong>{" "}
+                  — {formatCurrency(priceInfo.price, currency)}
                 </p>
               ) : (
                 <p style={{ color: "#666" }}>가격 정보 없음</p>
               )}
+
 
               {adminImgs.length > 0 && (
                 <p
