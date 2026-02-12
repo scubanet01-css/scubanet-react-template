@@ -388,6 +388,12 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
         return out;
     }
 
+    // ✅ bedType이 비어있고, 품질이 STANDARD면 기본값을 TWIN으로 잡는다
+    // (Standard Cabins 처럼 힌트가 없는 케이스가 많아서, Double은 보통 이름에 명시됨)
+    if (!classification.bedType && (classification.quality || "").toUpperCase() === "STANDARD") {
+        classification.bedType = "TWIN";
+    }
+
     types.forEach((ct) => {
         const ratePlans = collectForType(ct.id);
 
@@ -408,10 +414,44 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
                 detectBedTypeFromName(ct?.name) ||
                 null;
 
-            // ✅ canonicalType을 bedType까지 포함해서 표준화 (STANDARD_TWIN / STANDARD_DOUBLE 등)
-            const canonicalTypeFinal = bedTypeFromName
-                ? `${canonicalCode}_${bedTypeFromName}`
-                : canonicalCode;
+            // ✅ canonicalType: quality + bedType (+ optional view/master/junior tags)
+            // 우선순위: Admin(assetMeta) > 분류(classification) > 이름 파싱(bedTypeFromName)
+            const qualityFinal = (assetMeta?.quality || classification.quality || "STANDARD").toUpperCase();
+
+            // bedType 후보들 정리 (TWIN/DOUBLE/TRIPLE/QUAD/TWIN_DOUBLE)
+            let bedTypeFinal =
+                (assetMeta?.bedType || classification.bedType || bedTypeFromName || null);
+
+            if (bedTypeFinal) {
+                bedTypeFinal = String(bedTypeFinal).toUpperCase().replace(/\s+/g, "_");
+                // Twin/Double 같이 들어오는 경우 표준화
+                if (bedTypeFinal === "TWIN/DOUBLE" || bedTypeFinal === "DOUBLE/TWIN") bedTypeFinal = "TWIN_DOUBLE";
+            }
+
+            // ✅ Standard는 bedType이 없으면 기본 TWIN으로 간주 (현업 요구사항 반영)
+            if (!bedTypeFinal && qualityFinal === "STANDARD") {
+                bedTypeFinal = "TWIN";
+            }
+
+            // tagsFinal: Admin tags 우선, 없으면 classification.tags
+            const tagsFinal =
+                (assetMeta?.tags && assetMeta.tags.length ? assetMeta.tags : classification.tags) || [];
+
+            const tagCodes = tagsFinal
+                .map((t) => String(t || "").toUpperCase().replace(/\s+/g, "_"))
+                .filter(Boolean);
+
+            // canonicalType 조립: QUALITY + (BEDTYPE) + (옵션 태그: MASTER/JUNIOR/SEA_VIEW/OCEAN_VIEW 등)
+            const canonicalParts = [qualityFinal];
+            if (bedTypeFinal) canonicalParts.push(bedTypeFinal);
+
+            // 옵션 태그는 “필요한 것만” 붙임 (원하면 늘릴 수 있음)
+            const OPTIONAL_TAGS = new Set(["MASTER", "JUNIOR", "SEA_VIEW", "OCEAN_VIEW", "BUDGET"]);
+            for (const c of tagCodes) {
+                if (OPTIONAL_TAGS.has(c) && !canonicalParts.includes(c)) canonicalParts.push(c);
+            }
+
+            const canonicalTypeFinal = canonicalParts.join("_");
 
             cabins.push({
                 cabinId: c.id,
@@ -436,6 +476,8 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
                         : classification.tags) || [],
 
                 canonicalType: canonicalTypeFinal,
+
+
             });
         });
     });
