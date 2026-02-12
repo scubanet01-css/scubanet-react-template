@@ -397,43 +397,36 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
     types.forEach((ct) => {
         const ratePlans = collectForType(ct.id);
 
+        // ✅ ct 단위 분류 (반드시 여기 있어야 함)
         const classification = classifyCabinTypeName(ct.name);
         const canonicalCode = classification.cabinTypeCode || null;
 
-        // ⚠️ 여기서 assetMeta 키가 canonicalCode(=품질코드) 기반이면,
-        // STANDARD/DELUXE 같은 단일 타입에만 매칭됨.
-        // (bedType까지 구분하려면 아래 canonicalTypeFinal을 키로 쓰는 구조로 확장해야 함)
+        // ✅ Admin cabin meta는 canonicalCode 기준으로 매칭
         const assetMeta = canonicalCode
             ? assetCabinMap.get(String(canonicalCode).toUpperCase())
             : null;
 
         ct.cabins?.forEach((c) => {
-            // ✅ bedType은 "객실 개별 name"에서 먼저 추출해야 함
-            const bedTypeFromName =
-                detectBedTypeFromName(c?.name) ||
-                detectBedTypeFromName(ct?.name) ||
-                null;
+            // ✅ 개별 cabin 이름에서 bedType 추출 (있으면)
+            const bedTypeFromName = detectBedTypeFromName(c?.name || ""); // 너희가 이미 만든 함수/로직 사용
 
             // ✅ canonicalType: quality + bedType (+ optional view/master/junior tags)
             // 우선순위: Admin(assetMeta) > 분류(classification) > 이름 파싱(bedTypeFromName)
-            const qualityFinal = (assetMeta?.quality || classification.quality || "STANDARD").toUpperCase();
+            const qualityFinal = String(assetMeta?.quality || classification.quality || "STANDARD").toUpperCase();
 
-            // bedType 후보들 정리 (TWIN/DOUBLE/TRIPLE/QUAD/TWIN_DOUBLE)
             let bedTypeFinal =
                 (assetMeta?.bedType || classification.bedType || bedTypeFromName || null);
 
             if (bedTypeFinal) {
                 bedTypeFinal = String(bedTypeFinal).toUpperCase().replace(/\s+/g, "_");
-                // Twin/Double 같이 들어오는 경우 표준화
                 if (bedTypeFinal === "TWIN/DOUBLE" || bedTypeFinal === "DOUBLE/TWIN") bedTypeFinal = "TWIN_DOUBLE";
             }
 
-            // ✅ Standard는 bedType이 없으면 기본 TWIN으로 간주 (현업 요구사항 반영)
+            // ✅ Standard는 bedType이 없으면 기본 TWIN
             if (!bedTypeFinal && qualityFinal === "STANDARD") {
                 bedTypeFinal = "TWIN";
             }
 
-            // tagsFinal: Admin tags 우선, 없으면 classification.tags
             const tagsFinal =
                 (assetMeta?.tags && assetMeta.tags.length ? assetMeta.tags : classification.tags) || [];
 
@@ -441,14 +434,12 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
                 .map((t) => String(t || "").toUpperCase().replace(/\s+/g, "_"))
                 .filter(Boolean);
 
-            // canonicalType 조립: QUALITY + (BEDTYPE) + (옵션 태그: MASTER/JUNIOR/SEA_VIEW/OCEAN_VIEW 등)
             const canonicalParts = [qualityFinal];
             if (bedTypeFinal) canonicalParts.push(bedTypeFinal);
 
-            // 옵션 태그는 “필요한 것만” 붙임 (원하면 늘릴 수 있음)
             const OPTIONAL_TAGS = new Set(["MASTER", "JUNIOR", "SEA_VIEW", "OCEAN_VIEW", "BUDGET"]);
-            for (const c of tagCodes) {
-                if (OPTIONAL_TAGS.has(c) && !canonicalParts.includes(c)) canonicalParts.push(c);
+            for (const code of tagCodes) {
+                if (OPTIONAL_TAGS.has(code) && !canonicalParts.includes(code)) canonicalParts.push(code);
             }
 
             const canonicalTypeFinal = canonicalParts.join("_");
@@ -464,20 +455,11 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
                 images: assetMeta?.images || [],
 
                 deckCode: assetMeta?.deckCode || classification.deckCode || null,
-
-                // ✅ 핵심 교체
-                bedType: assetMeta?.bedType || bedTypeFromName || classification.bedType || null,
-
-                quality: assetMeta?.quality || classification.quality || "STANDARD",
-
-                tags:
-                    (assetMeta?.tags && assetMeta.tags.length
-                        ? assetMeta.tags
-                        : classification.tags) || [],
+                bedType: assetMeta?.bedType || classification.bedType || bedTypeFromName || null,
+                quality: qualityFinal,
+                tags: tagsFinal,
 
                 canonicalType: canonicalTypeFinal,
-
-
             });
         });
     });
