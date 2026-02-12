@@ -440,24 +440,124 @@ function TripDetail() {
     return { quality, view };
   }
 
-  // Admin JSON -> key (quality + view)
+  // 공통 정규화
+  function norm(s) {
+    return String(s || "")
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^A-Z0-9_]+/g, "");
+  }
+
+  /**
+   * parseCabinAttributes(label, fallbackQuality)
+   * - label에서 quality / deck / bedType / view / master/junior 같은 태그를 추출
+   * - fallbackQuality가 있으면 quality 기본값으로 사용
+   */
+  function parseCabinAttributes(label, fallbackQuality) {
+    const s = String(label || "").toUpperCase();
+
+    // quality
+    let quality =
+      (s.includes("BUDGET") && "BUDGET") ||
+      (s.includes("DELUXE") && "DELUXE") ||
+      (s.includes("SUITE") && "SUITE") ||
+      (s.includes("STANDARD") && "STANDARD") ||
+      null;
+
+    if (!quality && fallbackQuality) quality = norm(fallbackQuality);
+
+    // deck (label에 있는 경우만)
+    let deck =
+      (s.includes("UPPER") && "UPPER_DECK") ||
+      (s.includes("MAIN") && "MAIN_DECK") ||
+      ((s.includes("LOWER") || s.includes("LOW")) && "LOWER_DECK") ||
+      null;
+
+    // view
+    let view =
+      (s.includes("SEA VIEW") && "SEA_VIEW") ||
+      (s.includes("SEAVIEW") && "SEA_VIEW") ||
+      (s.includes("OCEAN VIEW") && "OCEAN_VIEW") ||
+      (s.includes("OCEANVIEW") && "OCEAN_VIEW") ||
+      null;
+
+    // master/junior tags
+    const tags = [];
+    if (s.includes("MASTER")) tags.push("MASTER");
+    if (s.includes("JUNIOR")) tags.push("JUNIOR");
+
+    // bedType (우선순위: 명시된 것)
+    let bedType =
+      ((s.includes("TWIN/DOUBLE") || s.includes("TWIN DOUBLE")) && "TWIN_DOUBLE") ||
+      (s.includes("TWIN") && "TWIN") ||
+      (s.includes("DOUBLE") && "DOUBLE") ||
+      (s.includes("TRIPLE") && "TRIPLE") ||
+      (s.includes("QUAD") && "QUAD") ||
+      (s.includes("QUADRUPLE") && "QUAD") ||
+      null;
+
+    return { quality: quality ? norm(quality) : null, deck, bedType, view, tags };
+  }
+
+  // ✅ Admin JSON -> key (quality + deck + bedType + view + tags)
   function makeAdminCabinKey(cabin) {
     const baseQuality = cabin?.cabinTypeCode || "";
     const name = cabin?.cabinName || "";
-    const { quality, view } = parseCabinAttributes(name, baseQuality);
+    const deckCode = cabin?.deckCode || "";     // ✅ Admin은 deckCode가 있음
+    const bed = cabin?.bedType || "";           // ✅ Admin에 bedType 입력받기 시작하면 사용
 
-    if (!quality && !view) return null;
-    return [quality, view].filter(Boolean).join("__");
+    const parsed = parseCabinAttributes(name, baseQuality);
+
+    const quality = parsed.quality || norm(baseQuality);
+    const deck = norm(deckCode) || parsed.deck || "";       // ✅ deckCode 우선
+    const bedType = norm(bed) || parsed.bedType || "";      // ✅ bedType 우선
+    const view = parsed.view || "";
+    const tags = (parsed.tags || []).map(norm);
+
+    if (!quality) return null;
+
+    // 핵심: deck/bedType/view/tags 포함 → 덮어쓰기 방지
+    return [quality, deck, bedType, view, ...tags].filter(Boolean).join("__");
   }
 
-  // UTS cabin type -> key (quality + view)
+  // ✅ UTS cabin type -> key (quality + deck + bedType + view + tags)
   function makeUtsCabinKey(uts) {
-    const label = uts?.name || uts?.type;
-    const { quality, view } = parseCabinAttributes(label, null);
+    const label = uts?.name || uts?.type || "";
+    const parsed = parseCabinAttributes(label, null);
 
-    if (!quality && !view) return null;
-    return [quality, view].filter(Boolean).join("__");
+    // ✅ UTS는 deck/bedType이 “객실(cabin) 레벨”에 있을 가능성이 높음
+    // → buildCabinTypes에서 uts.cabins를 모으고 있으니 그 안에서 대표값을 뽑아쓴다.
+    const deck = pickMostCommon(uts?.cabins, "deckCode");     // e.g. MAIN_DECK
+    const bedType = pickMostCommon(uts?.cabins, "bedType");   // e.g. TWIN / DOUBLE
+
+    const quality = parsed.quality || "STANDARD";
+    const view = parsed.view || "";
+    const tags = (parsed.tags || []).map(norm);
+
+    return [quality, norm(deck), norm(bedType), view, ...tags].filter(Boolean).join("__");
   }
+
+  // 대표값 뽑기 유틸 (uts.cabins 배열에서 가장 많이 등장하는 값)
+  function pickMostCommon(list, field) {
+    if (!Array.isArray(list) || !list.length) return "";
+    const freq = new Map();
+    for (const x of list) {
+      const v = String(x?.[field] || "").trim();
+      if (!v) continue;
+      freq.set(v, (freq.get(v) || 0) + 1);
+    }
+    let best = "";
+    let bestN = 0;
+    for (const [k, n] of freq.entries()) {
+      if (n > bestN) {
+        bestN = n;
+        best = k;
+      }
+    }
+    return best;
+  }
+
 
 
   // cabinTypes 길이가 바뀌면 indices도 맞춰줌
