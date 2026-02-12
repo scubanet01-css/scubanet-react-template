@@ -270,6 +270,74 @@ function normalizeRatePlanEntry(ratePlan, cabinTypeId, occ, kind) {
     };
 }
 
+// 문자열에서 Deck 코드 추출
+function detectDeckFromName(name) {
+    const s = String(name || "").toLowerCase();
+    if (s.includes("lower")) return "LOWER_DECK";
+    if (s.includes("main")) return "MAIN_DECK";
+    if (s.includes("upper")) return "UPPER_DECK";
+    return null;
+}
+
+// 문자열에서 BedType 추출
+function detectBedTypeFromName(name) {
+    const s = String(name || "").toLowerCase();
+
+    // Twin/Double 같이 둘 다 들어있는 경우
+    if (s.includes("twin") && s.includes("double")) return "TWIN_DOUBLE";
+
+    if (s.includes("twin")) return "TWIN";
+    if (s.includes("double")) return "DOUBLE";
+    if (s.includes("triple")) return "TRIPLE";
+    if (s.includes("quad")) return "QUAD";
+
+    return null;
+}
+
+// 품질(QUALITY) 추출: STANDARD / DELUXE / SUITE / BUDGET 등
+function detectQualityFromName(name) {
+    const s = String(name || "").toLowerCase();
+
+    if (s.includes("master")) return "MASTER";
+    if (s.includes("junior")) return "JUNIOR";
+    if (s.includes("suite")) return "SUITE";
+    if (s.includes("deluxe")) return "DELUXE";
+    if (s.includes("budget")) return "BUDGET";
+
+    // 기본값
+    return "STANDARD";
+}
+
+
+function buildCabinClassification(cabinTypeName, cabinName) {
+    const typeStr = String(cabinTypeName || "");
+    const cabinStr = String(cabinName || "");
+
+    const deckCode =
+        detectDeckFromName(typeStr) || detectDeckFromName(cabinStr);
+
+    const bedType =
+        detectBedTypeFromName(cabinStr) || detectBedTypeFromName(typeStr);
+
+    const quality = detectQualityFromName(typeStr || cabinStr);
+
+    const tags = [];
+    if (quality) tags.push(quality);
+    if (deckCode) tags.push(deckCode);
+    if (bedType) tags.push(bedType);
+
+    const canonicalType =
+        [quality, deckCode, bedType].filter(Boolean).join("__") || null;
+
+    return {
+        deckCode,
+        bedType,
+        quality,
+        tags,
+        canonicalType,
+    };
+}
+
 function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
     const types = avail.spaces?.cabinTypes || [];
     const retail = avail.ratePlansRetail || [];
@@ -323,13 +391,53 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
     types.forEach((ct) => {
         const ratePlans = collectForType(ct.id);
 
-        const classification = classifyCabinTypeName(ct.name);
-        const canonicalCode = classification.cabinTypeCode || null;
+        // 타입 이름 기준 기존 분류 (지금 쓰던 함수 그대로 유지)
+        const typeClass = classifyCabinTypeName(ct.name);
+        const canonicalCode = typeClass.cabinTypeCode || null;
+
+        // Admin 에서 저장해 둔 cabin 자산(이미지/메타)
         const assetMeta = canonicalCode
             ? assetCabinMap.get(canonicalCode.toUpperCase())
             : null;
 
         ct.cabins?.forEach((c) => {
+            // 🔹 호실 이름까지 포함해서 자동 분류
+            const autoClass = buildCabinClassification(ct.name, c.name);
+
+            // 🔹 최종 deck / bed / quality / tags 결정 (우선순위: Admin > typeClass > autoClass)
+            const deckCode =
+                assetMeta?.deckCode ||
+                typeClass.deckCode ||
+                autoClass.deckCode ||
+                null;
+
+            const bedType =
+                assetMeta?.bedType ||
+                typeClass.bedType ||
+                autoClass.bedType ||
+                null;
+
+            const quality =
+                assetMeta?.quality ||
+                typeClass.quality ||
+                autoClass.quality ||
+                "STANDARD";
+
+            const tags =
+                (assetMeta?.tags && assetMeta.tags.length
+                    ? assetMeta.tags
+                    : (typeClass.tags && typeClass.tags.length
+                        ? typeClass.tags
+                        : autoClass.tags)) || [];
+
+            // 🔹 canonicalType 은 기존 canonicalCode를 유지하되,
+            //    없으면 autoClass 기준으로 생성
+            const canonicalType =
+                canonicalCode ||
+                autoClass.canonicalType ||
+                [quality, deckCode, bedType].filter(Boolean).join("__") ||
+                null;
+
             cabins.push({
                 cabinId: c.id,
                 name: c.name,
@@ -340,18 +448,16 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
 
                 images: assetMeta?.images || [],
 
-                deckCode: assetMeta?.deckCode || classification.deckCode || null,
-                bedType: assetMeta?.bedType || classification.bedType || null,
-                quality: assetMeta?.quality || classification.quality || "STANDARD",
-                tags:
-                    (assetMeta?.tags && assetMeta.tags.length
-                        ? assetMeta.tags
-                        : classification.tags) || [],
+                deckCode,
+                bedType,
+                quality,
+                tags,
 
-                canonicalType: canonicalCode,
+                canonicalType,
             });
         });
     });
+
 
     // 🚫 Deck Space 제거 (기존 기능 유지)
     return cabins.filter((c) => {
