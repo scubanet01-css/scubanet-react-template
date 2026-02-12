@@ -388,12 +388,6 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
         return out;
     }
 
-    // ✅ bedType이 비어있고, 품질이 STANDARD면 기본값을 TWIN으로 잡는다
-    // (Standard Cabins 처럼 힌트가 없는 케이스가 많아서, Double은 보통 이름에 명시됨)
-    if (!classification.bedType && (classification.quality || "").toUpperCase() === "STANDARD") {
-        classification.bedType = "TWIN";
-    }
-
     types.forEach((ct) => {
         const ratePlans = collectForType(ct.id);
 
