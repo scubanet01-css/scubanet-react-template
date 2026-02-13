@@ -125,17 +125,19 @@ function TripDetail() {
     const map = new Map();
 
     for (const cab of cabins) {
-      const key = String(cab?.type || cab?.name || "").trim();
+      const key = String(cab?.canonicalType || cab?.type || cab?.name || "").trim();
       if (!key) continue;
 
       if (!map.has(key)) {
         map.set(key, {
-          name: key,
+          name: cab?.canonicalType || key,   // 화면 표시용(원하면 더 예쁘게 변환 가능)
+          rawType: cab?.type || "",
           description: cab?.description || "",
-          images: [], // UTS fallback images
+          images: [],
           cabins: [],
         });
       }
+
 
       const bucket = map.get(key);
       bucket.cabins.push(cab);

@@ -393,6 +393,11 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
 
         // ✅ ct 단위 분류 (반드시 여기 있어야 함)
         const classification = classifyCabinTypeName(ct.name);
+
+        // ✅ 여기서 기본값 처리
+        if (!classification.bedType && (classification.quality || "").toUpperCase() === "STANDARD") {
+            classification.bedType = "TWIN";
+        }
         const canonicalCode = classification.cabinTypeCode || null;
 
         // ✅ Admin cabin meta는 canonicalCode 기준으로 매칭
@@ -402,18 +407,27 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
 
         ct.cabins?.forEach((c) => {
             // ✅ 개별 cabin 이름에서 bedType 추출 (있으면)
-            const bedTypeFromName = detectBedTypeFromName(c?.name || ""); // 너희가 이미 만든 함수/로직 사용
+            const bedTypeFromName = detectBedTypeFromName(c?.name || "");
 
-            // ✅ canonicalType: quality + bedType (+ optional view/master/junior tags)
-            // 우선순위: Admin(assetMeta) > 분류(classification) > 이름 파싱(bedTypeFromName)
-            const qualityFinal = String(assetMeta?.quality || classification.quality || "STANDARD").toUpperCase();
+            // ✅ deck도 이름에서 추출 (가능하면)
+            const deckFromName = detectDeckFromName(c?.name || "");
+            const deckFinal =
+                assetMeta?.deckCode ||
+                classification.deckCode ||
+                deckFromName ||
+                null;
+
+            const qualityFinal = String(
+                assetMeta?.quality || classification.quality || "STANDARD"
+            ).toUpperCase();
 
             let bedTypeFinal =
-                (assetMeta?.bedType || classification.bedType || bedTypeFromName || null);
+                assetMeta?.bedType || classification.bedType || bedTypeFromName || null;
 
             if (bedTypeFinal) {
                 bedTypeFinal = String(bedTypeFinal).toUpperCase().replace(/\s+/g, "_");
-                if (bedTypeFinal === "TWIN/DOUBLE" || bedTypeFinal === "DOUBLE/TWIN") bedTypeFinal = "TWIN_DOUBLE";
+                if (bedTypeFinal === "TWIN/DOUBLE" || bedTypeFinal === "DOUBLE/TWIN")
+                    bedTypeFinal = "TWIN_DOUBLE";
             }
 
             // ✅ Standard는 bedType이 없으면 기본 TWIN
@@ -448,14 +462,17 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
 
                 images: assetMeta?.images || [],
 
-                deckCode: assetMeta?.deckCode || classification.deckCode || null,
-                bedType: assetMeta?.bedType || classification.bedType || bedTypeFromName || null,
+                // ✅ 여기 2개가 핵심: “최종 계산값”을 실제 저장에 반영
+                deckCode: deckFinal,
+                bedType: bedTypeFinal,
+
                 quality: qualityFinal,
                 tags: tagsFinal,
 
                 canonicalType: canonicalTypeFinal,
             });
         });
+
     });
 
 
