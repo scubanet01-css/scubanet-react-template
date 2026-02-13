@@ -344,23 +344,45 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
     const charter = avail.ratePlansCharter || [];
     const cabins = [];
 
-    // ✅ Admin assets 쪽 cabin 메타데이터 맵
+    // Admin boats-assets cabins -> Map
+    // key: QUALITY__DECK__BEDTYPE (가능하면) / QUALITY__DECK / QUALITY
     const assetCabinMap = new Map();
-    const assetCabins = Array.isArray(boatAssets?.cabins) ? boatAssets.cabins : [];
 
-    assetCabins.forEach((c) => {
-        const code = String(c.cabinTypeCode || "").toUpperCase();
-        if (!code) return;
+    (assetCabins || []).forEach((c) => {
+        const quality = String(c?.cabinTypeCode || "").toUpperCase().trim();
+        const deck = String(c?.deckCode || "").toUpperCase().trim();
 
-        assetCabinMap.set(code, {
-            deckCode: c.deckCode || null,
-            bedType: c.bedType || null,
-            quality: c.quality || null,
-            tags: Array.isArray(c.tags) ? c.tags : [],
-            images: Array.isArray(c.images) ? c.images : [],
-            cabinName: c.cabinName || null,
-        });
+        // bedType은 Admin JSON에 없으니 cabinName에서 추출 시도
+        let bed = detectBedTypeFromName(c?.cabinName || "");
+        bed = bed ? String(bed).toUpperCase().replace(/\s+/g, "_") : null;
+
+        // Standard는 bed 힌트 없으면 기본 TWIN (정책)
+        if (!bed && quality === "STANDARD") bed = "TWIN";
+
+        // images 정리
+        const images = Array.isArray(c?.images) ? c.images : [];
+        if (!images.length) return;
+
+        // ✅ 1순위 key: QUALITY__DECK__BED
+        if (quality && deck && bed) {
+            assetCabinMap.set(`${quality}__${deck}__${bed}`, { ...c, quality, deckCode: deck, bedType: bed, images });
+        }
+
+        // ✅ 2순위 key: QUALITY__DECK
+        if (quality && deck) {
+            // 이미 있으면 덮지 않음(첫번째가 더 구체적이므로)
+            const k2 = `${quality}__${deck}`;
+            if (!assetCabinMap.has(k2)) {
+                assetCabinMap.set(k2, { ...c, quality, deckCode: deck, bedType: bed, images });
+            }
+        }
+
+        // ✅ 3순위 key: QUALITY
+        if (quality && !assetCabinMap.has(quality)) {
+            assetCabinMap.set(quality, { ...c, quality, deckCode: deck, bedType: bed, images });
+        }
     });
+
 
     function collectForType(typeId) {
         const out = [];
@@ -391,53 +413,55 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
     types.forEach((ct) => {
         const ratePlans = collectForType(ct.id);
 
-        // ✅ ct 단위 분류 (반드시 여기 있어야 함)
+        // ✅ ct 단위 분류
         const classification = classifyCabinTypeName(ct.name);
 
-        // ✅ 여기서 기본값 처리
-        if (!classification.bedType && (classification.quality || "").toUpperCase() === "STANDARD") {
-            classification.bedType = "TWIN";
-        }
-        const canonicalCode = classification.cabinTypeCode || null;
-
-        // ✅ Admin cabin meta는 canonicalCode 기준으로 매칭
-        const assetMeta = canonicalCode
-            ? assetCabinMap.get(String(canonicalCode).toUpperCase())
-            : null;
+        // quality는 우선 classification 기준으로 (assetMeta로 quality를 결정하려 하면 순환참조가 생김)
+        const qualityFromType = String(classification.quality || classification.cabinTypeCode || "STANDARD").toUpperCase();
 
         ct.cabins?.forEach((c) => {
-            // ✅ 개별 cabin 이름에서 bedType 추출 (있으면)
+            // ✅ 이름 기반 추출
             const bedTypeFromName = detectBedTypeFromName(c?.name || "");
-
-            // ✅ deck도 이름에서 추출 (가능하면)
             const deckFromName = detectDeckFromName(c?.name || "");
-            const deckFinal =
-                assetMeta?.deckCode ||
-                classification.deckCode ||
-                deckFromName ||
-                null;
+            const deckFromType = classification.deckCode || null;
 
-            const qualityFinal = String(
-                assetMeta?.quality || classification.quality || "STANDARD"
-            ).toUpperCase();
+            // ✅ 일단 최종 deck/bed 후보를 만든다 (Admin meta 없을 때 기준)
+            let deckFinal = deckFromType || deckFromName || null;
 
-            let bedTypeFinal =
-                assetMeta?.bedType || classification.bedType || bedTypeFromName || null;
-
+            let bedTypeFinal = bedTypeFromName || classification.bedType || null;
             if (bedTypeFinal) {
                 bedTypeFinal = String(bedTypeFinal).toUpperCase().replace(/\s+/g, "_");
-                if (bedTypeFinal === "TWIN/DOUBLE" || bedTypeFinal === "DOUBLE/TWIN")
-                    bedTypeFinal = "TWIN_DOUBLE";
+                if (bedTypeFinal === "TWIN/DOUBLE" || bedTypeFinal === "DOUBLE/TWIN") bedTypeFinal = "TWIN_DOUBLE";
             }
 
-            // ✅ Standard는 bedType이 없으면 기본 TWIN
-            if (!bedTypeFinal && qualityFinal === "STANDARD") {
+            // ✅ Standard는 bedType 없으면 기본 TWIN
+            if (!bedTypeFinal && qualityFromType === "STANDARD") {
                 bedTypeFinal = "TWIN";
             }
 
+            // ✅ 여기서! Admin assetMeta를 “quality + deck (+ bedType)”로 찾는다
+            const key3 = deckFinal && bedTypeFinal ? `${qualityFromType}__${deckFinal}__${bedTypeFinal}` : null;
+            const key2 = deckFinal ? `${qualityFromType}__${deckFinal}` : null;
+            const key1 = `${qualityFromType}`;
+
+            const assetMeta =
+                (key3 && assetCabinMap.get(key3)) ||
+                (key2 && assetCabinMap.get(key2)) ||
+                assetCabinMap.get(key1) ||
+                null;
+
+            // ✅ assetMeta가 있으면 deck/bedType을 Admin 값으로 덮어씌움 (Admin 우선)
+            if (assetMeta?.deckCode) deckFinal = assetMeta.deckCode;
+
+            // Admin JSON엔 bedType이 없으니(현재), 있으면만 반영
+            if (assetMeta?.bedType) bedTypeFinal = assetMeta.bedType;
+
+            // ✅ 최종 tags/quality
+            const qualityFinal = String(assetMeta?.quality || qualityFromType || "STANDARD").toUpperCase();
             const tagsFinal =
                 (assetMeta?.tags && assetMeta.tags.length ? assetMeta.tags : classification.tags) || [];
 
+            // ✅ canonicalType 최종
             const tagCodes = tagsFinal
                 .map((t) => String(t || "").toUpperCase().replace(/\s+/g, "_"))
                 .filter(Boolean);
@@ -462,18 +486,16 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
 
                 images: assetMeta?.images || [],
 
-                // ✅ 여기 2개가 핵심: “최종 계산값”을 실제 저장에 반영
                 deckCode: deckFinal,
                 bedType: bedTypeFinal,
-
                 quality: qualityFinal,
                 tags: tagsFinal,
 
                 canonicalType: canonicalTypeFinal,
             });
         });
-
     });
+
 
 
 
