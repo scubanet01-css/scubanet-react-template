@@ -343,8 +343,11 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
     const retail = avail.ratePlansRetail || [];
     const charter = avail.ratePlansCharter || [];
     const cabins = [];
+    const assetCabins = Array.isArray(boatAssets?.assets?.cabins)
+        ? boatAssets.assets.cabins
+        : [];
 
-    const assetCabins = Array.isArray(boatAssets?.assets?.cabins) ? boatAssets.assets.cabins : [];
+
 
     // Admin boats-assets cabins -> Map
     // key: QUALITY__DECK__BEDTYPE (가능하면) / QUALITY__DECK / QUALITY
