@@ -100,6 +100,32 @@ router.post("/", (req, res) => {
                 message: "vesselId 누락",
             });
         }
+        // ✅ Cabins 입력 검증 (운영 실수 방지용)
+        const cabins = payload?.assets?.cabins;
+        if (Array.isArray(cabins)) {
+            for (let i = 0; i < cabins.length; i++) {
+                const c = cabins[i];
+                const q = String(c?.cabinTypeCode || "").toUpperCase().trim();
+                const d = String(c?.deckCode || "").toUpperCase().trim();
+
+                // 기본 필수
+                if (!q || !d) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `assets.cabins[${i}] cabinTypeCode/deckCode 누락`,
+                    });
+                }
+
+                // ✅ bedType 필수 정책 (원하면 STANDARD/SUITE만 강제해도 됨)
+                const b = String(c?.bedType || "").toUpperCase().trim();
+                if (!b) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `assets.cabins[${i}] bedType 누락 (quality=${q}, deck=${d})`,
+                    });
+                }
+            }
+        }
 
         const saveDir = `/var/www/scubanet/data/boats-assets`;
         if (!fs.existsSync(saveDir)) {

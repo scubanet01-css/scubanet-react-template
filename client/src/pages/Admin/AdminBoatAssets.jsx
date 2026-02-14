@@ -49,6 +49,16 @@ const DECK_CODE_OPTIONS = [
     "OTHER",
 ];
 
+const BED_TYPE_OPTIONS = [
+    "TWIN",
+    "DOUBLE",
+    "TRIPLE",
+    "QUAD",
+    "TWIN_DOUBLE", // 필요하면 (Twin/Double 혼합)
+    "UNKNOWN",
+];
+
+
 const FACILITY_TYPE_OPTIONS = [
     "RESTAURANT",
     "LOUNGE",
@@ -156,7 +166,7 @@ function AdminBoatAssets() {
     const [deckPlans, setDeckPlans] = useState([]);
 
     // Cabins
-    // [{ cabinTypeCode, deckCode, cabinName, images:[{id,file,preview,title,order}] }]
+    // [{ cabinTypeCode, deckCode, bedType, cabinName, images:[{id,file,preview,title,order}] }]
     const [cabins, setCabins] = useState([]);
 
     // Facilities
@@ -367,6 +377,7 @@ function AdminBoatAssets() {
             {
                 cabinTypeCode: "STANDARD",
                 deckCode: "MAIN_DECK",
+                bedType: "TWIN",
                 cabinName: "",
                 images: [],
             },
@@ -1214,6 +1225,17 @@ function AdminBoatAssets() {
 
                                         <select value={c.deckCode} onChange={(e) => updateCabin(cIdx, "deckCode", e.target.value)}>
                                             {DECK_CODE_OPTIONS.map((opt) => (
+                                                <option key={opt} value={opt}>
+                                                    {opt}
+                                                </option>
+                                            ))}
+                                        </select>
+
+                                        <select
+                                            value={c.bedType || "UNKNOWN"}
+                                            onChange={(e) => updateCabin(cIdx, "bedType", e.target.value)}
+                                        >
+                                            {BED_TYPE_OPTIONS.map((opt) => (
                                                 <option key={opt} value={opt}>
                                                     {opt}
                                                 </option>
