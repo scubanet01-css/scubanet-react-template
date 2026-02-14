@@ -785,9 +785,11 @@ function AdminBoatAssets() {
                 return {
                     cabinTypeCode: c.cabinTypeCode,
                     deckCode: c.deckCode || "OTHER",
+                    bedType: c.bedType || null,          // ✅ 추가 (핵심)
                     cabinName: c.cabinName || "",
                     images: imagesOut,
                 };
+
             })
             .filter(Boolean);
         if (cabinsOut.length) payload.assets.cabins = cabinsOut;
