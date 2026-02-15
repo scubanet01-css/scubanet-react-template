@@ -125,12 +125,17 @@ function TripDetail() {
     const map = new Map();
 
     for (const cab of cabins) {
-      const key = String(cab?.canonicalType || cab?.type || cab?.name || "").trim();
+      const base = String(cab?.canonicalType || cab?.type || cab?.name || "").trim();
+      const deck = String(cab?.deckCode || "").trim();
+      const key = deck ? `${base}__${deck}` : base;
+
       if (!key) continue;
 
       if (!map.has(key)) {
         map.set(key, {
-          name: cab?.canonicalType || key,   // 화면 표시용(원하면 더 예쁘게 변환 가능)
+          key,                              // ✅ 추가
+          name: key,                        // (구버전 호환)
+          displayName: key,                 // ✅ 추가: 나중에 예쁘게 바꿀 자리
           rawType: cab?.type || "",
           description: cab?.description || "",
           images: [],
@@ -138,23 +143,19 @@ function TripDetail() {
         });
       }
 
-
       const bucket = map.get(key);
       bucket.cabins.push(cab);
 
       const imgs = Array.isArray(cab?.images) ? cab.images : [];
       for (const img of imgs) {
-        if (typeof img === "string" && img.trim())
-          bucket.images.push({ image: img });
+        if (typeof img === "string" && img.trim()) bucket.images.push({ image: img });
         else if (img?.image) bucket.images.push({ image: img.image });
         else if (img?.url) bucket.images.push({ image: img.url });
       }
 
-      if (!bucket.description && cab?.description)
-        bucket.description = cab.description;
+      if (!bucket.description && cab?.description) bucket.description = cab.description;
     }
 
-    // 중복 제거
     for (const bucket of map.values()) {
       const seen = new Set();
       bucket.images = bucket.images.filter((x) => {
@@ -168,23 +169,26 @@ function TripDetail() {
     return Array.from(map.values());
   }
 
+
   // ===============================
   // ✅ 객실 타입 최저가 (UTS cabins[].ratePlans 기반)
   // ===============================
-  function findCabinTypeLowestPrice(cabinTypeName) {
+  function findCabinTypeLowestPrice(cabinTypeKey) {
     const cabins = Array.isArray(trip?.cabins) ? trip.cabins : [];
+
+    // ✅ canonicalType 기준으로 매칭
     const matched = cabins.filter(
-      (c) =>
-        String(c?.type || c?.name || "").trim() ===
-        String(cabinTypeName).trim()
+      (c) => String(c?.canonicalType || "").trim() === String(cabinTypeKey).trim()
     );
 
     let best = null; // { planName, price }
+
     for (const cab of matched) {
       const rps = Array.isArray(cab?.ratePlans) ? cab.ratePlans : [];
       for (const rp of rps) {
         const price = rp?.price;
         if (price == null) continue;
+
         if (!best || Number(price) < Number(best.price)) {
           best = {
             planName: rp?.ratePlanName || rp?.name || "Rate",
@@ -193,8 +197,10 @@ function TripDetail() {
         }
       }
     }
+
     return best;
   }
+
 
   const changeImage = (idx, dir, total) => {
     setIndices((prev) => {
@@ -404,43 +410,16 @@ function TripDetail() {
     });
   }, [trip, assets]);
 
+  console.log("CABIN TYPES KEYS", cabinTypes.map(x => x.key || x.name));
+  console.log("CABIN TYPES ADMIN?", cabinTypes.map(x => ({
+    key: x.key || x.name,
+    admin: (x.adminImages || []).length
+  })));
+
+
   /* ===============================
      Cabin 매칭용 헬퍼
   =============================== */
-
-  // 문자열에서 quality + view 뽑아내기
-  function parseCabinAttributes(label, fallbackQuality) {
-    const s = String(label || "").toUpperCase();
-
-    let quality = fallbackQuality ? String(fallbackQuality).toUpperCase() : null;
-    let view = null;
-
-    // --- View 코드 ---
-    if (s.includes("MASTER SEA VIEW")) {
-      view = "MASTER_SEA_VIEW";
-      if (!quality) quality = "SUITE";
-    } else if (s.includes("SEA VIEW")) {
-      view = "SEA_VIEW";
-      if (!quality) quality = "SUITE";
-    } else if (s.includes("OCEAN VIEW")) {
-      view = "OCEAN_VIEW";
-      if (!quality) quality = "SUITE";
-    }
-
-    // --- Quality 코드 (명시된 경우 우선) ---
-    if (s.includes("DELUXE")) {
-      quality = "DELUXE";
-    } else if (s.includes("STANDARD")) {
-      quality = quality || "STANDARD";
-    } else if (s.includes("SUITE")) {
-      quality = "SUITE";
-    } else if (!quality) {
-      // 아무 키워드도 없으면 기본값
-      quality = "STANDARD";
-    }
-
-    return { quality, view };
-  }
 
   // 공통 정규화
   function norm(s) {
@@ -502,63 +481,42 @@ function TripDetail() {
     return { quality: quality ? norm(quality) : null, deck, bedType, view, tags };
   }
 
-  // ✅ Admin JSON -> key (quality + deck + bedType + view + tags)
-  function makeAdminCabinKey(cabin) {
-    const baseQuality = cabin?.cabinTypeCode || "";
-    const name = cabin?.cabinName || "";
-    const deckCode = cabin?.deckCode || "";     // ✅ Admin은 deckCode가 있음
-    const bed = cabin?.bedType || "";           // ✅ Admin에 bedType 입력받기 시작하면 사용
+  // ✅ Admin JSON -> key (QUALITY__DECK__BEDTYPE)  ※매칭키는 최소로 고정
+  function makeAdminCabinKey(c) {
+    const quality = norm(c?.cabinTypeCode || "");
+    const deck = norm(c?.deckCode || "");
+    const bedType = norm(c?.bedType || "");
 
-    const parsed = parseCabinAttributes(name, baseQuality);
-
-    const quality = parsed.quality || norm(baseQuality);
-    const deck = norm(deckCode) || parsed.deck || "";       // ✅ deckCode 우선
-    const bedType = norm(bed) || parsed.bedType || "";      // ✅ bedType 우선
-    const view = parsed.view || "";
-    const tags = (parsed.tags || []).map(norm);
+    // 혹시 Sea view / Master 같은 건 cabinName에서 태그만 보조로 뽑기
+    const parsed = parseCabinAttributes(c?.cabinName || "", c?.cabinTypeCode || "");
+    const tags = (parsed?.tags || []).map(norm);
+    const OPTIONAL = new Set(["MASTER", "JUNIOR", "SEA_VIEW", "OCEAN_VIEW", "BUDGET"]);
+    const optTags = tags.filter(t => OPTIONAL.has(t));
 
     if (!quality) return null;
-
-    // 핵심: deck/bedType/view/tags 포함 → 덮어쓰기 방지
-    return [quality, deck, bedType, view, ...tags].filter(Boolean).join("__");
+    return [quality, deck, bedType, ...optTags].filter(Boolean).join("__");
   }
 
-  // ✅ UTS cabin type -> key (quality + deck + bedType + view + tags)
+
+
+  // ✅ UTS cabin type(또는 cabin 묶음) -> key (QUALITY__DECK__BEDTYPE)
   function makeUtsCabinKey(uts) {
-    const label = uts?.name || uts?.type || "";
-    const parsed = parseCabinAttributes(label, null);
+    // ✅ bucket 안의 첫 cabin을 기준으로 (같은 그룹이면 deck도 동일하게 묶이게 했으니 안전)
+    const sample = Array.isArray(uts?.cabins) ? uts.cabins[0] : null;
 
-    // ✅ UTS는 deck/bedType이 “객실(cabin) 레벨”에 있을 가능성이 높음
-    // → buildCabinTypes에서 uts.cabins를 모으고 있으니 그 안에서 대표값을 뽑아쓴다.
-    const deck = pickMostCommon(uts?.cabins, "deckCode");     // e.g. MAIN_DECK
-    const bedType = pickMostCommon(uts?.cabins, "bedType");   // e.g. TWIN / DOUBLE
+    const quality = norm(sample?.quality || "");
+    const deck = norm(sample?.deckCode || "");
+    const bedType = norm(sample?.bedType || "");
 
-    const quality = parsed.quality || "STANDARD";
-    const view = parsed.view || "";
-    const tags = (parsed.tags || []).map(norm);
+    // view/tags는 tags 배열에서 가져오기
+    const tags = Array.isArray(sample?.tags) ? sample.tags.map(norm) : [];
+    const OPTIONAL = new Set(["MASTER", "JUNIOR", "SEA_VIEW", "OCEAN_VIEW", "BUDGET"]);
+    const optTags = tags.filter(t => OPTIONAL.has(t));
 
-    return [quality, norm(deck), norm(bedType), view, ...tags].filter(Boolean).join("__");
+    if (!quality) return null;
+    return [quality, deck, bedType, ...optTags].filter(Boolean).join("__");
   }
 
-  // 대표값 뽑기 유틸 (uts.cabins 배열에서 가장 많이 등장하는 값)
-  function pickMostCommon(list, field) {
-    if (!Array.isArray(list) || !list.length) return "";
-    const freq = new Map();
-    for (const x of list) {
-      const v = String(x?.[field] || "").trim();
-      if (!v) continue;
-      freq.set(v, (freq.get(v) || 0) + 1);
-    }
-    let best = "";
-    let bestN = 0;
-    for (const [k, n] of freq.entries()) {
-      if (n > bestN) {
-        bestN = n;
-        best = k;
-      }
-    }
-    return best;
-  }
 
 
 
@@ -700,7 +658,9 @@ function TripDetail() {
               label: cabType.name,
             }));
 
-          const priceInfo = findCabinTypeLowestPrice(cabType.name);
+          const priceInfo = findCabinTypeLowestPrice(cabType.key || cabType.name);
+
+
           const currentIndex = indices[i] || 0;
 
           const desc =
@@ -710,11 +670,13 @@ function TripDetail() {
 
           return (
             <div
-              key={cabType.name || i}
+              key={cabType.key || i}
+
               className="cabin-card"
               style={{ marginBottom: "50px" }}
             >
-              <h3>{cabType.name}</h3>
+              <h3>{cabType.displayName}</h3>
+
 
               {images.length > 0 ? (
                 <div
