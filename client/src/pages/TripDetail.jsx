@@ -483,19 +483,20 @@ function TripDetail() {
 
   // ✅ Admin JSON -> key (QUALITY__DECK__BEDTYPE)  ※매칭키는 최소로 고정
   function makeAdminCabinKey(c) {
-    const quality = norm(c?.cabinTypeCode || "");
-    const deck = norm(c?.deckCode || "");
-    const bedType = norm(c?.bedType || "");
+    const quality = norm(c?.cabinTypeCode);
+    const deck = norm(c?.deckCode);
+    const bed = norm(c?.bedType);
 
-    // 혹시 Sea view / Master 같은 건 cabinName에서 태그만 보조로 뽑기
+    // view/tags는 선택(있으면 포함)
     const parsed = parseCabinAttributes(c?.cabinName || "", c?.cabinTypeCode || "");
-    const tags = (parsed?.tags || []).map(norm);
-    const OPTIONAL = new Set(["MASTER", "JUNIOR", "SEA_VIEW", "OCEAN_VIEW", "BUDGET"]);
-    const optTags = tags.filter(t => OPTIONAL.has(t));
+    const view = norm(parsed.view);
+    const tags = (parsed.tags || []).map(norm);
 
     if (!quality) return null;
-    return [quality, deck, bedType, ...optTags].filter(Boolean).join("__");
+
+    return [quality, deck, bed, view, ...tags].filter(Boolean).join("__");
   }
+
 
 
 
