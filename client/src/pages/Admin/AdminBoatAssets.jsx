@@ -55,7 +55,6 @@ const BED_TYPE_OPTIONS = [
     "TRIPLE",
     "QUAD",
     "TWIN_DOUBLE", // 필요하면 (Twin/Double 혼합)
-    "UNKNOWN",
 ];
 
 
@@ -785,7 +784,7 @@ function AdminBoatAssets() {
                 return {
                     cabinTypeCode: c.cabinTypeCode,
                     deckCode: c.deckCode || "OTHER",
-                    bedType: c.bedType || null,          // ✅ 추가 (핵심)
+                    bedType: c.bedType || "TWIN",
                     cabinName: c.cabinName || "",
                     images: imagesOut,
                 };
@@ -1234,8 +1233,9 @@ function AdminBoatAssets() {
                                         </select>
 
                                         <select
-                                            value={c.bedType || "UNKNOWN"}
+                                            value={c.bedType || "TWIN"} // ✅ fallback도 TWIN
                                             onChange={(e) => updateCabin(cIdx, "bedType", e.target.value)}
+                                            style={{ border: "1px solid #999" }} // 선택: 필수값처럼 보이게
                                         >
                                             {BED_TYPE_OPTIONS.map((opt) => (
                                                 <option key={opt} value={opt}>
@@ -1244,12 +1244,19 @@ function AdminBoatAssets() {
                                             ))}
                                         </select>
 
-                                        <input
-                                            placeholder="Cabin Name (예: Deluxe Twin / 오션뷰 캐빈)"
-                                            value={c.cabinName}
-                                            onChange={(e) => updateCabin(cIdx, "cabinName", e.target.value)}
-                                            style={{ width: 420 }}
-                                        />
+
+                                        <div style={{ display: "flex", flexDirection: "column" }}>
+                                            <input
+                                                placeholder="Cabin Name (선택, 화면 표시용) 예: Standard Upper Twin #10,#13"
+                                                value={c.cabinName}
+                                                onChange={(e) => updateCabin(cIdx, "cabinName", e.target.value)}
+                                                style={{ width: 420 }}
+                                            />
+                                            <div style={{ fontSize: 12, color: "#777", marginTop: 4 }}>
+                                                (선택) 화면 표시용 이름입니다. 매칭/분류는 Cabin Type + Deck + Bed Type으로 합니다.
+                                            </div>
+                                        </div>
+
                                     </div>
 
                                     <button onClick={() => removeCabin(cIdx)} style={{ color: "#b00" }}>
