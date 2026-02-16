@@ -8,5 +8,8 @@ export default defineConfig({
     proxy: {
       // '/data': 'http://localhost:3002'
     }
-  }
+  },
+  build: {
+    assetsDir: "app-assets",
+  },
 });
