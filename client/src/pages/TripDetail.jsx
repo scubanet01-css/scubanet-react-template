@@ -552,21 +552,29 @@ function TripDetail() {
 
   // ✅ UTS cabin type(또는 cabin 묶음) -> key (QUALITY__DECK__BEDTYPE)
   function makeUtsCabinKey(uts) {
-    // ✅ bucket 안의 첫 cabin을 기준으로 (같은 그룹이면 deck도 동일하게 묶이게 했으니 안전)
-    const sample = Array.isArray(uts?.cabins) ? uts.cabins[0] : null;
+    const firstCab =
+      Array.isArray(uts?.cabins) && uts.cabins.length > 0
+        ? uts.cabins[0]
+        : null;
 
-    const quality = norm(sample?.quality || "");
-    const deck = norm(sample?.deckCode || "");
-    const bedType = norm(sample?.bedType || "");
+    const quality =
+      norm(firstCab?.quality) ||
+      norm(parseCabinAttributes(uts?.name || "", null).quality) ||
+      "STANDARD";
 
-    // view/tags는 tags 배열에서 가져오기
-    const tags = Array.isArray(sample?.tags) ? sample.tags.map(norm) : [];
-    const OPTIONAL = new Set(["MASTER", "JUNIOR", "SEA_VIEW", "OCEAN_VIEW", "BUDGET"]);
-    const optTags = tags.filter(t => OPTIONAL.has(t));
+    const deck =
+      norm(firstCab?.deckCode) ||
+      norm(parseCabinAttributes(uts?.name || "", null).deck) ||
+      "";
 
-    if (!quality) return null;
-    return [quality, deck, bedType, ...optTags].filter(Boolean).join("__");
+    const bedType =
+      norm(firstCab?.bedType) ||
+      norm(parseCabinAttributes(uts?.name || "", null).bedType) ||
+      "";
+
+    return [quality, deck, bedType].filter(Boolean).join("__");
   }
+
 
 
 
