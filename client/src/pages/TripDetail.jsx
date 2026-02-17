@@ -396,6 +396,38 @@ function TripDetail() {
         });
       }
     }
+    // 2) UTS cabin type별로 key를 만들어 adminMap과 매칭 + Admin-only 타입도 합치기
+    const merged = utsCabinTypes.map((uts) => {
+      const key = makeUtsCabinKey(uts);
+      const admin = key ? adminMap.get(key) : null;
+
+      return {
+        ...uts,
+        adminImages: admin?.images || [],
+        adminTitle: admin?.title || "",
+      };
+    });
+
+    // ✅ Admin-only 타입 추가 (UTS에 없는 타입도 TripDetail에 카드 생성)
+    const existKeys = new Set(merged.map((x) => makeUtsCabinKey(x)).filter(Boolean));
+
+    for (const [key, admin] of adminMap.entries()) {
+      if (existKeys.has(key)) continue;
+
+      merged.push({
+        name: admin?.title || key,   // 화면에 표시될 제목
+        rawType: "",
+        description: "",
+        images: [],                  // UTS 이미지 없음
+        cabins: [],                  // UTS cabin row 없음
+        adminImages: admin?.images || [],
+        adminTitle: admin?.title || "",
+        // 필요하면 key도 보관 가능
+        _adminKey: key,
+      });
+    }
+
+    return merged;
 
     // 2) UTS cabin type별로 key를 만들어 adminMap과 매칭
     return utsCabinTypes.map((uts) => {
