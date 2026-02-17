@@ -443,6 +443,29 @@ function TripDetail() {
     admin: (x.adminImages || []).length
   })));
 
+  useEffect(() => {
+    if (!trip) return;
+
+    const uts = buildCabinTypes(trip);
+    const admin = Array.isArray(assets?.cabins) ? assets.cabins : [];
+
+    console.log("=== UTS KEYS ===");
+    console.table(uts.map(x => ({
+      name: x.name,
+      key: makeUtsCabinKey(x),
+      sampleDeck: x?.cabins?.[0]?.deckCode,
+      sampleBed: x?.cabins?.[0]?.bedType,
+    })));
+
+    console.log("=== ADMIN KEYS ===");
+    console.table(admin.map(x => ({
+      cabinName: x.cabinName,
+      deckCode: x.deckCode,
+      bedType: x.bedType,
+      key: makeAdminCabinKey(x),
+    })));
+  }, [trip, assets]);
+
 
   /* ===============================
      Cabin 매칭용 헬퍼
