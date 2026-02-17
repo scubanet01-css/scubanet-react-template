@@ -396,7 +396,12 @@ function TripDetail() {
         });
       }
     }
-    // 2) UTS cabin type별로 key를 만들어 adminMap과 매칭 + Admin-only 타입도 합치기
+
+    // 2) UTS cabin type별로 key를 만들어 adminMap과 매칭
+    const utsKeySet = new Set(
+      utsCabinTypes.map((uts) => makeUtsCabinKey(uts)).filter(Boolean)
+    );
+
     const merged = utsCabinTypes.map((uts) => {
       const key = makeUtsCabinKey(uts);
       const admin = key ? adminMap.get(key) : null;
@@ -408,38 +413,28 @@ function TripDetail() {
       };
     });
 
-    // ✅ Admin-only 타입 추가 (UTS에 없는 타입도 TripDetail에 카드 생성)
-    const existKeys = new Set(merged.map((x) => makeUtsCabinKey(x)).filter(Boolean));
-
+    // 3) ✅ UTS에는 없지만 Admin에는 있는 객실 타입도 추가(= 더블 같은 케이스)
     for (const [key, admin] of adminMap.entries()) {
-      if (existKeys.has(key)) continue;
+      if (utsKeySet.has(key)) continue;
+
+      const parts = String(key).split("__");
+      const quality = parts[0] || "STANDARD";
+      const deck = parts[1] || "";
+      const bed = parts[2] || "";
 
       merged.push({
-        name: admin?.title || key,   // 화면에 표시될 제목
+        name: [quality, bed, deck].filter(Boolean).join("_"),
         rawType: "",
         description: "",
-        images: [],                  // UTS 이미지 없음
-        cabins: [],                  // UTS cabin row 없음
+        images: [],
+        cabins: [],
         adminImages: admin?.images || [],
         adminTitle: admin?.title || "",
-        // 필요하면 key도 보관 가능
-        _adminKey: key,
       });
     }
 
     return merged;
 
-    // 2) UTS cabin type별로 key를 만들어 adminMap과 매칭
-    return utsCabinTypes.map((uts) => {
-      const key = makeUtsCabinKey(uts);
-      const admin = key ? adminMap.get(key) : null;
-
-      return {
-        ...uts,
-        adminImages: admin?.images || [],
-        adminTitle: admin?.title || "",
-      };
-    });
   }, [trip, assets]);
 
   console.log("CABIN TYPES KEYS", cabinTypes.map(x => x.key || x.name));
@@ -720,14 +715,9 @@ function TripDetail() {
                   }}
                 >
                   <img
-                    src={images[currentIndex]?.src}
+                    src={encodeURI(images[currentIndex]?.src || "")}
                     alt={`${cabType.name} ${currentIndex + 1}`}
-                    style={{
-                      width: "100%",
-                      borderRadius: "10px",
-                      height: "340px",
-                      objectFit: "cover",
-                    }}
+                    style={{ width: "100%", borderRadius: "10px", height: "340px", objectFit: "cover" }}
                     loading="lazy"
                   />
 
