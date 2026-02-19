@@ -12,7 +12,7 @@ console.log("🚀 UTS 변환 스크립트 시작됨");
 // --------------------------------------------------
 // 1. 기본 경로 설정
 // --------------------------------------------------
-const DATA_DIR = "/var/www/scubanet/data";
+const DATA_DIR = "/var/scubanet-data";
 
 // --------------------------------------------------
 // 2. 키워드 JSON 경로
@@ -81,7 +81,7 @@ function slugify(text) {
 
 /**
  * ✅ boats-assets JSON 로더
- *   /var/www/scubanet/data/boats-assets/{vesselId}.json
+ *   /var/scubanet-data/boats-assets/{vesselId}.json
  */
 const BOAT_ASSETS_DIR = path.join(DATA_DIR, "boats-assets"); // ✅ NEW
 

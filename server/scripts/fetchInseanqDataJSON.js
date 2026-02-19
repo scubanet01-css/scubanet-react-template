@@ -6,8 +6,8 @@ const path = require('path');
 // 🔑 API 키 (원래 사용중이던 키 그대로)
 const API_KEY = 'fa031783567788e568d8010a488a6c0f9cb860d0';
 
-// 🔄 저장 위치를 /var/www/scubanet/data 로 변경!!
-const DATA_DIR = "/var/www/scubanet/data";
+// 🔄 저장 위치를 /var/scubanet-data 로 변경!!
+const DATA_DIR = "/var/scubanet-data";
 
 const endpoints = [
   {
