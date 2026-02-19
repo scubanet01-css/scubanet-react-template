@@ -484,6 +484,29 @@ function TripDetail() {
 
   }, [trip, assets]);
 
+  // QUALITY + DECK 이 같은 형제 타입에서 cabins 를 빌려오는 헬퍼
+  function getSiblingCabinsForPrice(cabType, allTypes) {
+    const key = String(cabType.key || cabType.name || "");
+    const [quality, deck] = key.split("__");
+    if (!quality || !deck) return [];
+
+    const sibling = allTypes.find((ct) => {
+      if (ct === cabType) return false;
+      const k = String(ct.key || ct.name || "");
+      const [q2, d2] = k.split("__");
+
+      return (
+        q2 === quality &&
+        d2 === deck &&
+        Array.isArray(ct.cabins) &&
+        ct.cabins.length > 0
+      );
+    });
+
+    return sibling?.cabins || [];
+  }
+
+
   console.log("CABIN TYPES KEYS", cabinTypes.map(x => x.key || x.name));
   console.log("CABIN TYPES ADMIN?", cabinTypes.map(x => ({
     key: x.key || x.name,
@@ -778,9 +801,14 @@ function TripDetail() {
               label: cabType.name,
             }));
 
-          const priceInfo = findCabinTypeLowestPrice(cabType.cabins);
+          // ✅ 1순위: 자기 자신의 cabins
+          // ✅ 2순위: 같은 QUALITY + DECK 를 가진 형제 타입의 cabins 가져오기
+          const cabinsForPrice =
+            Array.isArray(cabType.cabins) && cabType.cabins.length
+              ? cabType.cabins
+              : getSiblingCabinsForPrice(cabType, cabinTypes);
 
-
+          const priceInfo = findCabinTypeLowestPrice(cabinsForPrice);
 
           const currentIndex = indices[i] || 0;
 
