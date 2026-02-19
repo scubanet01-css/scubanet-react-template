@@ -480,8 +480,42 @@ function TripDetail() {
       });
     }
 
-    return merged;
+    const allCabins = Array.isArray(trip?.cabins) ? trip.cabins : [];
 
+    const fixed = merged.map((ct) => {
+      // 이미 cabins 가 있으면 그대로 둠
+      if (Array.isArray(ct.cabins) && ct.cabins.length) return ct;
+
+      // admin 이미지도 없으면 손댈 필요 없음
+      if (!Array.isArray(ct.adminImages) || !ct.adminImages.length) return ct;
+
+      // key (또는 name) 에서 QUALITY 그룹 + DECK 추출
+      const key = String(ct.key || ct.name || "");
+      const parts = key.split("__");
+      if (parts.length < 2) return ct;
+
+      const qualityGroup = (parts[0] || "")
+        .toUpperCase()
+        .split("_")[0];               // "STANDARD_TWIN" → "STANDARD"
+      const deck = (parts[parts.length - 1] || "")
+        .toUpperCase();               // "LOWER_DECK"
+
+      // trip.cabins 에서 같은 QUALITY 그룹 + DECK 를 가진 cabins 찾기
+      const fallbackCabins = allCabins.filter((c) => {
+        const q = String(c.quality || "")
+          .toUpperCase()
+          .split("_")[0];             // "STANDARD_TWIN" → "STANDARD"
+        const d = String(c.deckCode || "").toUpperCase();
+        return q === qualityGroup && d === deck;
+      });
+
+      // 찾은 게 있으면 cabins 를 채워주고, 없으면 원본 유지
+      return fallbackCabins.length
+        ? { ...ct, cabins: fallbackCabins }
+        : ct;
+    });
+
+    return fixed;
   }, [trip, assets]);
 
   // QUALITY 그룹(STANDARD / SUITE...) + DECK 기준으로 형제 타입에서 cabins 빌려오기
@@ -824,7 +858,7 @@ function TripDetail() {
               ? cabType.cabins
               : getSiblingCabinsForPrice(cabType, cabinTypes);
 
-          const priceInfo = findCabinTypeLowestPrice(cabinsForPrice);
+          const priceInfo = findCabinTypeLowestPrice(cabinType.cabins);
 
           const currentIndex = indices[i] || 0;
 
