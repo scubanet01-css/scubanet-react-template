@@ -7,7 +7,7 @@ const fs = require("fs");
 const path = require("path");
 
 // Inseanq 원본 데이터
-const DATA_FILE = "/var/scubanet-data/availability-detailed.json";
+const DATA_FILE = "/var/www.scubanet/data/availability-detailed.json";
 
 // 기존 country 판단 함수 가져오기 (convertInseanqToUTS.js에서 사용한 것과 동일)
 const COUNTRY_KEYWORDS = [

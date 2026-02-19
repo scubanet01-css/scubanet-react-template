@@ -51,15 +51,12 @@ function TripList() {
                 console.log("📌 API 응답 원본:", res);
                 console.log("📦 res.data:", res.data);
                 console.log("📦 res.data.data:", res.data?.data);
-                const rows = Array.isArray(res.data?.data) ? res.data.data : [];
-                setTrips(rows);
-                console.log("✅ rows.length =", rows.length);
+                setTrips(Array.isArray(res.data) ? res.data : []);
             })
             .catch(err => {
                 console.error("❌ API 요청 오류:", err);
             });
     }, []);
-
 
     useEffect(() => {
         if (!trips.length) return;
