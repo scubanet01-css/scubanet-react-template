@@ -858,7 +858,7 @@ function TripDetail() {
               ? cabType.cabins
               : getSiblingCabinsForPrice(cabType, cabinTypes);
 
-          const priceInfo = findCabinTypeLowestPrice(cabinType.cabins);
+          const priceInfo = findCabinTypeLowestPrice(cabType.cabins);
 
           const currentIndex = indices[i] || 0;
 
