@@ -378,12 +378,14 @@ function TripDetail() {
       : [];
 
     const adminMap = new Map();
+    const adminPrimaryKeys = new Set();
 
-    // 1) Admin 쪽을 key → {title, images[]} 로 정리
     for (const c of adminCabins) {
-      // 원래 full key(뷰/태그까지 포함)
-      const fullKey = makeAdminCabinKey(c);
-      if (!fullKey) continue;
+      const quality = norm(c?.cabinTypeCode);
+      const deck = norm(c?.deckCode);
+      const bed = norm(c?.bedType);
+
+      if (!quality || !deck) continue; // deck은 필수로 두자(지금 데이터가 deck 중심이니까)
 
       const images = (Array.isArray(c?.images) ? c.images : [])
         .map((img) => ({
@@ -396,25 +398,25 @@ function TripDetail() {
 
       if (!images.length) continue;
 
-      const quality = norm(c?.cabinTypeCode);
-      const deck = norm(c?.deckCode);
-      const bed = norm(c?.bedType);
-
-      // ✅ fallback 키들 (중요)
-      const k3 = [quality, deck, bed].filter(Boolean).join("__"); // QUALITY__DECK__BED
-      const k2 = [quality, deck].filter(Boolean).join("__");      // QUALITY__DECK
-      const k1 = [quality].filter(Boolean).join("__");            // QUALITY
+      // ✅ “원본 1개 entry”의 대표키(Primary Key)
+      const primaryKey = [quality, deck, bed].filter(Boolean).join("__");
+      adminPrimaryKeys.add(primaryKey);
 
       const payload = {
-        title: c?.cabinName || c?.cabinTypeCode || "",
+        title: c?.cabinName || [quality, bed, deck].filter(Boolean).join(" "),
         images,
+        primaryKey,
       };
 
-      // ✅ 가장 구체적인 키부터 등록 (이미 있으면 덮지 않음)
-      for (const k of [fullKey, k3, k2, k1]) {
-        if (!k) continue;
-        if (!adminMap.has(k)) adminMap.set(k, payload);
-      }
+      // ✅ exact key는 무조건 등록(덮어쓰기 허용 X)
+      if (!adminMap.has(primaryKey)) adminMap.set(primaryKey, payload);
+
+      // ✅ fallback 키는 “없을 때만” 등록 (덮어쓰기 금지)
+      const k2 = [quality, deck].join("__");
+      const k1 = [quality].join("__");
+
+      if (!adminMap.has(k2)) adminMap.set(k2, payload);
+      if (!adminMap.has(k1)) adminMap.set(k1, payload);
     }
 
 
@@ -424,52 +426,54 @@ function TripDetail() {
     );
 
     const merged = utsCabinTypes.map((uts) => {
-      const key3 = makeUtsCabinKey(uts); // QUALITY__DECK__BED 또는 QUALITY__DECK
-      if (!key3) {
-        return { ...uts, adminImages: [], adminTitle: "" };
-      }
-
-      const parts = String(key3).split("__");
+      const key3 = makeUtsCabinKey(uts); // QUALITY__DECK__BED or QUALITY__DECK
+      const parts = String(key3 || "").split("__");
       const quality = parts[0] || "";
       const deck = parts[1] || "";
       const bed = parts[2] || "";
 
-      const candidates = [
-        key3,                             // 1순위
-        [quality, deck].filter(Boolean).join("__"), // 2순위
-        [quality].filter(Boolean).join("__"),       // 3순위
-      ];
+      const exact = [quality, deck, bed].filter(Boolean).join("__");
+      const k2 = [quality, deck].filter(Boolean).join("__");
+      const k1 = [quality].filter(Boolean).join("__");
 
-      const admin =
-        candidates.map(k => adminMap.get(k)).find(Boolean) || null;
+      // ✅ exact → quality+deck → quality 순서
+      const admin = (exact && adminMap.get(exact)) || (k2 && adminMap.get(k2)) || (k1 && adminMap.get(k1)) || null;
 
       return {
         ...uts,
+        // ✅ 제목도 Admin이 있으면 Admin title 우선
+        displayName: uts?.displayName || uts?.name || "",
         adminImages: admin?.images || [],
         adminTitle: admin?.title || "",
+        _matchKeyUsed: admin ? (exact && adminMap.get(exact) ? exact : (k2 && adminMap.get(k2) ? k2 : k1)) : "",
       };
     });
 
+    for (const primaryKey of adminPrimaryKeys) {
+      // UTS에 같은 exact가 있으면 추가 안 함
+      if (utsKeySet.has(primaryKey)) continue;
 
-    // 3) ✅ UTS에는 없지만 Admin에는 있는 객실 타입도 추가(= 더블 같은 케이스)
-    for (const [key, admin] of adminMap.entries()) {
-      if (utsKeySet.has(key)) continue;
-
-      const parts = String(key).split("__");
+      const parts = String(primaryKey).split("__");
       const quality = parts[0] || "STANDARD";
       const deck = parts[1] || "";
       const bed = parts[2] || "";
 
+      const admin = adminMap.get(primaryKey);
+      if (!admin?.images?.length) continue;
+
       merged.push({
-        name: [quality, bed, deck].filter(Boolean).join("_"),
+        key: primaryKey,                            // ✅ key 넣기
+        name: primaryKey,                           // ✅ name도 넣기
+        displayName: [quality, bed, deck].filter(Boolean).join("_"), // ✅ 타이틀 보이게
         rawType: "",
         description: "",
         images: [],
         cabins: [],
-        adminImages: admin?.images || [],
-        adminTitle: admin?.title || "",
+        adminImages: admin.images,
+        adminTitle: admin.title || "",
       });
     }
+
 
     return merged;
 
@@ -591,27 +595,16 @@ function TripDetail() {
   // ✅ UTS cabin type(또는 cabin 묶음) -> key (QUALITY__DECK__BEDTYPE)
   function makeUtsCabinKey(uts) {
     const firstCab =
-      Array.isArray(uts?.cabins) && uts.cabins.length > 0
-        ? uts.cabins[0]
-        : null;
+      Array.isArray(uts?.cabins) && uts.cabins.length > 0 ? uts.cabins[0] : null;
 
-    const quality =
-      norm(firstCab?.quality) ||
-      norm(parseCabinAttributes(uts?.name || "", null).quality) ||
-      "STANDARD";
+    const quality = norm(firstCab?.quality) || "";
+    const deck = norm(firstCab?.deckCode) || "";
+    const bed = norm(firstCab?.bedType) || "";
 
-    const deck =
-      norm(firstCab?.deckCode) ||
-      norm(parseCabinAttributes(uts?.name || "", null).deck) ||
-      "";
-
-    const bedType =
-      norm(firstCab?.bedType) ||
-      norm(parseCabinAttributes(uts?.name || "", null).bedType) ||
-      "";
-
-    return [quality, deck, bedType].filter(Boolean).join("__");
+    // bed가 비어 있을 수 있음(SUITE)
+    return [quality, deck, bed].filter(Boolean).join("__");
   }
+
 
 
 
@@ -772,7 +765,7 @@ function TripDetail() {
               className="cabin-card"
               style={{ marginBottom: "50px" }}
             >
-              <h3>{cabType.displayName}</h3>
+              <h3>{cabType.adminTitle || cabType.displayName || cabType.name}</h3>
 
 
               {images.length > 0 ? (
