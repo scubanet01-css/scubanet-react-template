@@ -97,7 +97,7 @@ function loadBoatAssetsForVessel(vesselId) {                  // ✅ NEW
 
         const raw = fs.readFileSync(filePath, "utf8");
         const json = JSON.parse(raw);
-        return json.assets || null;
+        return json || null;
     } catch (e) {
         console.error("❌ boat-assets JSON 로드/파싱 오류:", e);
         return null;
@@ -345,7 +345,8 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
     const cabins = [];
     const assetCabins = Array.isArray(boatAssets?.assets?.cabins)
         ? boatAssets.assets.cabins
-        : [];
+        : (Array.isArray(boatAssets?.cabins) ? boatAssets.cabins : []);
+
 
 
 
@@ -358,8 +359,9 @@ function buildCabins(avail, boatAssets) {       // ✅ boatAssets 추가
         const deck = String(c?.deckCode || "").toUpperCase().trim();
 
         // bedType은 Admin JSON에 없으니 cabinName에서 추출 시도
-        let bed = detectBedTypeFromName(c?.cabinName || "");
-        bed = bed ? String(bed).toUpperCase().replace(/\s+/g, "_") : null;
+        let bed = c?.bedType ? String(c.bedType).toUpperCase().trim() : detectBedTypeFromName(c?.cabinName || "");
+        bed = bed ? bed.replace(/\s+/g, "_") : null;
+
 
         // Standard는 bed 힌트 없으면 기본 TWIN (정책)
         if (!bed && quality === "STANDARD") bed = "TWIN";

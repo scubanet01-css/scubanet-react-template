@@ -175,13 +175,19 @@ function TripDetail() {
   // ===============================
   function findCabinTypeLowestPrice(cabinTypeKey) {
     const cabins = Array.isArray(trip?.cabins) ? trip.cabins : [];
+    if (!cabinTypeKey) return null;
 
-    // ✅ canonicalType 기준으로 매칭
-    const matched = cabins.filter(
-      (c) => String(c?.canonicalType || "").trim() === String(cabinTypeKey).trim()
-    );
+    // key가 "CANONICAL__DECK" 형태면 분해
+    const [canon, deck] = String(cabinTypeKey).split("__");
 
-    let best = null; // { planName, price }
+    const matched = cabins.filter((c) => {
+      const cCanon = String(c?.canonicalType || "").trim();
+      const cDeck = String(c?.deckCode || "").trim();
+      if (deck) return cCanon === String(canon).trim() && cDeck === String(deck).trim();
+      return cCanon === String(cabinTypeKey).trim();
+    });
+
+    let best = null;
 
     for (const cab of matched) {
       const rps = Array.isArray(cab?.ratePlans) ? cab.ratePlans : [];
@@ -200,6 +206,7 @@ function TripDetail() {
 
     return best;
   }
+
 
 
   const changeImage = (idx, dir, total) => {
@@ -374,8 +381,9 @@ function TripDetail() {
 
     // 1) Admin 쪽을 key → {title, images[]} 로 정리
     for (const c of adminCabins) {
-      const key = makeAdminCabinKey(c);
-      if (!key) continue;
+      // 원래 full key(뷰/태그까지 포함)
+      const fullKey = makeAdminCabinKey(c);
+      if (!fullKey) continue;
 
       const images = (Array.isArray(c?.images) ? c.images : [])
         .map((img) => ({
@@ -388,14 +396,27 @@ function TripDetail() {
 
       if (!images.length) continue;
 
-      // 같은 key가 여러 개면 첫 번째만 사용
-      if (!adminMap.has(key)) {
-        adminMap.set(key, {
-          title: c?.cabinName || c?.cabinTypeCode || "",
-          images,
-        });
+      const quality = norm(c?.cabinTypeCode);
+      const deck = norm(c?.deckCode);
+      const bed = norm(c?.bedType);
+
+      // ✅ fallback 키들 (중요)
+      const k3 = [quality, deck, bed].filter(Boolean).join("__"); // QUALITY__DECK__BED
+      const k2 = [quality, deck].filter(Boolean).join("__");      // QUALITY__DECK
+      const k1 = [quality].filter(Boolean).join("__");            // QUALITY
+
+      const payload = {
+        title: c?.cabinName || c?.cabinTypeCode || "",
+        images,
+      };
+
+      // ✅ 가장 구체적인 키부터 등록 (이미 있으면 덮지 않음)
+      for (const k of [fullKey, k3, k2, k1]) {
+        if (!k) continue;
+        if (!adminMap.has(k)) adminMap.set(k, payload);
       }
     }
+
 
     // 2) UTS cabin type별로 key를 만들어 adminMap과 매칭
     const utsKeySet = new Set(
@@ -403,8 +424,24 @@ function TripDetail() {
     );
 
     const merged = utsCabinTypes.map((uts) => {
-      const key = makeUtsCabinKey(uts);
-      const admin = key ? adminMap.get(key) : null;
+      const key3 = makeUtsCabinKey(uts); // QUALITY__DECK__BED 또는 QUALITY__DECK
+      if (!key3) {
+        return { ...uts, adminImages: [], adminTitle: "" };
+      }
+
+      const parts = String(key3).split("__");
+      const quality = parts[0] || "";
+      const deck = parts[1] || "";
+      const bed = parts[2] || "";
+
+      const candidates = [
+        key3,                             // 1순위
+        [quality, deck].filter(Boolean).join("__"), // 2순위
+        [quality].filter(Boolean).join("__"),       // 3순위
+      ];
+
+      const admin =
+        candidates.map(k => adminMap.get(k)).find(Boolean) || null;
 
       return {
         ...uts,
@@ -412,6 +449,7 @@ function TripDetail() {
         adminTitle: admin?.title || "",
       };
     });
+
 
     // 3) ✅ UTS에는 없지만 Admin에는 있는 객실 타입도 추가(= 더블 같은 케이스)
     for (const [key, admin] of adminMap.entries()) {
