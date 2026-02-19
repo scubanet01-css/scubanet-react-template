@@ -171,25 +171,15 @@ function TripDetail() {
 
 
   // ===============================
-  // ✅ 객실 타입 최저가 (UTS cabins[].ratePlans 기반)
+  // ✅ 객실 타입 최저가 (해당 타입의 cabins 배열 기반)
   // ===============================
-  function findCabinTypeLowestPrice(cabinTypeKey) {
-    const cabins = Array.isArray(trip?.cabins) ? trip.cabins : [];
-    if (!cabinTypeKey) return null;
-
-    // key가 "CANONICAL__DECK" 형태면 분해
-    const [canon, deck] = String(cabinTypeKey).split("__");
-
-    const matched = cabins.filter((c) => {
-      const cCanon = String(c?.canonicalType || "").trim();
-      const cDeck = String(c?.deckCode || "").trim();
-      if (deck) return cCanon === String(canon).trim() && cDeck === String(deck).trim();
-      return cCanon === String(cabinTypeKey).trim();
-    });
+  function findCabinTypeLowestPrice(cabinsForType) {
+    const list = Array.isArray(cabinsForType) ? cabinsForType : [];
+    if (!list.length) return null;
 
     let best = null;
 
-    for (const cab of matched) {
+    for (const cab of list) {
       const rps = Array.isArray(cab?.ratePlans) ? cab.ratePlans : [];
       for (const rp of rps) {
         const price = rp?.price;
@@ -450,7 +440,7 @@ function TripDetail() {
     });
 
     for (const primaryKey of adminPrimaryKeys) {
-      // UTS에 같은 exact가 있으면 추가 안 함
+      // UTS에 완전히 동일한 key(QUALITY__DECK__BED)가 이미 있으면 추가 안 함
       if (utsKeySet.has(primaryKey)) continue;
 
       const parts = String(primaryKey).split("__");
@@ -461,19 +451,34 @@ function TripDetail() {
       const admin = adminMap.get(primaryKey);
       if (!admin?.images?.length) continue;
 
+      // 🔍 같은 QUALITY + DECK를 가진 기존 UTS 타입을 찾는다.
+      // 예: STANDARD__LOWER_DECK__TWIN  ← 여기에 붙어 있는 cabins를 복사해서 같이 쓰게 함
+      const sibling = merged.find((m) => {
+        const kParts = String(m.key || m.name || "").split("__");
+        const q2 = kParts[0] || "";
+        const d2 = kParts[1] || "";
+
+        return (
+          q2 === quality &&
+          d2 === deck &&
+          Array.isArray(m.cabins) &&
+          m.cabins.length > 0
+        );
+      });
+
       merged.push({
-        key: primaryKey,                            // ✅ key 넣기
-        name: primaryKey,                           // ✅ name도 넣기
-        displayName: [quality, bed, deck].filter(Boolean).join("_"), // ✅ 타이틀 보이게
+        key: primaryKey,
+        name: primaryKey,
+        displayName: [quality, bed, deck].filter(Boolean).join("_"),
         rawType: "",
-        description: "",
+        description: sibling?.description || "",
         images: [],
-        cabins: [],
+        // 👇 형제 타입의 cabins를 같이 사용 → 가격/좌석 정보 공유
+        cabins: sibling?.cabins || [],
         adminImages: admin.images,
         adminTitle: admin.title || "",
       });
     }
-
 
     return merged;
 
@@ -773,7 +778,8 @@ function TripDetail() {
               label: cabType.name,
             }));
 
-          const priceInfo = findCabinTypeLowestPrice(cabType.key || cabType.name);
+          const priceInfo = findCabinTypeLowestPrice(cabType.cabins);
+
 
 
           const currentIndex = indices[i] || 0;

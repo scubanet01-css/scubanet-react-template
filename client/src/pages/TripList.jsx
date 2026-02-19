@@ -23,14 +23,6 @@ function TripList() {
         setSelectedDestination
     } = useDestinationFilter();
 
-    console.log("🔥 destinationList =", destinationList);
-    console.log("🔥 TripList 렌더링됨");
-    console.log("📌 trips.length =", trips.length);
-    console.log("📌 countryList =", countryList);
-    console.log("📌 destinationList =", destinationList);
-    console.log("🔥 TripList 함수 실행됨 at", Date.now());
-
-
     // TripList 전용 필터
     const [selectedBoat, setSelectedBoat] = useState("전체");
     const [specialType, setSpecialType] = useState("전체");
@@ -43,19 +35,14 @@ function TripList() {
 
     // 🚤 Boat 목록 계산 (UTS trips 기반)
     useEffect(() => {
-        console.log("📌 API 요청 시작 (uts-trips.json)");
-
         axios.get("/data/uts-trips.json")
             .then(res => {
-                console.log("📌 API 응답 원본:", res);
                 const raw = res.data;
 
                 // 배열 형태든 { data: [...] } 형태든 모두 대응
                 const list = Array.isArray(raw)
                     ? raw
                     : (raw && Array.isArray(raw.data) ? raw.data : []);
-
-                console.log("📦 UTS trips 개수:", list.length);
                 setTrips(list);
             })
             .catch(err => {
