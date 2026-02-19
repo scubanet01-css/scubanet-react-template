@@ -41,20 +41,25 @@ function TripList() {
     const itemsPerPage = 20;
     const [startDate, endDate] = dateRange;
 
-    // 🚤 Boat 목록 계산 (UTS boatName 기반)
+    // 🚤 Boat 목록 계산 (UTS trips 기반)
     useEffect(() => {
-        console.log("📌 API 요청 시작");
-        axios.get("/data/availability-detailed.json")
+        console.log("📌 API 요청 시작 (uts-trips.json)");
 
-
+        axios.get("/data/uts-trips.json")
             .then(res => {
                 console.log("📌 API 응답 원본:", res);
-                console.log("📦 res.data:", res.data);
-                console.log("📦 res.data.data:", res.data?.data);
-                setTrips(Array.isArray(res.data?.data) ? res.data.data : []);
+                const raw = res.data;
+
+                // 배열 형태든 { data: [...] } 형태든 모두 대응
+                const list = Array.isArray(raw)
+                    ? raw
+                    : (raw && Array.isArray(raw.data) ? raw.data : []);
+
+                console.log("📦 UTS trips 개수:", list.length);
+                setTrips(list);
             })
             .catch(err => {
-                console.error("❌ API 요청 오류:", err);
+                console.error("❌ uts-trips.json 로드 오류:", err);
             });
     }, []);
 
