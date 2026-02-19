@@ -594,16 +594,41 @@ function TripDetail() {
 
   // ✅ UTS cabin type(또는 cabin 묶음) -> key (QUALITY__DECK__BEDTYPE)
   function makeUtsCabinKey(uts) {
+    // buildCabinTypes에서 만든 key가 가장 신뢰도 높음: "CANONICAL__DECK"
+    const bucketKey = String(uts?.key || uts?.name || "").trim(); // 예: "STANDARD_TWIN__LOWER_DECK"
+    const [baseFromKey, deckFromKey] = bucketKey.includes("__")
+      ? bucketKey.split("__")
+      : [bucketKey, ""];
+
     const firstCab =
       Array.isArray(uts?.cabins) && uts.cabins.length > 0 ? uts.cabins[0] : null;
 
-    const quality = norm(firstCab?.quality) || "";
-    const deck = norm(firstCab?.deckCode) || "";
-    const bed = norm(firstCab?.bedType) || "";
+    // 1) quality: 우선 cabin 필드, 없으면 baseFromKey 첫 토큰
+    const quality =
+      norm(firstCab?.quality) ||
+      norm(baseFromKey.split("_")[0]) ||
+      "";
 
-    // bed가 비어 있을 수 있음(SUITE)
+    // 2) deck: 우선 cabin 필드, 없으면 key에서
+    const deck =
+      norm(firstCab?.deckCode) ||
+      norm(deckFromKey) ||
+      "";
+
+    // 3) bed: 우선 cabin 필드, 없으면 canonical(baseFromKey)에서 추출
+    let bed =
+      norm(firstCab?.bedType) ||
+      "";
+
+    if (!bed) {
+      const tokens = baseFromKey.split("_").map(norm);
+      const BED_SET = new Set(["TWIN", "DOUBLE", "TRIPLE", "QUAD", "TWIN_DOUBLE"]);
+      bed = tokens.find(t => BED_SET.has(t)) || "";
+    }
+
     return [quality, deck, bed].filter(Boolean).join("__");
   }
+
 
 
 
