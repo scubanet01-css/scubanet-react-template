@@ -171,23 +171,55 @@ function TripDetail() {
 
 
   // ===============================
-  // ✅ 객실 타입 최저가 (해당 타입의 cabins 배열 기반)
+  // ✅ 객실 타입 최저가
+  //    - 기본: 해당 cabinType 에 연결된 UTS cabins 사용
+  //    - 보정: cabins 가 비어 있으면 같은 QUALITY + DECK 의 UTS cabins 로 fallback
   // ===============================
-  function findCabinTypeLowestPrice(cabinsForType) {
-    const list = Array.isArray(cabinsForType) ? cabinsForType : [];
-    if (!list.length) return null;
+  function findCabinTypeLowestPrice(cabType) {
+    const allCabins = Array.isArray(trip?.cabins) ? trip.cabins : [];
+    if (!cabType || !allCabins.length) return null;
 
+    // 1) 기본: 이 타입에 직접 연결된 cabins 우선 사용
+    let candidates = Array.isArray(cabType.cabins) ? cabType.cabins : [];
+
+    // 2) Admin-only 타입(STANDARD DOUBLE LOWER_DECK 등) → fallback
+    if (!candidates.length) {
+      // key 또는 name 에서 QUALITY / DECK 추출
+      const keySource = String(cabType.key || cabType.name || "").toUpperCase();
+      const parts = keySource.split("__");
+
+      let quality = parts[0] || "";
+      let deck = parts[1] || "";
+
+      quality = quality.toUpperCase();
+      deck = deck.toUpperCase();
+
+      // QUALITY, DECK 이 제대로 안 잡혔으면 한 번 더 보정(최소한 deck 이나 quality 하나만 맞아도 매칭)
+      candidates = allCabins.filter((c) => {
+        const cQuality = String(c.quality || "").toUpperCase();
+        const cDeck = String(c.deckCode || "").toUpperCase();
+
+        const okQuality = !quality || cQuality === quality;
+        const okDeck = !deck || cDeck === deck;
+
+        return okQuality && okDeck;
+      });
+    }
+
+    if (!candidates.length) return null;
+
+    // 3) 최저가 찾기
     let best = null;
 
-    for (const cab of list) {
-      const rps = Array.isArray(cab?.ratePlans) ? cab.ratePlans : [];
+    for (const cab of candidates) {
+      const rps = Array.isArray(cab.ratePlans) ? cab.ratePlans : [];
       for (const rp of rps) {
         const price = rp?.price;
         if (price == null) continue;
 
         if (!best || Number(price) < Number(best.price)) {
           best = {
-            planName: rp?.ratePlanName || rp?.name || "Rate",
+            planName: rp.ratePlanName || rp.name || "Rate",
             price,
           };
         }
@@ -196,6 +228,8 @@ function TripDetail() {
 
     return best;
   }
+
+
 
 
 
@@ -858,7 +892,8 @@ function TripDetail() {
               ? cabType.cabins
               : getSiblingCabinsForPrice(cabType, cabinTypes);
 
-          const priceInfo = findCabinTypeLowestPrice(cabType.cabins);
+          const priceInfo = findCabinTypeLowestPrice(cabType);
+
 
           const currentIndex = indices[i] || 0;
 
