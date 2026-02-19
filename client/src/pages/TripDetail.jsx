@@ -484,19 +484,34 @@ function TripDetail() {
 
   }, [trip, assets]);
 
-  // QUALITY + DECK 이 같은 형제 타입에서 cabins 를 빌려오는 헬퍼
+  // QUALITY 그룹(STANDARD / SUITE...) + DECK 기준으로 형제 타입에서 cabins 빌려오기
   function getSiblingCabinsForPrice(cabType, allTypes) {
     const key = String(cabType.key || cabType.name || "");
-    const [quality, deck] = key.split("__");
-    if (!quality || !deck) return [];
+    const parts = key.split("__");
+    if (parts.length < 2) return [];
+
+    // parts[0] = "STANDARD_TWIN" or "STANDARD_DOUBLE" or "SUITE_TWIN" ...
+    // parts[last] = "LOWER_DECK" / "MAIN_DECK" / "UPPER_DECK"
+    const qualityRaw = parts[0];                 // 예: "STANDARD_TWIN"
+    const deck = parts[parts.length - 1];        // 예: "LOWER_DECK"
+
+    // QUALITY 그룹만 뽑기: "STANDARD_TWIN" -> "STANDARD"
+    const qualityGroup = qualityRaw.split("_")[0];  // "STANDARD" / "SUITE" ...
 
     const sibling = allTypes.find((ct) => {
       if (ct === cabType) return false;
-      const k = String(ct.key || ct.name || "");
-      const [q2, d2] = k.split("__");
+
+      const k2 = String(ct.key || ct.name || "");
+      const p2 = k2.split("__");
+      if (p2.length < 2) return false;
+
+      const q2Raw = p2[0];
+      const d2 = p2[p2.length - 1];
+
+      const q2Group = q2Raw.split("_")[0];
 
       return (
-        q2 === quality &&
+        q2Group === qualityGroup &&
         d2 === deck &&
         Array.isArray(ct.cabins) &&
         ct.cabins.length > 0
@@ -505,6 +520,7 @@ function TripDetail() {
 
     return sibling?.cabins || [];
   }
+
 
 
   console.log("CABIN TYPES KEYS", cabinTypes.map(x => x.key || x.name));
