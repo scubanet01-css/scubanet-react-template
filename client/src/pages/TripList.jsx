@@ -44,14 +44,14 @@ function TripList() {
     // 🚤 Boat 목록 계산 (UTS boatName 기반)
     useEffect(() => {
         console.log("📌 API 요청 시작");
-        axios.get("/data/uts-trips.json")
+        axios.get("/data/availability-detailed.json")
 
 
             .then(res => {
                 console.log("📌 API 응답 원본:", res);
                 console.log("📦 res.data:", res.data);
                 console.log("📦 res.data.data:", res.data?.data);
-                setTrips(Array.isArray(res.data) ? res.data : []);
+                setTrips(Array.isArray(res.data?.data) ? res.data.data : []);
             })
             .catch(err => {
                 console.error("❌ API 요청 오류:", err);
