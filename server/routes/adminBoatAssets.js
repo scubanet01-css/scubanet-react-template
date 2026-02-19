@@ -18,7 +18,7 @@ function ensureDir(dirPath) {
     }
 }
 
-const BASE_DIR = "/var/www/scubanet/assets/vessels";
+const BASE_DIR = "/var/scubanet-data/assets/vessels";
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -66,7 +66,7 @@ router.post(
 
             const { vesselId, bucket, sub } = req.body;
 
-            const savedPath = req.file.path.replace("/var/www/scubanet", "");
+            const savedPath = req.file.path.replace("/var/scubanet-data", "");
 
             res.json({
                 success: true,
@@ -127,7 +127,7 @@ router.post("/", (req, res) => {
             }
         }
 
-        const saveDir = `/var/www/scubanet/data/boats-assets`;
+        const saveDir = `/var/scubanet-data/boats-assets`;
         if (!fs.existsSync(saveDir)) {
             fs.mkdirSync(saveDir, { recursive: true });
         }
@@ -139,7 +139,7 @@ router.post("/", (req, res) => {
         res.json({
             success: true,
             vesselId: payload.vesselId,
-            savedPath: filePath.replace("/var/www/scubanet", ""),
+            savedPath: filePath.replace("/var/scubanet-data", ""),
         });
     } catch (err) {
         console.error("❌ boats-assets JSON 저장 실패:", err);
