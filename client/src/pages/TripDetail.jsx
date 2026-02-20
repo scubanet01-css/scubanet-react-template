@@ -851,7 +851,7 @@ function TripDetail() {
           <div className="facility-grid">
             {deckPlans.map((d) => (
               <figure key={d.deckCode} className="facility-card">
-                <img src={d.url} alt={d.title} loading="lazy" />
+                <img src={encodeURI(d.url)} alt={d.title} loading="lazy" />
                 <figcaption>{d.title}</figcaption>
               </figure>
             ))}
