@@ -884,107 +884,269 @@ function AdminBoatAssets() {
             return;
         }
 
-        setSaveStatus("이미지 처리 중...");
+        setSaveStatus("이미지 업로드 및 메타데이터 준비 중...");
 
         try {
+            // ✅ 여기서부터 실제로 저장할 payload를 직접 만든다.
+            const payloadForSave = {
+                vesselId,
+                boatName,
+                lastUpdated: new Date().toISOString().slice(0, 10),
+                assets: {},
+            };
+
             /* =========================
                1. Hero Image
             ========================= */
             if (heroImage?.file) {
                 const resizedHero = await resizeImage(heroImage.file, 2000, 0.85);
 
-                await uploadImageToServer({
+                const heroRes = await uploadImageToServer({
                     vesselId,
                     bucket: "hero",
                     file: resizedHero,
                 });
+
+                payloadForSave.assets.hero = {
+                    id: heroImage.id,
+                    url:
+                        heroRes.savedPath ||
+                        buildUrl({
+                            vesselId,
+                            bucket: "hero",
+                            filename: resizedHero.name,
+                        }),
+                    title: heroImage.title || boatName || "",
+                    description: heroImage.description || "",
+                    order: heroImage.order || 1,
+                    isPrimary: !!heroImage.isPrimary,
+                };
+            } else {
+                payloadForSave.assets.hero = null;
             }
 
             /* =========================
                2. Deck Plans
             ========================= */
-            for (const deck of deckPlans) {
-                if (!deck.image?.file) continue;
+            const deckPlansOut = [];
+            for (const d of deckPlans) {
+                if (!d?.image?.file) continue;
 
-                const resized = await resizeImage(deck.image.file, 2000, 0.85);
+                const resized = await resizeImage(d.image.file, 2000, 0.85);
 
-                await uploadImageToServer({
+                const res = await uploadImageToServer({
                     vesselId,
                     bucket: "deck-plans",
-                    sub: deck.deckCode,
+                    sub: d.deckCode,
                     file: resized,
                 });
+
+                deckPlansOut.push({
+                    deckCode: d.deckCode,
+                    deckName: d.deckName || d.deckCode,
+                    order: d.order || 1,
+                    image: {
+                        id: d.image.id,
+                        url:
+                            res.savedPath ||
+                            buildUrl({
+                                vesselId,
+                                bucket: "deck-plans",
+                                sub: d.deckCode,
+                                filename: resized.name,
+                            }),
+                        title: d.image.title || `${d.deckName || d.deckCode} Plan`,
+                        order: d.image.order || d.order || 1,
+                    },
+                });
+            }
+            if (deckPlansOut.length) {
+                payloadForSave.assets.deckPlans = deckPlansOut;
             }
 
             /* =========================
                3. Cabins
             ========================= */
-            for (const cabin of cabins) {
-                for (const img of cabin.images || []) {
+            const cabinsOut = [];
+            for (const c of cabins) {
+                const imagesOut = [];
+
+                for (const img of c.images || []) {
                     if (!img.file) continue;
 
                     const resized = await resizeImage(img.file, 1600, 0.8);
 
-                    await uploadImageToServer({
+                    const res = await uploadImageToServer({
                         vesselId,
                         bucket: "cabins",
-                        sub: cabin.cabinTypeCode,
+                        sub: c.cabinTypeCode,
                         file: resized,
                     });
+
+                    imagesOut.push({
+                        id: img.id,
+                        url:
+                            res.savedPath ||
+                            buildUrl({
+                                vesselId,
+                                bucket: "cabins",
+                                sub: c.cabinTypeCode,
+                                filename: resized.name,
+                            }),
+                        title: img.title || "",
+                        order: img.order || 1,
+                    });
                 }
+
+                // cabinName 또는 images가 있는 경우만 저장
+                if (!imagesOut.length && !c.cabinName?.trim()) continue;
+
+                cabinsOut.push({
+                    cabinTypeCode: c.cabinTypeCode,
+                    deckCode: c.deckCode || "OTHER",
+                    bedType: c.bedType || "TWIN",
+                    cabinName: c.cabinName || "",
+                    images: imagesOut,
+                });
+            }
+            if (cabinsOut.length) {
+                payloadForSave.assets.cabins = cabinsOut;
             }
 
             /* =========================
                4. Facilities
             ========================= */
-            for (const fac of facilities) {
-                for (const img of fac.images || []) {
-                    if (!img.file) continue;
+            const facilitiesOut = [];
+            for (const f of facilities) {
+                const imagesOut = [];
 
-                    const resized = await resizeImage(img.file, 1600, 0.8);
-
-                    await uploadImageToServer({
-                        vesselId,
-                        bucket: "facilities",
-                        sub: fac.facilityType,
-                        file: resized,
-                    });
-                }
-            }
-
-            /* =========================
-               5. Tenders
-            ========================= */
-            for (const t of tenders) {
-                for (const img of t.images || []) {
-                    if (!img.file) continue;
-
-                    const resized = await resizeImage(img.file, 1600, 0.8);
-
-                    await uploadImageToServer({
-                        vesselId,
-                        bucket: "tenders",
-                        file: resized,
-                    });
-                }
-            }
-
-            /* =========================
-               6. Food
-            ========================= */
-            for (const f of food) {
                 for (const img of f.images || []) {
                     if (!img.file) continue;
 
                     const resized = await resizeImage(img.file, 1600, 0.8);
 
-                    await uploadImageToServer({
+                    const res = await uploadImageToServer({
+                        vesselId,
+                        bucket: "facilities",
+                        sub: f.facilityType,
+                        file: resized,
+                    });
+
+                    imagesOut.push({
+                        id: img.id,
+                        url:
+                            res.savedPath ||
+                            buildUrl({
+                                vesselId,
+                                bucket: "facilities",
+                                sub: f.facilityType,
+                                filename: resized.name,
+                            }),
+                        title: img.title || "",
+                        order: img.order || 1,
+                    });
+                }
+
+                if (!imagesOut.length && !f.name?.trim()) continue;
+
+                facilitiesOut.push({
+                    facilityType: f.facilityType,
+                    name: f.name || "",
+                    images: imagesOut,
+                });
+            }
+            if (facilitiesOut.length) {
+                payloadForSave.assets.facilities = facilitiesOut;
+            }
+
+            /* =========================
+               5. Tenders
+            ========================= */
+            const tendersOut = [];
+            for (const t of tenders) {
+                const imagesOut = [];
+
+                for (const img of t.images || []) {
+                    if (!img.file) continue;
+
+                    const resized = await resizeImage(img.file, 1600, 0.8);
+
+                    const res = await uploadImageToServer({
+                        vesselId,
+                        bucket: "tenders",
+                        file: resized,
+                    });
+
+                    imagesOut.push({
+                        id: img.id,
+                        url:
+                            res.savedPath ||
+                            buildUrl({
+                                vesselId,
+                                bucket: "tenders",
+                                filename: resized.name,
+                            }),
+                        title: img.title || "",
+                        order: img.order || 1,
+                    });
+                }
+
+                if (!imagesOut.length && !t.name?.trim()) continue;
+
+                tendersOut.push({
+                    name: t.name || "",
+                    capacity: t.capacity === "" ? null : Number(t.capacity),
+                    images: imagesOut,
+                });
+            }
+            if (tendersOut.length) {
+                payloadForSave.assets.tenders = tendersOut;
+            }
+
+            /* =========================
+               6. Food
+            ========================= */
+            const foodOut = [];
+            for (const f of food) {
+                const imagesOut = [];
+
+                for (const img of f.images || []) {
+                    if (!img.file) continue;
+
+                    const resized = await resizeImage(img.file, 1600, 0.8);
+
+                    const res = await uploadImageToServer({
                         vesselId,
                         bucket: "food",
                         sub: f.foodType,
                         file: resized,
                     });
+
+                    imagesOut.push({
+                        id: img.id,
+                        url:
+                            res.savedPath ||
+                            buildUrl({
+                                vesselId,
+                                bucket: "food",
+                                sub: f.foodType,
+                                filename: resized.name,
+                            }),
+                        title: img.title || "",
+                        order: img.order || 1,
+                    });
                 }
+
+                if (!imagesOut.length && !f.name?.trim()) continue;
+
+                foodOut.push({
+                    foodType: f.foodType,
+                    name: f.name || "",
+                    images: imagesOut,
+                });
+            }
+            if (foodOut.length) {
+                payloadForSave.assets.food = foodOut;
             }
 
             /* =========================
@@ -992,12 +1154,10 @@ function AdminBoatAssets() {
             ========================= */
             setSaveStatus("메타데이터 저장 중...");
 
-            const payload = buildPayload();
-
             const res = await fetch("/admin/api/boats-assets", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
+                body: JSON.stringify(payloadForSave),
             });
 
             if (!res.ok) {
@@ -1007,7 +1167,7 @@ function AdminBoatAssets() {
             setSaveStatus("✅ 이미지 + 메타데이터 저장 완료");
 
         } catch (err) {
-            console.error(err);
+            console.error("❌ 저장 중 오류:", err);
             setSaveStatus("❌ 저장 중 오류 발생 (콘솔 확인)");
         }
     }
