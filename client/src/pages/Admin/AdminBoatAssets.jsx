@@ -38,7 +38,20 @@ async function uploadImageToServer({
  * 현재 단계는 "메타데이터 저장" 단계이며, 이미지 업로드(multer)는 다음 단계에서 추가 예정.
  */
 
-const CABIN_TYPE_OPTIONS = ["STANDARD", "DELUXE", "SUITE", "CUSTOM"];
+const CABIN_TYPE_OPTIONS = [
+    // 기본
+    "STANDARD",
+    "SUPERIOR",
+    "DELUXE",
+
+    // 스위트 세분화
+    "JUNIOR_SUITE",
+    "MASTER_SUITE",
+    "SUITE",
+
+    // 기타
+    "CUSTOM",
+];
 
 const DECK_CODE_OPTIONS = [
     "LOWER_DECK",
@@ -50,11 +63,12 @@ const DECK_CODE_OPTIONS = [
 ];
 
 const BED_TYPE_OPTIONS = [
+    "SINGLE",     // Adora SUPERIOR MAIN SINGLE 등
     "TWIN",
     "DOUBLE",
     "TRIPLE",
     "QUAD",
-    "TWIN_DOUBLE", // 필요하면 (Twin/Double 혼합)
+    "TWIN_DOUBLE", // 필요시
 ];
 
 

@@ -11,6 +11,30 @@ import { getCurrencyForTrip } from "../utils/currencyUtils";
 
 const BOAT_ASSETS_JSON_BASE = "/data/boats-assets"; // nginx가 서빙하는 메타데이터 JSON
 
+// ============================
+// Cabin Key Normalization Utils
+// ============================
+
+function norm(str) {
+  return String(str || "").trim().toUpperCase();
+}
+
+// canonicalType / cabinName 에서 QUALITY 를 뽑아내는 규칙
+function deriveQualityFromCabin(cabin) {
+  const ct = norm(cabin?.canonicalType || "");
+  const name = norm(cabin?.cabinName || "");
+
+  const src = ct || name;
+
+  if (src.includes("JUNIOR")) return "JUNIOR_SUITE";
+  if (src.includes("MASTER")) return "MASTER_SUITE";
+  if (src.includes("SUPERIOR")) return "SUPERIOR";
+  if (src.includes("DELUXE")) return "DELUXE";
+  if (src.includes("SUITE")) return "SUITE";
+
+  return "STANDARD";
+}
+
 function TripDetail() {
   const { id: tripId } = useParams();
   const navigate = useNavigate();
@@ -705,47 +729,32 @@ function TripDetail() {
 
 
   // ✅ UTS cabin type(또는 cabin 묶음) -> key (QUALITY__DECK__BEDTYPE)
-  function makeUtsCabinKey(uts) {
-    // buildCabinTypes에서 만든 key가 가장 신뢰도 높음: "CANONICAL__DECK"
-    const bucketKey = String(uts?.key || uts?.name || "").trim(); // 예: "STANDARD_TWIN__LOWER_DECK"
-    const [baseFromKey, deckFromKey] = bucketKey.includes("__")
-      ? bucketKey.split("__")
-      : [bucketKey, ""];
+  function makeUtsCabinKey(utsGroup) {
+    // utsGroup.cabins 는 이 타입에 속하는 UTS cabin 배열이라고 가정
+    const one = (utsGroup.cabins && utsGroup.cabins[0]) || {};
 
-    const firstCab =
-      Array.isArray(uts?.cabins) && uts.cabins.length > 0 ? uts.cabins[0] : null;
+    const quality = norm(
+      utsGroup.quality ||
+      one.cabinTypeCode ||
+      deriveQualityFromCabin(one)
+    );
 
-    // 1) quality: 우선 cabin 필드, 없으면 baseFromKey 첫 토큰
-    const quality =
-      norm(firstCab?.quality) ||
-      norm(baseFromKey.split("_")[0]) ||
-      "";
+    const deck = norm(
+      utsGroup.sampleDeck ||
+      one.deckCode
+    );
 
-    // 2) deck: 우선 cabin 필드, 없으면 key에서
-    const deck =
-      norm(firstCab?.deckCode) ||
-      norm(deckFromKey) ||
-      "";
+    // bedType 이 없는 경우도 있어서 TWIN 기본값
+    const bed = norm(
+      utsGroup.sampleBed ||
+      one.bedType ||
+      "TWIN"
+    );
 
-    // 3) bed: 우선 cabin 필드, 없으면 canonical(baseFromKey)에서 추출
-    let bed =
-      norm(firstCab?.bedType) ||
-      "";
+    if (!quality || !deck) return null;
 
-    if (!bed) {
-      const tokens = baseFromKey.split("_").map(norm);
-      const BED_SET = new Set(["TWIN", "DOUBLE", "TRIPLE", "QUAD", "TWIN_DOUBLE"]);
-      bed = tokens.find(t => BED_SET.has(t)) || "";
-    }
-
-    return [quality, deck, bed].filter(Boolean).join("__");
+    return `${quality}__${deck}__${bed}`;
   }
-
-
-
-
-
-
 
   // cabinTypes 길이가 바뀌면 indices도 맞춰줌
   useEffect(() => {
