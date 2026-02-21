@@ -420,20 +420,48 @@ function TripDetail() {
     - UTS : "Deluxe Twin", "Sea View Cabin", "Master Sea View" 에서 같은 코드를 뽑아 매칭
  =============================== */
   const cabinTypes = useMemo(() => {
-    const utsCabinTypes = buildCabinTypes(trip);
-    const adminCabins = Array.isArray(assets?.cabins)
-      ? assets.cabins
+    // ----------------------------
+    // 1) UTS cabinTypes 정리 (key 기준으로 dedupe)
+    // ----------------------------
+    const utsCabinTypesRaw = Array.isArray(buildCabinTypes(trip))
+      ? buildCabinTypes(trip)
       : [];
 
-    const adminMap = new Map();
-    const adminPrimaryKeys = new Set();
+    // key: QUALITY__DECK__BED (또는 QUALITY__DECK)
+    const utsByKey = new Map();
 
-    for (const c of adminCabins) {
+    utsCabinTypesRaw.forEach((uts) => {
+      const key = makeUtsCabinKey(uts); // 이미 추가해 둔 함수
+      if (!key) return;
+
+      const existing = utsByKey.get(key);
+      if (existing) {
+        // 같은 key가 여러 번 나오면 cabins만 합쳐서 하나로
+        const mergedCabins = [
+          ...(Array.isArray(existing.cabins) ? existing.cabins : []),
+          ...(Array.isArray(uts.cabins) ? uts.cabins : []),
+        ];
+        utsByKey.set(key, { ...existing, cabins: mergedCabins });
+      } else {
+        utsByKey.set(key, { ...uts, key });
+      }
+    });
+
+    // ----------------------------
+    // 2) Admin cabins 정리 (vessel_*.json → assets.cabins)
+    // ----------------------------
+    const adminCabins = Array.isArray(assets?.cabins) ? assets.cabins : [];
+
+    // key: QUALITY__DECK__BED
+    const adminByKey = new Map();
+
+    adminCabins.forEach((c) => {
       const quality = norm(c?.cabinTypeCode);
       const deck = norm(c?.deckCode);
       const bed = norm(c?.bedType);
 
-      if (!quality || !deck) continue; // deck은 필수로 두자(지금 데이터가 deck 중심이니까)
+      // quality, deck 는 필수 / bed 는 있으면 사용
+      if (!quality || !deck) return;
 
       const images = (Array.isArray(c?.images) ? c.images : [])
         .map((img) => ({
@@ -444,104 +472,78 @@ function TripDetail() {
         .filter((img) => img.url)
         .sort((a, b) => a.order - b.order);
 
-      if (!images.length) continue;
+      if (!images.length) return;
 
-      // ✅ “원본 1개 entry”의 대표키(Primary Key)
       const primaryKey = [quality, deck, bed].filter(Boolean).join("__");
-      adminPrimaryKeys.add(primaryKey);
 
-      const payload = {
-        title: c?.cabinName || [quality, bed, deck].filter(Boolean).join(" "),
-        images,
+      adminByKey.set(primaryKey, {
         primaryKey,
-      };
-
-      // ✅ exact key는 무조건 등록(덮어쓰기 허용 X)
-      if (!adminMap.has(primaryKey)) adminMap.set(primaryKey, payload);
-
-      // ✅ fallback 키는 “없을 때만” 등록 (덮어쓰기 금지)
-      const k2 = [quality, deck].join("__");
-      const k1 = [quality].join("__");
-
-      if (!adminMap.has(k2)) adminMap.set(k2, payload);
-      if (!adminMap.has(k1)) adminMap.set(k1, payload);
-    }
-
-
-    // 2) UTS cabin type별로 key를 만들어 adminMap과 매칭
-    const utsKeySet = new Set(
-      utsCabinTypes.map((uts) => makeUtsCabinKey(uts)).filter(Boolean)
-    );
-
-    const merged = utsCabinTypes.map((uts) => {
-      const key3 = makeUtsCabinKey(uts); // QUALITY__DECK__BED or QUALITY__DECK
-      const parts = String(key3 || "").split("__");
-      const quality = parts[0] || "";
-      const deck = parts[1] || "";
-      const bed = parts[2] || "";
-
-      const exact = [quality, deck, bed].filter(Boolean).join("__");
-      const k2 = [quality, deck].filter(Boolean).join("__");
-      const k1 = [quality].filter(Boolean).join("__");
-
-      // ✅ exact → quality+deck → quality 순서
-      const admin = (exact && adminMap.get(exact)) || (k2 && adminMap.get(k2)) || (k1 && adminMap.get(k1)) || null;
-
-      return {
-        ...uts,
-        // ✅ 제목도 Admin이 있으면 Admin title 우선
-        displayName: uts?.displayName || uts?.name || "",
-        adminImages: admin?.images || [],
-        adminTitle: admin?.title || "",
-        _matchKeyUsed: admin ? (exact && adminMap.get(exact) ? exact : (k2 && adminMap.get(k2) ? k2 : k1)) : "",
-      };
+        cabinName: c?.cabinName || "",
+        title:
+          c?.cabinName ||
+          [quality, bed, deck].filter(Boolean).join(" "),
+        images,
+        quality,
+        deck,
+        bed,
+      });
     });
 
-    for (const primaryKey of adminPrimaryKeys) {
-      // UTS에 완전히 동일한 key(QUALITY__DECK__BED)가 이미 있으면 추가 안 함
-      if (utsKeySet.has(primaryKey)) continue;
+    const utsKeySet = new Set(utsByKey.keys());
+    const merged = [];
 
-      const parts = String(primaryKey).split("__");
-      const quality = parts[0] || "STANDARD";
-      const deck = parts[1] || "";
-      const bed = parts[2] || "";
-
-      const admin = adminMap.get(primaryKey);
-      if (!admin?.images?.length) continue;
-
-      // 🔍 같은 QUALITY + DECK를 가진 기존 UTS 타입을 찾는다.
-      // 예: STANDARD__LOWER_DECK__TWIN  ← 여기에 붙어 있는 cabins를 복사해서 같이 쓰게 함
-      const sibling = merged.find((m) => {
-        const kParts = String(m.key || m.name || "").split("__");
-        const q2 = kParts[0] || "";
-        const d2 = kParts[1] || "";
-
-        return (
-          q2 === quality &&
-          d2 === deck &&
-          Array.isArray(m.cabins) &&
-          m.cabins.length > 0
-        );
-      });
+    // ----------------------------
+    // 3) UTS cabinTypes 기준으로 Admin 정보 붙이기
+    // ----------------------------
+    utsByKey.forEach((uts, key) => {
+      // 우선 exact key(QUALITY__DECK__BED)만 본다
+      const admin = adminByKey.get(key) || null;
 
       merged.push({
-        key: primaryKey,
-        name: primaryKey,
-        displayName: [quality, bed, deck].filter(Boolean).join("_"),
-        rawType: "",
-        description: sibling?.description || "",
-        images: [],
-        // 👇 형제 타입의 cabins를 같이 사용 → 가격/좌석 정보 공유
-        cabins: sibling?.cabins || [],
-        adminImages: admin.images,
-        adminTitle: admin.title || "",
+        ...uts,
+        key,
+        // 기본 이름 (UTS 쪽 이름)
+        displayName: uts?.displayName || uts?.name || "",
+        // Admin cabinName이 있으면 이걸 별도로 들고 간다
+        cabinName: admin?.cabinName || uts?.name || "",
+        adminImages: admin?.images || [],
+        adminTitle: admin?.title || "",
+        _matchKeyUsed: admin ? key : "",
       });
-    }
 
+      // 이미 병합된 Admin entry 는 admin-only 단계에서 제외
+      if (admin) {
+        adminByKey.delete(key);
+      }
+    });
+
+    // ----------------------------
+    // 4) UTS에는 없지만 Admin 에만 있는 cabin 타입 추가
+    //    (예: UTS 요금은 없고 사진만 있는 타입)
+    // ----------------------------
+    adminByKey.forEach((admin, key) => {
+      merged.push({
+        key,
+        name: admin.cabinName || key,
+        displayName: admin.cabinName || key,
+        rawType: "",
+        description: "",
+        cabins: [], // 아래 fixed 단계에서 fallback cabins 채운다
+        adminImages: admin.images,
+        adminTitle: admin.title,
+        cabinName: admin.cabinName || "",
+      });
+    });
+
+    // ----------------------------
+    // 5) cabins 가 비어 있는 타입에 대해
+    //    trip.cabins 를 이용해서 fallback cabins 채우기
+    //    (기존 fixed 로직 유지)
+    // ----------------------------
     const allCabins = Array.isArray(trip?.cabins) ? trip.cabins : [];
 
     const fixed = merged.map((ct) => {
-      // 이미 cabins 가 있으면 그대로 둠
+      // 이미 cabins 가 있으면 그대로
       if (Array.isArray(ct.cabins) && ct.cabins.length) return ct;
 
       // admin 이미지도 없으면 손댈 필요 없음
@@ -554,25 +556,26 @@ function TripDetail() {
 
       const qualityGroup = (parts[0] || "")
         .toUpperCase()
-        .split("_")[0];               // "STANDARD_TWIN" → "STANDARD"
-      const deck = (parts[parts.length - 1] || "")
-        .toUpperCase();               // "LOWER_DECK"
+        .split("_")[0]; // "STANDARD_TWIN" → "STANDARD"
+
+      const deck = (parts[1] || parts[parts.length - 1] || "")
+        .toUpperCase(); // LOWER_DECK / MAIN_DECK ...
 
       // trip.cabins 에서 같은 QUALITY 그룹 + DECK 를 가진 cabins 찾기
       const fallbackCabins = allCabins.filter((c) => {
         const q = String(c.quality || "")
           .toUpperCase()
-          .split("_")[0];             // "STANDARD_TWIN" → "STANDARD"
+          .split("_")[0];
         const d = String(c.deckCode || "").toUpperCase();
         return q === qualityGroup && d === deck;
       });
 
-      // 찾은 게 있으면 cabins 를 채워주고, 없으면 원본 유지
       return fallbackCabins.length
         ? { ...ct, cabins: fallbackCabins }
         : ct;
     });
 
+    console.log("=== CABIN TYPES MERGED (fixed) ===", fixed);
     return fixed;
   }, [trip, assets]);
 
@@ -901,7 +904,7 @@ function TripDetail() {
               ? cabType.cabins
               : getSiblingCabinsForPrice(cabType, cabinTypes);
 
-          const priceInfo = findCabinTypeLowestPrice(cabType);
+          const priceInfo = findCabinTypeLowestPrice(cabinsForPrice);
 
 
           const currentIndex = indices[i] || 0;
@@ -909,8 +912,16 @@ function TripDetail() {
           const desc =
             cabType?.adminDescription ||
             cabType?.description ||
+            (images[0]?.label || "").trim() ||   // ➜ 이미지 제목도 fallback 으로 사용
             "설명 없음";
 
+          // 🔹 제목 우선순위: Admin 제목 > cabinName > displayName > name
+          const title =
+            (cabType.adminTitle && cabType.adminTitle.trim()) ||
+            (cabType.cabinName && cabType.cabinName.trim()) ||
+            cabType.displayName ||
+            cabType.name ||
+            "";
           return (
             <div
               key={cabType.key || i}
@@ -918,7 +929,7 @@ function TripDetail() {
               className="cabin-card"
               style={{ marginBottom: "50px" }}
             >
-              <h3>{cabType.adminTitle || cabType.displayName || cabType.name}</h3>
+              <h3>{title}</h3>
 
 
               {images.length > 0 ? (
