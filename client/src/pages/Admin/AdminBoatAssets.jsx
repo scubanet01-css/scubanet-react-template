@@ -39,17 +39,12 @@ async function uploadImageToServer({
  */
 
 const CABIN_TYPE_OPTIONS = [
-    // 기본
     "STANDARD",
-    "SUPERIOR",
     "DELUXE",
-
-    // 스위트 세분화
+    "SUPERIOR",
     "JUNIOR_SUITE",
     "MASTER_SUITE",
     "SUITE",
-
-    // 기타
     "CUSTOM",
 ];
 

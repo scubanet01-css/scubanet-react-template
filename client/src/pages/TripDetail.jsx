@@ -908,6 +908,7 @@ function TripDetail() {
 
 
           const currentIndex = indices[i] || 0;
+          const currentImage = images[currentIndex] || null;
 
           const desc =
             cabType?.adminDescription ||
@@ -975,7 +976,15 @@ function TripDetail() {
                 <p style={{ color: "#666" }}>등록된 이미지 없음</p>
               )}
 
-              <p style={{ marginTop: "10px" }}>{desc}</p>
+              {/* 이미지 개별 타이틀 (있을 때만) */}
+              {currentImage?.label && (
+                <p style={{ marginTop: "10px", fontWeight: 500 }}>
+                  {currentImage.label}
+                </p>
+              )}
+
+              {/* 객실 설명 (Admin Description → UTS description → 기본 문구) */}
+              <p style={{ marginTop: "4px" }}>{desc}</p>
 
               {priceInfo ? (
                 <p>
