@@ -494,10 +494,38 @@ function TripDetail() {
 
     // ----------------------------
     // 3) UTS cabinTypes 기준으로 Admin 정보 붙이기
+    //    - 1순위: exact key (QUALITY__DECK__BED)
+    //    - 2순위: QUALITY 그룹 + DECK 가 같은 Admin cabin 에 매칭
     // ----------------------------
     utsByKey.forEach((uts, key) => {
-      // 우선 exact key(QUALITY__DECK__BED)만 본다
-      const admin = adminByKey.get(key) || null;
+      let admin = adminByKey.get(key) || null;
+      let matchedKey = admin ? key : "";
+
+      // 🔁 exact key 로는 못 찾았을 때: QUALITY 그룹 + DECK 기준으로 fallback
+      if (!admin) {
+        const parts = String(key || "").split("__");
+        const qRaw = parts[0] || "";
+        const d = parts[1] || parts[parts.length - 1] || "";
+        const qGroup = qRaw.split("_")[0]; // "STANDARD_TWIN" → "STANDARD"
+
+        for (const [aKey, aVal] of adminByKey.entries()) {
+          const ap = String(aKey || "").split("__");
+          const aqRaw = ap[0] || "";
+          const ad = ap[1] || ap[ap.length - 1] || "";
+          const aqGroup = aqRaw.split("_")[0];
+
+          if (aqGroup === qGroup && ad === d) {
+            admin = aVal;
+            matchedKey = aKey;
+            // 이 Admin entry 는 이 UTS 타입에 붙였으니까 더 이상 admin-only 카드로 만들지 않음
+            adminByKey.delete(aKey);
+            break;
+          }
+        }
+      } else {
+        // exact key 로 매칭된 경우도 admin-only 단계에서 제외
+        adminByKey.delete(key);
+      }
 
       merged.push({
         ...uts,
@@ -508,13 +536,8 @@ function TripDetail() {
         cabinName: admin?.cabinName || uts?.name || "",
         adminImages: admin?.images || [],
         adminTitle: admin?.title || "",
-        _matchKeyUsed: admin ? key : "",
+        _matchKeyUsed: matchedKey,
       });
-
-      // 이미 병합된 Admin entry 는 admin-only 단계에서 제외
-      if (admin) {
-        adminByKey.delete(key);
-      }
     });
 
     // ----------------------------
