@@ -235,37 +235,25 @@ function TripDetail() {
 
         if (!imgs.length) return null;
 
-        // 제목: cabinName이 있으면 그걸 사용, 없으면 타입/덱/베드 합쳐서 만듦
+        // 🔹 제목 우선순위: 첫 번째 이미지 title(한글) > cabinName > 타입/덱/베드 조합
+        const primaryLabel =
+          (imgs[0].label && imgs[0].label.trim()) || "";
+
         const title =
+          primaryLabel ||
           (cabin.cabinName && cabin.cabinName.trim()) ||
           [
             cabin.cabinTypeCode, // DELUXE, JUNIOR_SUITE 등
-            cabin.deckCode, // LOWER_DECK, MAIN_DECK ...
-            cabin.bedType, // TWIN, DOUBLE ...
+            cabin.deckCode,      // LOWER_DECK, MAIN_DECK ...
+            cabin.bedType,       // TWIN, DOUBLE ...
           ]
             .filter(Boolean)
             .join(" ");
 
-        // 부제(선택): 덱/베드 정보 간단히 표시
-        const subtitleParts = [];
-        if (cabin.deckCode)
-          subtitleParts.push(
-            String(cabin.deckCode).replace(/_/g, " ").toLowerCase()
-          );
-        if (cabin.bedType)
-          subtitleParts.push(
-            String(cabin.bedType).replace(/_/g, " ").toLowerCase()
-          );
-        const subtitle = subtitleParts.join(" · ");
-
-        const description = cabin.description || "";
-
         return {
           id: `admin-cabin-${idx}`,
           title,
-          subtitle,
           images: imgs,
-          description,
         };
       })
       .filter(Boolean);
@@ -417,18 +405,8 @@ function TripDetail() {
               className="cabin-card"
               style={{ marginBottom: "50px" }}
             >
+              {/* ✅ 한 줄짜리 객실 이름만 표시 (예: 딜럭스 캐빈 어퍼덱) */}
               <h3>{cab.title}</h3>
-              {cab.subtitle && (
-                <div
-                  style={{
-                    color: "#666",
-                    fontSize: 13,
-                    marginBottom: 4,
-                  }}
-                >
-                  {cab.subtitle}
-                </div>
-              )}
 
               {images.length > 0 ? (
                 <div
@@ -477,33 +455,6 @@ function TripDetail() {
               ) : (
                 <p style={{ color: "#666" }}>등록된 이미지 없음</p>
               )}
-
-              {/* 이미지 개별 타이틀 (있을 때만) */}
-              {currentImage?.label && (
-                <p style={{ marginTop: "10px", fontWeight: 500 }}>
-                  {currentImage.label}
-                </p>
-              )}
-
-              {/* 객실 설명 */}
-              <p style={{ marginTop: "4px" }}>
-                {cab.description || "객실 구조와 위치는 사진을 참고해 주세요."}
-              </p>
-
-              {/* 가격 안내는 고정 문구로 */}
-              <p style={{ color: "#666", marginTop: 4 }}>
-                상세 요금은 예약 단계에서 확인해 주세요.
-              </p>
-
-              <p
-                style={{
-                  color: "#2a7",
-                  marginTop: 6,
-                  fontSize: 13,
-                }}
-              >
-                (객실 이미지는 Admin Assets 기준으로 표시됩니다)
-              </p>
             </div>
           );
         })}
