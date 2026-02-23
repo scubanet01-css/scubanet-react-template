@@ -385,3 +385,62 @@
     z-index: 3;
     letter-spacing: 0.5px;
 }
+
+/* ✅ 상세 일정 / 포함·불포함 카드 영역 */
+.trip-section.trip-extra-info {
+    max-width: 1080px;
+    margin: 24px auto 40px;
+    padding: 16px 20px 20px;
+    border-radius: 12px;
+    border: 1px solid #e6e6e6;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .03);
+}
+
+.trip-block+.trip-block {
+    margin-top: 24px;
+}
+
+.trip-block-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.trip-block-body {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #444;
+}
+
+/* 포함 / 불포함 레이아웃 */
+.includes-excludes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.includes-box,
+.excludes-box {
+    border-radius: 10px;
+    border: 1px solid #eaeaea;
+    padding: 12px 14px;
+    background: #fafafa;
+}
+
+.sub-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.included-title {
+    color: #0b9f4a;
+    /* 포함: 초록색 */
+}
+
+.excluded-title {
+    color: #d94141;
+    /* 불포함: 빨강색 */
+}

@@ -509,10 +509,42 @@ function TripDetail() {
         )}
       </section>
 
-      {/* ✅ 상세가격 (UTS trip 기준) */}
-      <section ref={refs.price} className="trip-section trip-price">
-        <h2>상세가격 (Price details)</h2>
-        <TripPriceDetails trip={trip} />
+
+
+      {/* ✅ 상세 일정 & 포함/불포함 섹션 */}
+      <section className="trip-section trip-extra-info">
+        {/* 상세 일정 */}
+        {itineraryText && (
+          <div className="trip-block">
+            <h3 className="trip-block-title">상세 일정</h3>
+            <div className="trip-block-body">
+              {renderMultiline(itineraryText)}
+            </div>
+          </div>
+        )}
+
+        {/* 포함 / 불포함 */}
+        {(includedText || excludedText) && (
+          <div className="trip-block includes-excludes">
+            {includedText && (
+              <div className="includes-box">
+                <h4 className="sub-title included-title">포함 사항</h4>
+                <div className="trip-block-body">
+                  {renderMultiline(includedText)}
+                </div>
+              </div>
+            )}
+
+            {excludedText && (
+              <div className="excludes-box">
+                <h4 className="sub-title excluded-title">불포함 사항</h4>
+                <div className="trip-block-body">
+                  {renderMultiline(excludedText)}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </section>
     </div>
   );
