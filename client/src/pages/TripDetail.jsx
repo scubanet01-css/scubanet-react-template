@@ -7,6 +7,17 @@ import TripPriceDetails from "../components/TripPriceDetails";
 
 import "./TripDetail.css";
 
+// 줄바꿈(\n)을 <br>로 바꿔서 렌더링하는 헬퍼
+function renderMultiline(text) {
+  if (!text) return null;
+  return text.split('\n').map((line, idx) => (
+    <React.Fragment key={idx}>
+      {line}
+      <br />
+    </React.Fragment>
+  ));
+}
+
 const BOAT_ASSETS_JSON_BASE = "/data/boats-assets"; // nginx가 서빙하는 메타데이터 JSON
 
 function TripDetail() {
@@ -43,6 +54,10 @@ function TripDetail() {
       navigate(`/booking/${trip.id}`, { state: { trip } });
     }
   };
+
+  const itineraryText = trip?.adminDetails?.itinerary || "";
+  const includedText = trip?.adminDetails?.included || "";
+  const excludedText = trip?.adminDetails?.excluded || "";
 
   // ===============================
   // ✅ vesselId 결정 규칙
