@@ -26,6 +26,18 @@ async function uploadImageToServer({
     return await res.json();
 }
 
+// 선박 데이터에 tripInfo 기본값 채워 넣기
+function withTripInfoDefaults(boat) {
+    if (!boat) return null;
+    return {
+        ...boat,
+        tripInfo: {
+            itinerary: boat.tripInfo?.itinerary || "",
+            included: boat.tripInfo?.included || "",
+            excluded: boat.tripInfo?.excluded || "",
+        },
+    };
+}
 
 /**
  * AdminBoatAssets (Refactored Full Schema)
@@ -189,6 +201,13 @@ function AdminBoatAssets() {
     // [{ foodType, name, images:[{id,file,preview,title,order}] }]
     const [food, setFood] = useState([]);
 
+    // Trip 상세 정보 (일정 / 포함 / 불포함)
+    const [tripInfo, setTripInfo] = useState({
+        itinerary: "",
+        included: "",
+        excluded: "",
+    });
+
     const [saveStatus, setSaveStatus] = useState("");
 
     // -------------------------------
@@ -260,6 +279,14 @@ function AdminBoatAssets() {
         setFacilities([]);
         setTenders([]);
         setFood([]);
+
+        // ✅ Trip 상세 정보 초기화
+        setTripInfo({
+            itinerary: "",
+            included: "",
+            excluded: "",
+        });
+
         setSaveStatus("");
     }
 
@@ -661,6 +688,13 @@ function AdminBoatAssets() {
         });
     }
 
+    function updateTripInfo(field, value) {
+        setTripInfo((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    }
+
     async function addFoodImage(foodIndex, rawFile) {
         if (!rawFile || !vesselId) return;
 
@@ -730,6 +764,14 @@ function AdminBoatAssets() {
             vesselId,
             boatName,
             lastUpdated: new Date().toISOString().slice(0, 10),
+
+            // ✅ Trip 상세 정보 포함
+            tripInfo: {
+                itinerary: tripInfo.itinerary,
+                included: tripInfo.included,
+                excluded: tripInfo.excluded,
+            },
+
             assets: {},
         };
 
@@ -901,6 +943,14 @@ function AdminBoatAssets() {
                 vesselId,
                 boatName,
                 lastUpdated: new Date().toISOString().slice(0, 10),
+
+                // ✅ Trip 상세 정보
+                tripInfo: {
+                    itinerary: tripInfo.itinerary,
+                    included: tripInfo.included,
+                    excluded: tripInfo.excluded,
+                },
+
                 assets: {},
             };
 
@@ -1191,6 +1241,7 @@ function AdminBoatAssets() {
         facilities,
         tenders,
         food,
+        tripInfo,   // ✅ 추가
     ]);
 
     if (loading) return <div style={{ padding: 24 }}>UTS 데이터 로딩 중...</div>;
@@ -1702,6 +1753,95 @@ function AdminBoatAssets() {
                                 )}
                             </div>
                         ))}
+                    </section>
+
+                    {/* Trip 상세 일정 / 포함 / 불포함 */}
+                    <section
+                        style={{
+                            marginTop: 18,
+                            padding: 12,
+                            border: "1px solid #e5e5e5",
+                            borderRadius: 10,
+                        }}
+                    >
+                        <h3 style={{ marginTop: 0 }}>Trip 상세 정보 (일정 / 포함 / 불포함)</h3>
+
+                        {/* 상세 일정 */}
+                        <div style={{ marginBottom: 12 }}>
+                            <label
+                                style={{
+                                    display: "block",
+                                    fontSize: 12,
+                                    color: "#555",
+                                    marginBottom: 4,
+                                }}
+                            >
+                                상세 일정 (Itinerary)
+                            </label>
+                            <textarea
+                                rows={7}
+                                style={{ width: "100%", fontSize: 13, lineHeight: 1.6 }}
+                                value={tripInfo.itinerary}
+                                onChange={(e) => updateTripInfo("itinerary", e.target.value)}
+                                placeholder={`예)
+1일차: 말레 도착 후 승선 및 체크다이빙
+2일차: 남말레 아톨 다이빙 3회
+3일차: 펠라기 포인트 중심 일정
+...
+마지막 날: 체크아웃 및 공항 이동`}
+                            />
+                        </div>
+
+                        {/* 포함 사항 */}
+                        <div style={{ marginBottom: 12 }}>
+                            <label
+                                style={{
+                                    display: "block",
+                                    fontSize: 12,
+                                    color: "#555",
+                                    marginBottom: 4,
+                                }}
+                            >
+                                포함 사항 (Included)
+                            </label>
+                            <textarea
+                                rows={5}
+                                style={{ width: "100%", fontSize: 13, lineHeight: 1.6 }}
+                                value={tripInfo.included}
+                                onChange={(e) => updateTripInfo("included", e.target.value)}
+                                placeholder={`예)
+- 숙박 및 기본 식사 (조/중/석)
+- 하루 최대 3회 다이빙
+- 탱크, 웨이트, 가이드 비용
+- 차/커피/물`}
+                            />
+                        </div>
+
+                        {/* 불포함 사항 */}
+                        <div>
+                            <label
+                                style={{
+                                    display: "block",
+                                    fontSize: 12,
+                                    color: "#555",
+                                    marginBottom: 4,
+                                }}
+                            >
+                                불포함 사항 (Excluded)
+                            </label>
+                            <textarea
+                                rows={5}
+                                style={{ width: "100%", fontSize: 13, lineHeight: 1.6 }}
+                                value={tripInfo.excluded}
+                                onChange={(e) => updateTripInfo("excluded", e.target.value)}
+                                placeholder={`예)
+- 국제선 항공권
+- 장비 렌탈 비용
+- 현지 팁
+- 개인 여행자 보험
+- 알콜 음료 및 캔/병 음료`}
+                            />
+                        </div>
                     </section>
 
                     {/* Save + Preview */}
