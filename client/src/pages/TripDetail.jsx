@@ -10,12 +10,22 @@ import "./TripDetail.css";
 // 줄바꿈(\n)을 <br>로 바꿔서 렌더링하는 헬퍼
 function renderMultiline(text) {
   if (!text) return null;
-  return text.split('\n').map((line, idx) => (
-    <React.Fragment key={idx}>
-      {line}
-      <br />
-    </React.Fragment>
-  ));
+
+  return text.split('\n').map((line, idx) => {
+    // "1일차:" 같은 패턴 강조
+    const formatted = line.replace(
+      /(.*일차:)/,
+      "<strong>$1</strong>"
+    );
+
+    return (
+      <div
+        key={idx}
+        dangerouslySetInnerHTML={{ __html: formatted }}
+        style={{ marginBottom: "6px" }}
+      />
+    );
+  });
 }
 
 const BOAT_ASSETS_JSON_BASE = "/data/boats-assets"; // nginx가 서빙하는 메타데이터 JSON
@@ -516,7 +526,9 @@ function TripDetail() {
         {/* 상세 일정 */}
         {itineraryText && (
           <div className="trip-block">
-            <h3 className="trip-block-title">상세 일정</h3>
+            <h3 className="trip-block-title">
+              📅 상세 일정
+            </h3>
             <div className="trip-block-body">
               {renderMultiline(itineraryText)}
             </div>
@@ -528,7 +540,9 @@ function TripDetail() {
           <div className="trip-block includes-excludes">
             {includedText && (
               <div className="includes-box">
-                <h4 className="sub-title included-title">포함 사항</h4>
+                <h4 className="sub-title included-title">
+                  ✔ 포함 사항
+                </h4>
                 <div className="trip-block-body">
                   {renderMultiline(includedText)}
                 </div>
@@ -537,7 +551,9 @@ function TripDetail() {
 
             {excludedText && (
               <div className="excludes-box">
-                <h4 className="sub-title excluded-title">불포함 사항</h4>
+                <h4 className="sub-title excluded-title">
+                  ✖ 불포함 사항
+                </h4>
                 <div className="trip-block-body">
                   {renderMultiline(excludedText)}
                 </div>

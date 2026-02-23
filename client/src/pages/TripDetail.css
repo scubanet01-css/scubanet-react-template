@@ -421,18 +421,26 @@
     margin-top: 16px;
 }
 
-.includes-box,
+.includes-box {
+    border-radius: 12px;
+    border: 1px solid #e0f3e6;
+    padding: 16px;
+    background: #f6fffa;
+}
+
 .excludes-box {
-    border-radius: 10px;
-    border: 1px solid #eaeaea;
-    padding: 12px 14px;
-    background: #fafafa;
+    border-radius: 12px;
+    border: 1px solid #f8d7da;
+    padding: 16px;
+    background: #fff7f7;
 }
 
 .sub-title {
     font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 6px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .included-title {
@@ -443,4 +451,16 @@
 .excluded-title {
     color: #d94141;
     /* 불포함: 빨강색 */
+}
+
+.trip-block-body {
+    font-size: 14px;
+    line-height: 1.8;
+    /* 기존 1.6 → 1.8로 여유 */
+    color: #444;
+}
+
+/* 1일차, 2일차 강조 */
+.trip-block-body strong {
+    font-weight: 700;
 }
