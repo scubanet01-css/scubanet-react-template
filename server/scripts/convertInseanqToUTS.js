@@ -555,7 +555,8 @@ try {
 
         // ✅ boat-assets JSON 로드
         const boatAssets = vesselId ? loadBoatAssetsForVessel(vesselId) : null;
-
+        // ✅ AdminBoatAssets에서 입력한 트립 상세 정보
+        const tripInfo = boatAssets?.tripInfo || {};
         const country = detectCountryImproved(productName, portName);
         let destination = extractDestinationByCountry(country, productName);
 
@@ -592,6 +593,13 @@ try {
                 available: a.spaces?.availableSpaces || 0,
                 booked: a.spaces?.bookedSpaces || 0,
                 holding: a.spaces?.optionSpaces || 0,
+            },
+
+            // ✅ Admin에서 입력한 상세 일정 / 포함 / 불포함
+            adminDetails: {
+                itinerary: tripInfo.itinerary || "",
+                included: tripInfo.included || "",
+                excluded: tripInfo.excluded || "",
             },
 
             cabins: buildCabins(a, boatAssets),
