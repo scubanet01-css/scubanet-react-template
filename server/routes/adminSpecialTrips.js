@@ -10,21 +10,21 @@ const {
 
 /**
  * GET /api/admin/special-trips
- *  - 모든 스페셜 트립 목록 조회
+ *  → app.use("/api/admin/special-trips", router) 기준으로
+ *     여기서는 "/"만 써야 최종 경로가 /api/admin/special-trips 가 됩니다.
  */
 router.get("/", (req, res) => {
     try {
         const trips = loadSpecialTrips();
         res.json(trips);
     } catch (err) {
-        console.error("❌ [GET /special-trips] 오류:", err);
+        console.error("❌ [GET /api/admin/special-trips] 오류:", err);
         res.status(500).json({ error: "Failed to load special trips" });
     }
 });
 
 /**
  * GET /api/admin/special-trips/:id
- *  - 특정 specialTripId로 조회
  */
 router.get("/:id", (req, res) => {
     try {
@@ -35,23 +35,17 @@ router.get("/:id", (req, res) => {
         if (!found) {
             return res.status(404).json({ error: "Special trip not found" });
         }
+
         res.json(found);
     } catch (err) {
-        console.error("❌ [GET /special-trips/:id] 오류:", err);
+        console.error("❌ [GET /api/admin/special-trips/:id] 오류:", err);
         res.status(500).json({ error: "Failed to load special trip" });
     }
 });
 
 /**
  * POST /api/admin/special-trips
- *  - specialTripId 기준으로 upsert (추가/수정)
- *  - body 예시:
- *    {
- *      "specialTripId": "special_mola01_2026_komodo_0910",
- *      "vesselId": "vessel_scuba_molamola01",
- *      "title": "...",
- *      ...
- *    }
+ *  - specialTripId 기준 upsert
  */
 router.post("/", (req, res) => {
     try {
@@ -66,7 +60,7 @@ router.post("/", (req, res) => {
         const saved = upsertSpecialTrip(payload);
         res.json(saved);
     } catch (err) {
-        console.error("❌ [POST /special-trips] 오류:", err);
+        console.error("❌ [POST /api/admin/special-trips] 오류:", err);
         res.status(500).json({ error: "Failed to save special trip" });
     }
 });
