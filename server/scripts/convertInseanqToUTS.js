@@ -116,6 +116,91 @@ function loadJsonArray(filePath, label) {
     throw new Error(`❌ ${label} JSON 구조 오류: 배열이 아닙니다.`);
 }
 
+/**
+ * ✅ Special Trip → UTS trip 변환
+ *  - /var/scubanet-data/special-trips.json 한 건을
+ *  - uts-trips.json에 들어가는 trip 객체 형태로 변환
+ */
+function mapSpecialTripToUTS(specialTrip) {
+    const {
+        specialTripId,
+        vesselId,
+        boatName: boatNameInput,
+        title,
+        region,
+        destination,
+        routeSummary,
+        startDate,
+        endDate,
+        nights,
+        embarkPort,
+        disembarkPort,
+        currency,
+        publicPriceFrom,
+        totalSpaces,
+        availableSpaces,
+        optionSpaces = 0,
+        bookedSpaces = 0,
+        status,
+    } = specialTrip;
+
+    // boat-assets에서 tripInfo / hero 이미지 가져오기 (있으면)
+    const boatAssets = vesselId ? loadBoatAssetsForVessel(vesselId) : null;
+    const tripInfo = boatAssets?.tripInfo || {};
+
+    const boatNameFromAssets = boatAssets?.boatName || boatAssets?.name || "";
+    const boatName =
+        boatNameInput || boatNameFromAssets || ""; // special-trips.json에 boatName 추가하면 가장 우선
+
+    // 기존 Inseanq trip 구조에 최대한 맞춤
+    return {
+        id: `SPC_${specialTripId}`,
+        source: "special",
+        tripType: "liveaboard",
+
+        vesselId,
+        boatName,
+
+        title: title || `${destination || ""} Special Trip`.trim(),
+
+        country: region || "Others", // region을 country 역할로 사용 (예: "Indonesia")
+        destination: destination || extractDestinationBasic(routeSummary || title || ""),
+
+        startDate,
+        endDate,
+        nights: nights || null,
+
+        // Inseanq는 객체 형태이므로 최소 name만 맞춰줌
+        departurePort: embarkPort ? { name: embarkPort } : null,
+        arrivalPort: disembarkPort ? { name: disembarkPort } : null,
+
+        images: {
+            cover: boatAssets?.assets?.hero?.url || "",
+            gallery: [], // 나중에 필요하면 boatAssets에서 추출
+        },
+
+        spaces: {
+            available: availableSpaces ?? 0,
+            booked: bookedSpaces ?? 0,
+            holding: optionSpaces ?? 0,
+        },
+
+        adminDetails: {
+            itinerary: tripInfo.itinerary || "",
+            included: tripInfo.included || "",
+            excluded: tripInfo.excluded || "",
+        },
+
+        // 지금은 cabins 정보 없음 → 나중에 필요해지면 별도 설계
+        cabins: [],
+
+        // Special 표시용 플래그 (나중에 프론트에서 뱃지 표시할 때 사용)
+        isSpecialTrip: true,
+        specialType: "scubanet-charter",
+        status: status || "open",
+    };
+}
+
 function detectCountryImproved(productName, portName) {
     const text = `${productName} ${portName}`.toLowerCase();
 
@@ -605,6 +690,39 @@ try {
             cabins: buildCabins(a, boatAssets),
         });
     }
+
+    // --------------------------------------------------
+    // 7-A. Special Trips 병합
+    // --------------------------------------------------
+    try {
+        const PATH_SPECIAL = path.join(DATA_DIR, "special-trips.json");
+
+        if (fs.existsSync(PATH_SPECIAL)) {
+            const specialTripsRaw = loadJsonArray(PATH_SPECIAL, "special-trips");
+
+            console.log("  - special-trips:", specialTripsRaw.length);
+
+            const specialTripsMapped = specialTripsRaw
+                .map(mapSpecialTripToUTS)
+                // status가 closed인 것은 제외 (원하지 않으면 이 줄 삭제 가능)
+                .filter((t) => t.status !== "closed");
+
+            trips.push(...specialTripsMapped);
+
+            console.log(
+                `➕ Special Trips 추가 완료 → ${specialTripsMapped.length}건 병합됨`,
+            );
+        } else {
+            console.log("ℹ️ special-trips.json 없음 → 스페셜 트립 병합 생략");
+        }
+    } catch (e) {
+        console.error("❌ special-trips 병합 중 오류:", e);
+    }
+
+    // --------------------------------------------------
+    // 이후 기존 코드 그대로 유지
+    // --------------------------------------------------
+
 
     console.log(`🧹 중복 제거 완료 → 최종 Trip 수: ${trips.length}`);
 
