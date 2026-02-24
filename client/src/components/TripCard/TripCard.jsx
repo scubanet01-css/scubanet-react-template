@@ -95,12 +95,7 @@ export default function TripCard({ trip, mode = "public" }) {
 
     return (
         <div className="trip-card">
-            {/* ✅ ScubaNet Special Trip 배지 */}
-            {isSpecial && (
-                <div className="trip-special-badge">
-                    스쿠버넷 스페셜트립
-                </div>
-            )}
+
             {/* ✔ 보트명 + 상품명 */}
             <div className="trip-info">
                 <strong>{trip.boatName}</strong>
@@ -115,6 +110,13 @@ export default function TripCard({ trip, mode = "public" }) {
 
             {/* ✔ 할인 + FOC 배지 */}
             <div className="trip-badge instructor-offer-wrapper">
+
+                {/* ✅ 스쿠버넷 스페셜 트립 배지(할인/FOC 보다 위) */}
+                {isSpecial && (
+                    <div className="trip-special-badge">
+                        스쿠버넷 스페셜트립
+                    </div>
+                )}
 
                 {hasDiscount && (
                     <span className="offer-badge">{discountPercent}% OFF</span>
