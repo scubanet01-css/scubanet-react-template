@@ -40,6 +40,12 @@ app.use(
 app.use(express.json());
 app.use(bodyParser.json());
 
+// 🔍 모든 요청 로깅
+app.use((req, res, next) => {
+  console.log("➡ REQ:", req.method, req.url);
+  next();
+});
+
 // --------------------------------------------------
 // ✅ Special Trips Admin API (여기가 핵심)
 // --------------------------------------------------
@@ -186,7 +192,11 @@ app.post("/api/create-invoice", async (req, res) => {
   }
 });
 
-
+// 🔍 디버그용: server.js가 실제로 라우팅하는지 확인
+app.get("/test-special", (req, res) => {
+  console.log("🔥 /test-special hit");
+  res.json({ ok: true, from: "server.js", path: "/test-special" });
+});
 
 // --------------------------------------------------
 // 헬스 체크
