@@ -41,6 +41,58 @@ app.use(express.json());
 app.use(bodyParser.json());
 
 // --------------------------------------------------
+// ✅ Special Trips Admin API (여기가 핵심)
+// --------------------------------------------------
+
+// 전체 목록 조회
+app.get("/api/admin/special-trips", (req, res) => {
+  try {
+    const trips = loadSpecialTrips();
+    res.json(trips);
+  } catch (err) {
+    console.error("❌ [GET /api/admin/special-trips] 오류:", err);
+    res.status(500).json({ error: "Failed to load special trips" });
+  }
+});
+
+// 특정 ID 조회
+app.get("/api/admin/special-trips/:id", (req, res) => {
+  try {
+    const id = req.params.id;
+    const trips = loadSpecialTrips();
+    const found = trips.find((t) => t.specialTripId === id);
+
+    if (!found) {
+      return res.status(404).json({ error: "Special trip not found" });
+    }
+
+    res.json(found);
+  } catch (err) {
+    console.error("❌ [GET /api/admin/special-trips/:id] 오류:", err);
+    res.status(500).json({ error: "Failed to load special trip" });
+  }
+});
+
+// 추가/수정 (Upsert)
+app.post("/api/admin/special-trips", (req, res) => {
+  try {
+    const payload = req.body || {};
+
+    if (!payload.specialTripId) {
+      return res
+        .status(400)
+        .json({ error: "specialTripId is required" });
+    }
+
+    const saved = upsertSpecialTrip(payload);
+    res.json(saved);
+  } catch (err) {
+    console.error("❌ [POST /api/admin/special-trips] 오류:", err);
+    res.status(500).json({ error: "Failed to save special trip" });
+  }
+});
+
+// --------------------------------------------------
 // 기존 라우트들
 // --------------------------------------------------
 app.use("/api", invoiceRoutes);
@@ -134,57 +186,7 @@ app.post("/api/create-invoice", async (req, res) => {
   }
 });
 
-// --------------------------------------------------
-// ✅ Special Trips Admin API (여기가 핵심)
-// --------------------------------------------------
 
-// 전체 목록 조회
-app.get("/api/admin/special-trips", (req, res) => {
-  try {
-    const trips = loadSpecialTrips();
-    res.json(trips);
-  } catch (err) {
-    console.error("❌ [GET /api/admin/special-trips] 오류:", err);
-    res.status(500).json({ error: "Failed to load special trips" });
-  }
-});
-
-// 특정 ID 조회
-app.get("/api/admin/special-trips/:id", (req, res) => {
-  try {
-    const id = req.params.id;
-    const trips = loadSpecialTrips();
-    const found = trips.find((t) => t.specialTripId === id);
-
-    if (!found) {
-      return res.status(404).json({ error: "Special trip not found" });
-    }
-
-    res.json(found);
-  } catch (err) {
-    console.error("❌ [GET /api/admin/special-trips/:id] 오류:", err);
-    res.status(500).json({ error: "Failed to load special trip" });
-  }
-});
-
-// 추가/수정 (Upsert)
-app.post("/api/admin/special-trips", (req, res) => {
-  try {
-    const payload = req.body || {};
-
-    if (!payload.specialTripId) {
-      return res
-        .status(400)
-        .json({ error: "specialTripId is required" });
-    }
-
-    const saved = upsertSpecialTrip(payload);
-    res.json(saved);
-  } catch (err) {
-    console.error("❌ [POST /api/admin/special-trips] 오류:", err);
-    res.status(500).json({ error: "Failed to save special trip" });
-  }
-});
 
 // --------------------------------------------------
 // 헬스 체크
