@@ -75,6 +75,9 @@ function getFOCLabel(trip) {
 export default function TripCard({ trip, mode = "public" }) {
     const navigate = useNavigate();
     const seats = getSeatCounts(trip);
+    // ✅ ScubaNet Special Trip 여부
+    const isSpecial =
+        trip?.isSpecialTrip === true || trip?.source === "special";
 
     const rate = getLowestRatePlan(trip);
 
@@ -92,7 +95,12 @@ export default function TripCard({ trip, mode = "public" }) {
 
     return (
         <div className="trip-card">
-
+            {/* ✅ ScubaNet Special Trip 배지 */}
+            {isSpecial && (
+                <div className="trip-special-badge">
+                    스쿠버넷 스페셜트립
+                </div>
+            )}
             {/* ✔ 보트명 + 상품명 */}
             <div className="trip-info">
                 <strong>{trip.boatName}</strong>
