@@ -10,7 +10,12 @@ const generateInvoicePDF = require('./utils/generateInvoicePDF');
 const sendInvoiceEmail = require('./utils/sendInvoiceEmail'); // ✅ 이메일 모듈 추가
 const invoiceRoutes = require("./routes/invoiceRoutes");
 const adminBoatAssetsRoutes = require("./routes/adminBoatAssets");
-const adminSpecialTripsRouter = require("./routes/adminSpecialTrips");
+// ✅ special-trips 유틸 직접 사용
+const {
+  loadSpecialTrips,
+  upsertSpecialTrip,
+} = require("./utils/specialTripsStore");
+
 const app = express();
 const port = 3002;
 
@@ -24,7 +29,6 @@ app.use(express.json()); // ✅ POST 요청의 body를 읽을 수 있게 함
 app.use(bodyParser.json());
 app.use("/api", invoiceRoutes);
 app.use("/admin/api/boats-assets", adminBoatAssetsRoutes);
-app.use("/api/admin/special-trips", adminSpecialTripsRouter);
 app.post("/__debug_post_test__", (req, res) => {
   res.json({ ok: true });
 });
@@ -71,6 +75,55 @@ app.get('/api/boats-details', (req, res) => {
       res.status(500).json({ error: '서버 오류 (json 파싱)' });
     }
   });
+});
+
+// ✅ Special Trips Admin API
+
+// 전체 목록 조회
+app.get("/api/admin/special-trips", (req, res) => {
+  try {
+    const trips = loadSpecialTrips();
+    res.json(trips);
+  } catch (err) {
+    console.error("❌ [GET /api/admin/special-trips] 오류:", err);
+    res.status(500).json({ error: "Failed to load special trips" });
+  }
+});
+
+// 특정 ID 조회
+app.get("/api/admin/special-trips/:id", (req, res) => {
+  try {
+    const id = req.params.id;
+    const trips = loadSpecialTrips();
+    const found = trips.find((t) => t.specialTripId === id);
+
+    if (!found) {
+      return res.status(404).json({ error: "Special trip not found" });
+    }
+    res.json(found);
+  } catch (err) {
+    console.error("❌ [GET /api/admin/special-trips/:id] 오류:", err);
+    res.status(500).json({ error: "Failed to load special trip" });
+  }
+});
+
+// 추가/수정 (upsert)
+app.post("/api/admin/special-trips", (req, res) => {
+  try {
+    const payload = req.body || {};
+
+    if (!payload.specialTripId) {
+      return res
+        .status(400)
+        .json({ error: "specialTripId is required" });
+    }
+
+    const saved = upsertSpecialTrip(payload);
+    res.json(saved);
+  } catch (err) {
+    console.error("❌ [POST /api/admin/special-trips] 오류:", err);
+    res.status(500).json({ error: "Failed to save special trip" });
+  }
 });
 
 app.post('/api/create-invoice', async (req, res) => {
