@@ -1,0 +1,57 @@
+[
+    {
+        "specialTripId": "special_mola01_2026_komodo_0910",
+        "vesselId": "vessel_scuba_molamola01",
+        "title": "Molamola01 코모도 7박 스쿠버넷 스페셜 차터",
+        "region": "Indonesia",
+        "destination": "Komodo",
+        "routeSummary": "Labuan Bajo 왕복 / Central + North Komodo",
+        "startDate": "2026-09-10",
+        "endDate": "2026-09-17",
+        "nights": 7,
+        "embarkPort": "Labuan Bajo",
+        "disembarkPort": "Labuan Bajo",
+        "currency": "USD",
+        "publicPriceFrom": 3200,
+        "totalSpaces": 20,
+        "availableSpaces": 14,
+        "optionSpaces": 2,
+        "bookedSpaces": 4,
+        "status": "open",
+        "isScubanetSpecial": true,
+        "salesMode": [
+            "full",
+            "group",
+            "open"
+        ],
+        "focPolicy": "3+1 또는 5+1 선택 가능",
+        "internalNote": "MolaMola Liveaboards 네트 기준가 2,600 USD, 최소 14명"
+    },
+    {
+        "specialTripId": "special_mola02_2026_raja_1105",
+        "vesselId": "vessel_scuba_molamola02",
+        "title": "Molamola02 라자암팟 7박 스쿠버넷 스페셜 차터",
+        "region": "Indonesia",
+        "destination": "Raja Ampat",
+        "routeSummary": "Sorong 출발 / Misool + Dampier Strait",
+        "startDate": "2026-11-05",
+        "endDate": "2026-11-12",
+        "nights": 7,
+        "embarkPort": "Sorong",
+        "disembarkPort": "Sorong",
+        "currency": "USD",
+        "publicPriceFrom": 3600,
+        "totalSpaces": 20,
+        "availableSpaces": 10,
+        "optionSpaces": 4,
+        "bookedSpaces": 6,
+        "status": "open",
+        "isScubanetSpecial": true,
+        "salesMode": [
+            "group",
+            "open"
+        ],
+        "focPolicy": "5+1 기준 / 그룹 우선",
+        "internalNote": "Raja 시즌, 얼리버드 시 5% 할인 검토 가능"
+    }
+]
