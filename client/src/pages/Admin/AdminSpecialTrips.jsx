@@ -21,7 +21,8 @@ export default function AdminSpecialTrips() {
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
+    // ✅ 테이블에서 선택한 스페셜 트립
+    const [selectedTrip, setSelectedTrip] = useState(null);
     useEffect(() => {
         async function fetchTrips() {
             try {
@@ -86,59 +87,165 @@ export default function AdminSpecialTrips() {
                         </tr>
                     </thead>
                     <tbody>
-                        {trips.map((t) => (
-                            <tr key={t.specialTripId || t.id}>
-                                <td style={tdStyle}>
-                                    <code>{t.specialTripId || t.id}</code>
-                                </td>
-                                <td style={tdStyle}>
-                                    <div style={{ fontWeight: 600 }}>{t.title}</div>
-                                    <div style={{ fontSize: "0.8rem", color: "#666" }}>
-                                        vesselId: {t.vesselId}
-                                    </div>
-                                </td>
-                                <td style={tdStyle}>
-                                    {t.region} / {t.destination}
-                                    <div style={{ fontSize: "0.8rem", color: "#666" }}>
-                                        {t.routeSummary}
-                                    </div>
-                                </td>
-                                <td style={tdStyle}>
-                                    {formatDate(t.startDate)} ~ {formatDate(t.endDate)} (
-                                    {t.nights}박)
-                                </td>
-                                <td style={tdStyle}>
-                                    {t.totalSpaces} / {t.availableSpaces} / {t.optionSpaces} /{" "}
-                                    {t.bookedSpaces}
-                                </td>
-                                <td style={tdStyle}>
-                                    {Array.isArray(t.salesMode)
-                                        ? t.salesMode.join(", ")
-                                        : ""}
-                                </td>
-                                <td style={tdStyle}>{t.focPolicy}</td>
-                                <td style={tdStyle}>
-                                    {t.status}
-                                    {t.isScubanetSpecial && (
-                                        <div
-                                            style={{
-                                                marginTop: 4,
-                                                display: "inline-block",
-                                                padding: "2px 6px",
-                                                borderRadius: 6,
-                                                backgroundColor: "#ff9800",
-                                                color: "#fff",
-                                                fontSize: "0.75rem",
-                                            }}
-                                        >
-                                            ScubaNet Special
+                        {trips.map((t) => {
+                            const isSelected =
+                                selectedTrip &&
+                                (selectedTrip.specialTripId || selectedTrip.id) ===
+                                (t.specialTripId || t.id);
+
+                            return (
+                                <tr
+                                    key={t.specialTripId || t.id}
+                                    onClick={() => setSelectedTrip(t)}          // ✅ 클릭하면 선택
+                                    style={{
+                                        ...tdRowStyle,                            // 아래에서 정의할 스타일
+                                        backgroundColor: isSelected ? "#fffde7" : "transparent",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    <td style={tdStyle}>
+                                        <code>{t.specialTripId || t.id}</code>
+                                    </td>
+                                    <td style={tdStyle}>
+                                        <div style={{ fontWeight: 600 }}>{t.title}</div>
+                                        <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                                            vesselId: {t.vesselId}
                                         </div>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
+                                    </td>
+                                    <td style={tdStyle}>
+                                        {t.region} / {t.destination}
+                                        <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                                            {t.routeSummary}
+                                        </div>
+                                    </td>
+                                    <td style={tdStyle}>
+                                        {formatDate(t.startDate)} ~ {formatDate(t.endDate)} ({t.nights}박)
+                                    </td>
+                                    <td style={tdStyle}>
+                                        {t.totalSpaces} / {t.availableSpaces} / {t.optionSpaces} /{" "}
+                                        {t.bookedSpaces}
+                                    </td>
+                                    <td style={tdStyle}>
+                                        {Array.isArray(t.salesMode) ? t.salesMode.join(", ") : ""}
+                                    </td>
+                                    <td style={tdStyle}>{t.focPolicy}</td>
+                                    <td style={tdStyle}>
+                                        {t.status}
+                                        {t.isScubanetSpecial && (
+                                            <div
+                                                style={{
+                                                    marginTop: 4,
+                                                    display: "inline-block",
+                                                    padding: "2px 6px",
+                                                    borderRadius: 6,
+                                                    backgroundColor: "#ff9800",
+                                                    color: "#fff",
+                                                    fontSize: "0.75rem",
+                                                }}
+                                            >
+                                                ScubaNet Special
+                                            </div>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
+
+            )}
+
+            {!loading && !error && trips.length > 0 && (
+                <table
+                    style={{
+                        width: "100%",
+                        borderCollapse: "collapse",
+                        marginTop: 12,
+                        fontSize: "0.9rem",
+                    }}
+                >
+                    {/* ... 방금까지 있던 thead / tbody ... */}
+                </table>
+            )}
+
+            {/* ✅ 선택된 스페셜 트립 상세 (다음 단계: 여기서 폼으로 발전) */}
+            {selectedTrip && (
+                <div
+                    style={{
+                        marginTop: 24,
+                        padding: 16,
+                        borderRadius: 8,
+                        border: "1px solid #ddd",
+                        backgroundColor: "#fafafa",
+                    }}
+                >
+                    <h3 style={{ marginTop: 0 }}>
+                        선택된 스페셜 트립 상세
+                    </h3>
+                    <p style={{ fontSize: "0.9rem", color: "#555" }}>
+                        이 영역은 다음 단계에서 <strong>입력/수정 폼</strong>으로 확장할 예정입니다.
+                        지금은 선택된 행의 전체 데이터를 확인하는 용도로 사용합니다.
+                    </p>
+
+                    <div style={{ display: "flex", gap: 24 }}>
+                        <div style={{ flex: 1 }}>
+                            <div>
+                                <strong>ID: </strong>
+                                <code>{selectedTrip.specialTripId || selectedTrip.id}</code>
+                            </div>
+                            <div>
+                                <strong>타이틀: </strong>
+                                {selectedTrip.title}
+                            </div>
+                            <div>
+                                <strong>지역/목적지: </strong>
+                                {selectedTrip.region} / {selectedTrip.destination}
+                            </div>
+                            <div>
+                                <strong>출발~종료: </strong>
+                                {formatDate(selectedTrip.startDate)} ~{" "}
+                                {formatDate(selectedTrip.endDate)} ({selectedTrip.nights}박)
+                            </div>
+                            <div>
+                                <strong>정원/가용/옵션/예약: </strong>
+                                {selectedTrip.totalSpaces} / {selectedTrip.availableSpaces} /{" "}
+                                {selectedTrip.optionSpaces} / {selectedTrip.bookedSpaces}
+                            </div>
+                            <div>
+                                <strong>판매 모드: </strong>
+                                {Array.isArray(selectedTrip.salesMode)
+                                    ? selectedTrip.salesMode.join(", ")
+                                    : ""}
+                            </div>
+                            <div>
+                                <strong>FOC 정책: </strong>
+                                {selectedTrip.focPolicy}
+                            </div>
+                            <div>
+                                <strong>상태: </strong>
+                                {selectedTrip.status}
+                            </div>
+                        </div>
+
+                        <div style={{ flex: 1 }}>
+                            <strong>raw JSON</strong>
+                            <pre
+                                style={{
+                                    marginTop: 8,
+                                    maxHeight: 260,
+                                    overflow: "auto",
+                                    fontSize: "0.8rem",
+                                    backgroundColor: "#fff",
+                                    border: "1px solid #eee",
+                                    borderRadius: 4,
+                                    padding: 8,
+                                }}
+                            >
+                                {JSON.stringify(selectedTrip, null, 2)}
+                            </pre>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
@@ -155,4 +262,8 @@ const tdStyle = {
     borderBottom: "1px solid #eee",
     padding: "6px 8px",
     verticalAlign: "top",
+};
+
+const tdRowStyle = {
+    borderBottom: "1px solid #eee",
 };
