@@ -1,7 +1,7 @@
 // client/src/pages/Admin/AdminSpecialTrips.jsx
 import React, { useEffect, useState } from "react";
 
-// 상황 단순화를 위해 일단 하드코딩
+// 현재 개발 서버 기준 백엔드 API 베이스 URL
 const API_BASE = "http://210.114.22.82:4002";
 
 function formatDate(iso) {
@@ -21,8 +21,8 @@ export default function AdminSpecialTrips() {
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    // ✅ 테이블에서 선택한 스페셜 트립
-    const [selectedTrip, setSelectedTrip] = useState(null);
+    const [selectedTrip, setSelectedTrip] = useState(null); // ✅ 선택된 행
+
     useEffect(() => {
         async function fetchTrips() {
             try {
@@ -65,6 +65,7 @@ export default function AdminSpecialTrips() {
                 <div>등록된 스페셜 트립이 없습니다.</div>
             )}
 
+            {/* ✅ 리스트 테이블 */}
             {!loading && !error && trips.length > 0 && (
                 <table
                     style={{
@@ -88,23 +89,22 @@ export default function AdminSpecialTrips() {
                     </thead>
                     <tbody>
                         {trips.map((t) => {
+                            const id = t.specialTripId || t.id;
                             const isSelected =
                                 selectedTrip &&
-                                (selectedTrip.specialTripId || selectedTrip.id) ===
-                                (t.specialTripId || t.id);
+                                (selectedTrip.specialTripId || selectedTrip.id) === id;
 
                             return (
                                 <tr
-                                    key={t.specialTripId || t.id}
-                                    onClick={() => setSelectedTrip(t)}          // ✅ 클릭하면 선택
+                                    key={id}
+                                    onClick={() => setSelectedTrip(t)}
                                     style={{
-                                        ...tdRowStyle,                            // 아래에서 정의할 스타일
                                         backgroundColor: isSelected ? "#fffde7" : "transparent",
                                         cursor: "pointer",
                                     }}
                                 >
                                     <td style={tdStyle}>
-                                        <code>{t.specialTripId || t.id}</code>
+                                        <code>{id}</code>
                                     </td>
                                     <td style={tdStyle}>
                                         <div style={{ fontWeight: 600 }}>{t.title}</div>
@@ -119,14 +119,17 @@ export default function AdminSpecialTrips() {
                                         </div>
                                     </td>
                                     <td style={tdStyle}>
-                                        {formatDate(t.startDate)} ~ {formatDate(t.endDate)} ({t.nights}박)
+                                        {formatDate(t.startDate)} ~ {formatDate(t.endDate)} (
+                                        {t.nights}박)
                                     </td>
                                     <td style={tdStyle}>
                                         {t.totalSpaces} / {t.availableSpaces} / {t.optionSpaces} /{" "}
                                         {t.bookedSpaces}
                                     </td>
                                     <td style={tdStyle}>
-                                        {Array.isArray(t.salesMode) ? t.salesMode.join(", ") : ""}
+                                        {Array.isArray(t.salesMode)
+                                            ? t.salesMode.join(", ")
+                                            : ""}
                                     </td>
                                     <td style={tdStyle}>{t.focPolicy}</td>
                                     <td style={tdStyle}>
@@ -152,23 +155,9 @@ export default function AdminSpecialTrips() {
                         })}
                     </tbody>
                 </table>
-
             )}
 
-            {!loading && !error && trips.length > 0 && (
-                <table
-                    style={{
-                        width: "100%",
-                        borderCollapse: "collapse",
-                        marginTop: 12,
-                        fontSize: "0.9rem",
-                    }}
-                >
-                    {/* ... 방금까지 있던 thead / tbody ... */}
-                </table>
-            )}
-
-            {/* ✅ 선택된 스페셜 트립 상세 (다음 단계: 여기서 폼으로 발전) */}
+            {/* ✅ 선택된 스페셜 트립 상세 영역 */}
             {selectedTrip && (
                 <div
                     style={{
@@ -179,16 +168,14 @@ export default function AdminSpecialTrips() {
                         backgroundColor: "#fafafa",
                     }}
                 >
-                    <h3 style={{ marginTop: 0 }}>
-                        선택된 스페셜 트립 상세
-                    </h3>
+                    <h3 style={{ marginTop: 0 }}>선택된 스페셜 트립 상세</h3>
                     <p style={{ fontSize: "0.9rem", color: "#555" }}>
                         이 영역은 다음 단계에서 <strong>입력/수정 폼</strong>으로 확장할 예정입니다.
                         지금은 선택된 행의 전체 데이터를 확인하는 용도로 사용합니다.
                     </p>
 
-                    <div style={{ display: "flex", gap: 24 }}>
-                        <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+                        <div style={{ flex: 1, minWidth: 280 }}>
                             <div>
                                 <strong>ID: </strong>
                                 <code>{selectedTrip.specialTripId || selectedTrip.id}</code>
@@ -225,9 +212,13 @@ export default function AdminSpecialTrips() {
                                 <strong>상태: </strong>
                                 {selectedTrip.status}
                             </div>
+                            <div>
+                                <strong>내부 메모: </strong>
+                                {selectedTrip.internalNote}
+                            </div>
                         </div>
 
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: 280 }}>
                             <strong>raw JSON</strong>
                             <pre
                                 style={{
@@ -262,8 +253,4 @@ const tdStyle = {
     borderBottom: "1px solid #eee",
     padding: "6px 8px",
     verticalAlign: "top",
-};
-
-const tdRowStyle = {
-    borderBottom: "1px solid #eee",
 };
