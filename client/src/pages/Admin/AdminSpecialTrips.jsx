@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 
 // 상황 단순화를 위해 일단 하드코딩
-const API_BASE = "http://localhost:4002";
+const API_BASE = "http://210.114.22.82:4002";
 
 function formatDate(iso) {
     if (!iso) return "";
