@@ -20,7 +20,7 @@ import InstructorConfirm from './pages/Instructor/InstructorConfirm';
 import InstructorMyBooking from './pages/Instructor/InstructorMyBooking';
 
 import AdminBoatAssets from "./pages/Admin/AdminBoatAssets";
-
+import AdminSpecialTrips from './pages/Admin/AdminSpecialTrips';
 import { AuthProvider } from './hooks/useAuth';
 
 function App() {
@@ -111,7 +111,8 @@ function App() {
             path="/admin/boats/assets"
             element={<AdminBoatAssets />}
           />
-
+          {/* ✅ 스페셜 트립 관리 페이지 */}
+          <Route path="/admin/special-trips" element={<AdminSpecialTrips />} />
         </Routes>
       </Router>
     </AuthProvider>
