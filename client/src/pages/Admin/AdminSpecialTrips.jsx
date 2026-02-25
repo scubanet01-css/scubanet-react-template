@@ -1,7 +1,7 @@
 // client/src/pages/Admin/AdminSpecialTrips.jsx
 import React, { useEffect, useState } from "react";
 
-// 현재 개발 서버 기준 백엔드 API 베이스 URL
+// 개발용 API 서버 주소
 const API_BASE = "http://210.114.22.82:4002";
 
 function formatDate(iso) {
@@ -21,7 +21,7 @@ export default function AdminSpecialTrips() {
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [selectedTrip, setSelectedTrip] = useState(null); // ✅ 선택된 행
+    const [selectedTrip, setSelectedTrip] = useState(null); // ✅ 선택된 트립
 
     useEffect(() => {
         async function fetchTrips() {
@@ -35,7 +35,14 @@ export default function AdminSpecialTrips() {
                 }
 
                 const data = await res.json();
-                setTrips(Array.isArray(data) ? data : []);
+                const arr = Array.isArray(data) ? data : [];
+
+                setTrips(arr);
+
+                // ✅ 첫 번째 항목 자동 선택
+                if (arr.length > 0) {
+                    setSelectedTrip(arr[0]);
+                }
             } catch (err) {
                 console.error("❌ special-trips 로드 오류:", err);
                 setError("스페셜 트립 목록을 불러오는 중 오류가 발생했습니다.");
@@ -63,6 +70,93 @@ export default function AdminSpecialTrips() {
 
             {!loading && !error && trips.length === 0 && (
                 <div>등록된 스페셜 트립이 없습니다.</div>
+            )}
+
+            {/* ✅ 선택된 스페셜 트립 상세 (테이블 위에 표시) */}
+            {selectedTrip && (
+                <div
+                    style={{
+                        marginTop: 8,
+                        marginBottom: 20,
+                        padding: 16,
+                        borderRadius: 8,
+                        border: "1px solid #ddd",
+                        backgroundColor: "#fafafa",
+                    }}
+                >
+                    <h3 style={{ marginTop: 0, marginBottom: 8 }}>
+                        선택된 스페셜 트립 상세
+                    </h3>
+                    <p style={{ fontSize: "0.9rem", color: "#555", marginTop: 0 }}>
+                        이 영역은 다음 단계에서 <strong>입력/수정 폼</strong>으로 확장할 예정입니다.
+                        지금은 선택된 행의 데이터를 그대로 확인하는 용도입니다.
+                    </p>
+
+                    <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+                        {/* 왼쪽: 요약 정보 */}
+                        <div style={{ flex: 1, minWidth: 260 }}>
+                            <div>
+                                <strong>ID: </strong>
+                                <code>{selectedTrip.specialTripId || selectedTrip.id}</code>
+                            </div>
+                            <div>
+                                <strong>타이틀: </strong>
+                                {selectedTrip.title}
+                            </div>
+                            <div>
+                                <strong>지역/목적지: </strong>
+                                {selectedTrip.region} / {selectedTrip.destination}
+                            </div>
+                            <div>
+                                <strong>출발~종료: </strong>
+                                {formatDate(selectedTrip.startDate)} ~{" "}
+                                {formatDate(selectedTrip.endDate)} ({selectedTrip.nights}박)
+                            </div>
+                            <div>
+                                <strong>정원/가용/옵션/예약: </strong>
+                                {selectedTrip.totalSpaces} / {selectedTrip.availableSpaces} /{" "}
+                                {selectedTrip.optionSpaces} / {selectedTrip.bookedSpaces}
+                            </div>
+                            <div>
+                                <strong>판매 모드: </strong>
+                                {Array.isArray(selectedTrip.salesMode)
+                                    ? selectedTrip.salesMode.join(", ")
+                                    : ""}
+                            </div>
+                            <div>
+                                <strong>FOC 정책: </strong>
+                                {selectedTrip.focPolicy}
+                            </div>
+                            <div>
+                                <strong>상태: </strong>
+                                {selectedTrip.status}
+                            </div>
+                            <div>
+                                <strong>내부 메모: </strong>
+                                {selectedTrip.internalNote}
+                            </div>
+                        </div>
+
+                        {/* 오른쪽: raw JSON */}
+                        <div style={{ flex: 1, minWidth: 260 }}>
+                            <strong>raw JSON</strong>
+                            <pre
+                                style={{
+                                    marginTop: 8,
+                                    maxHeight: 260,
+                                    overflow: "auto",
+                                    fontSize: "0.8rem",
+                                    backgroundColor: "#fff",
+                                    border: "1px solid #eee",
+                                    borderRadius: 4,
+                                    padding: 8,
+                                }}
+                            >
+                                {JSON.stringify(selectedTrip, null, 2)}
+                            </pre>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* ✅ 리스트 테이블 */}
@@ -99,7 +193,7 @@ export default function AdminSpecialTrips() {
                                     key={id}
                                     onClick={() => setSelectedTrip(t)}
                                     style={{
-                                        backgroundColor: isSelected ? "#fffde7" : "transparent",
+                                        backgroundColor: isSelected ? "#ffecb3" : "transparent",
                                         cursor: "pointer",
                                     }}
                                 >
@@ -155,88 +249,6 @@ export default function AdminSpecialTrips() {
                         })}
                     </tbody>
                 </table>
-            )}
-
-            {/* ✅ 선택된 스페셜 트립 상세 영역 */}
-            {selectedTrip && (
-                <div
-                    style={{
-                        marginTop: 24,
-                        padding: 16,
-                        borderRadius: 8,
-                        border: "1px solid #ddd",
-                        backgroundColor: "#fafafa",
-                    }}
-                >
-                    <h3 style={{ marginTop: 0 }}>선택된 스페셜 트립 상세</h3>
-                    <p style={{ fontSize: "0.9rem", color: "#555" }}>
-                        이 영역은 다음 단계에서 <strong>입력/수정 폼</strong>으로 확장할 예정입니다.
-                        지금은 선택된 행의 전체 데이터를 확인하는 용도로 사용합니다.
-                    </p>
-
-                    <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-                        <div style={{ flex: 1, minWidth: 280 }}>
-                            <div>
-                                <strong>ID: </strong>
-                                <code>{selectedTrip.specialTripId || selectedTrip.id}</code>
-                            </div>
-                            <div>
-                                <strong>타이틀: </strong>
-                                {selectedTrip.title}
-                            </div>
-                            <div>
-                                <strong>지역/목적지: </strong>
-                                {selectedTrip.region} / {selectedTrip.destination}
-                            </div>
-                            <div>
-                                <strong>출발~종료: </strong>
-                                {formatDate(selectedTrip.startDate)} ~{" "}
-                                {formatDate(selectedTrip.endDate)} ({selectedTrip.nights}박)
-                            </div>
-                            <div>
-                                <strong>정원/가용/옵션/예약: </strong>
-                                {selectedTrip.totalSpaces} / {selectedTrip.availableSpaces} /{" "}
-                                {selectedTrip.optionSpaces} / {selectedTrip.bookedSpaces}
-                            </div>
-                            <div>
-                                <strong>판매 모드: </strong>
-                                {Array.isArray(selectedTrip.salesMode)
-                                    ? selectedTrip.salesMode.join(", ")
-                                    : ""}
-                            </div>
-                            <div>
-                                <strong>FOC 정책: </strong>
-                                {selectedTrip.focPolicy}
-                            </div>
-                            <div>
-                                <strong>상태: </strong>
-                                {selectedTrip.status}
-                            </div>
-                            <div>
-                                <strong>내부 메모: </strong>
-                                {selectedTrip.internalNote}
-                            </div>
-                        </div>
-
-                        <div style={{ flex: 1, minWidth: 280 }}>
-                            <strong>raw JSON</strong>
-                            <pre
-                                style={{
-                                    marginTop: 8,
-                                    maxHeight: 260,
-                                    overflow: "auto",
-                                    fontSize: "0.8rem",
-                                    backgroundColor: "#fff",
-                                    border: "1px solid #eee",
-                                    borderRadius: 4,
-                                    padding: 8,
-                                }}
-                            >
-                                {JSON.stringify(selectedTrip, null, 2)}
-                            </pre>
-                        </div>
-                    </div>
-                </div>
             )}
         </div>
     );
