@@ -3,6 +3,13 @@ import React, { useEffect, useState } from "react";
 
 // 개발용 API 서버 주소
 const API_BASE = "http://210.114.22.82:4002";
+const [formData, setFormData] = useState(null);
+
+useEffect(() => {
+    if (selectedTrip) {
+        setFormData(selectedTrip);
+    }
+}, [selectedTrip]);
 
 function formatDate(iso) {
     if (!iso) return "";
@@ -139,21 +146,81 @@ export default function AdminSpecialTrips() {
 
                         {/* 오른쪽: raw JSON */}
                         <div style={{ flex: 1, minWidth: 260 }}>
-                            <strong>raw JSON</strong>
-                            <pre
-                                style={{
-                                    marginTop: 8,
-                                    maxHeight: 260,
-                                    overflow: "auto",
-                                    fontSize: "0.8rem",
-                                    backgroundColor: "#fff",
-                                    border: "1px solid #eee",
-                                    borderRadius: 4,
-                                    padding: 8,
-                                }}
-                            >
-                                {JSON.stringify(selectedTrip, null, 2)}
-                            </pre>
+                            <div style={{ flex: 1, minWidth: 260 }}>
+                                <h4>편집 영역</h4>
+
+                                <div style={{ marginBottom: 8 }}>
+                                    <label>타이틀</label>
+                                    <input
+                                        style={inputStyle}
+                                        value={formData?.title || ""}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, title: e.target.value })
+                                        }
+                                    />
+                                </div>
+
+                                <div style={{ marginBottom: 8 }}>
+                                    <label>FOC 정책</label>
+                                    <input
+                                        style={inputStyle}
+                                        value={formData?.focPolicy || ""}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, focPolicy: e.target.value })
+                                        }
+                                    />
+                                </div>
+
+                                <div style={{ marginBottom: 8 }}>
+                                    <label>상태</label>
+                                    <select
+                                        style={inputStyle}
+                                        value={formData?.status || "open"}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, status: e.target.value })
+                                        }
+                                    >
+                                        <option value="open">open</option>
+                                        <option value="closed">closed</option>
+                                        <option value="cancelled">cancelled</option>
+                                    </select>
+                                </div>
+
+                                <button
+                                    style={{
+                                        marginTop: 10,
+                                        padding: "6px 12px",
+                                        backgroundColor: "#1976d2",
+                                        color: "#fff",
+                                        border: "none",
+                                        borderRadius: 4,
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={async () => {
+                                        try {
+                                            const res = await fetch(
+                                                `${API_BASE}/api/admin/special-trips`,
+                                                {
+                                                    method: "POST",
+                                                    headers: { "Content-Type": "application/json" },
+                                                    body: JSON.stringify(formData),
+                                                }
+                                            );
+
+                                            if (!res.ok) {
+                                                throw new Error("저장 실패");
+                                            }
+
+                                            alert("저장 완료");
+
+                                        } catch (err) {
+                                            alert("저장 중 오류 발생");
+                                        }
+                                    }}
+                                >
+                                    저장
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -265,4 +332,12 @@ const tdStyle = {
     borderBottom: "1px solid #eee",
     padding: "6px 8px",
     verticalAlign: "top",
+};
+
+const inputStyle = {
+    width: "100%",
+    padding: "6px",
+    marginTop: "4px",
+    borderRadius: "4px",
+    border: "1px solid #ccc",
 };
