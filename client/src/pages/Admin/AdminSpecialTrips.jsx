@@ -3,13 +3,6 @@ import React, { useEffect, useState } from "react";
 
 // 개발용 API 서버 주소
 const API_BASE = "http://210.114.22.82:4002";
-const [formData, setFormData] = useState(null);
-
-useEffect(() => {
-    if (selectedTrip) {
-        setFormData(selectedTrip);
-    }
-}, [selectedTrip]);
 
 function formatDate(iso) {
     if (!iso) return "";
@@ -28,8 +21,11 @@ export default function AdminSpecialTrips() {
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [selectedTrip, setSelectedTrip] = useState(null); // ✅ 선택된 트립
+    const [selectedTrip, setSelectedTrip] = useState(null); // 선택된 트립
+    const [formData, setFormData] = useState(null);        // 편집용 폼 데이터
+    const [saving, setSaving] = useState(false);
 
+    // 최초 로딩: 목록 가져오기
     useEffect(() => {
         async function fetchTrips() {
             try {
@@ -46,7 +42,7 @@ export default function AdminSpecialTrips() {
 
                 setTrips(arr);
 
-                // ✅ 첫 번째 항목 자동 선택
+                // 첫 번째 항목 자동 선택
                 if (arr.length > 0) {
                     setSelectedTrip(arr[0]);
                 }
@@ -61,11 +57,71 @@ export default function AdminSpecialTrips() {
         fetchTrips();
     }, []);
 
+    // 선택된 트립이 바뀔 때마다 폼 데이터 동기화
+    useEffect(() => {
+        if (selectedTrip) {
+            setFormData(selectedTrip);
+        } else {
+            setFormData(null);
+        }
+    }, [selectedTrip]);
+
+    // 공통 change 핸들러
+    const handleFieldChange = (field) => (e) => {
+        const value = e.target.value;
+        setFormData((prev) => ({
+            ...(prev || {}),
+            [field]: value,
+        }));
+    };
+
+    // 저장 버튼 클릭
+    const handleSave = async () => {
+        if (!formData) return;
+
+        try {
+            setSaving(true);
+
+            const res = await fetch(`${API_BASE}/api/admin/special-trips`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData),
+            });
+
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
+
+            alert("✅ 저장 완료");
+
+            // 저장 후 리스트도 최신 상태로 반영 (간단히 메모리 업데이트)
+            setTrips((prev) => {
+                const id = formData.specialTripId || formData.id;
+                const copied = [...prev];
+                const idx = copied.findIndex(
+                    (t) => (t.specialTripId || t.id) === id
+                );
+                if (idx >= 0) {
+                    copied[idx] = formData;
+                }
+                return copied;
+            });
+
+            setSelectedTrip(formData);
+        } catch (err) {
+            console.error("❌ 저장 중 오류:", err);
+            alert("저장 중 오류가 발생했습니다.");
+        } finally {
+            setSaving(false);
+        }
+    };
+
     return (
         <div style={{ padding: "20px" }}>
-            <h2>스페셜 트립 관리 (읽기 전용 1단계)</h2>
+            <h2>스페셜 트립 관리 (읽기 전용 1단계 + 간단 편집)</h2>
             <p style={{ color: "#666", marginBottom: 16 }}>
-                /var/scubanet-data/special-trips.json 내용을 API(4002)에서 불러와서 표시합니다.
+                /var/scubanet-data/special-trips.json 내용을 API(4002)에서 불러와서
+                표시합니다. 선택된 트립의 일부 필드는 여기서 바로 수정할 수 있습니다.
             </p>
 
             {loading && <div>불러오는 중...</div>}
@@ -79,8 +135,8 @@ export default function AdminSpecialTrips() {
                 <div>등록된 스페셜 트립이 없습니다.</div>
             )}
 
-            {/* ✅ 선택된 스페셜 트립 상세 (테이블 위에 표시) */}
-            {selectedTrip && (
+            {/* ✅ 선택된 스페셜 트립 상세 + 편집 폼 */}
+            {selectedTrip && formData && (
                 <div
                     style={{
                         marginTop: 8,
@@ -95,8 +151,8 @@ export default function AdminSpecialTrips() {
                         선택된 스페셜 트립 상세
                     </h3>
                     <p style={{ fontSize: "0.9rem", color: "#555", marginTop: 0 }}>
-                        이 영역은 다음 단계에서 <strong>입력/수정 폼</strong>으로 확장할 예정입니다.
-                        지금은 선택된 행의 데이터를 그대로 확인하는 용도입니다.
+                        이 영역은 다음 단계에서 <strong>입력/수정 전체 폼</strong>으로 확장할 예정입니다.
+                        지금은 타이틀 / FOC / 상태 정도만 서버에 저장해 보는 단계입니다.
                     </p>
 
                     <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
@@ -104,123 +160,87 @@ export default function AdminSpecialTrips() {
                         <div style={{ flex: 1, minWidth: 260 }}>
                             <div>
                                 <strong>ID: </strong>
-                                <code>{selectedTrip.specialTripId || selectedTrip.id}</code>
+                                <code>{formData.specialTripId || formData.id}</code>
                             </div>
                             <div>
                                 <strong>타이틀: </strong>
-                                {selectedTrip.title}
+                                {formData.title}
                             </div>
                             <div>
                                 <strong>지역/목적지: </strong>
-                                {selectedTrip.region} / {selectedTrip.destination}
+                                {formData.region} / {formData.destination}
                             </div>
                             <div>
                                 <strong>출발~종료: </strong>
-                                {formatDate(selectedTrip.startDate)} ~{" "}
-                                {formatDate(selectedTrip.endDate)} ({selectedTrip.nights}박)
+                                {formatDate(formData.startDate)} ~{" "}
+                                {formatDate(formData.endDate)} ({formData.nights}박)
                             </div>
                             <div>
                                 <strong>정원/가용/옵션/예약: </strong>
-                                {selectedTrip.totalSpaces} / {selectedTrip.availableSpaces} /{" "}
-                                {selectedTrip.optionSpaces} / {selectedTrip.bookedSpaces}
+                                {formData.totalSpaces} / {formData.availableSpaces} /{" "}
+                                {formData.optionSpaces} / {formData.bookedSpaces}
                             </div>
                             <div>
                                 <strong>판매 모드: </strong>
-                                {Array.isArray(selectedTrip.salesMode)
-                                    ? selectedTrip.salesMode.join(", ")
+                                {Array.isArray(formData.salesMode)
+                                    ? formData.salesMode.join(", ")
                                     : ""}
                             </div>
                             <div>
-                                <strong>FOC 정책: </strong>
-                                {selectedTrip.focPolicy}
-                            </div>
-                            <div>
-                                <strong>상태: </strong>
-                                {selectedTrip.status}
-                            </div>
-                            <div>
                                 <strong>내부 메모: </strong>
-                                {selectedTrip.internalNote}
+                                {formData.internalNote}
                             </div>
                         </div>
 
-                        {/* 오른쪽: raw JSON */}
+                        {/* 오른쪽: 간단 편집 폼 */}
                         <div style={{ flex: 1, minWidth: 260 }}>
-                            <div style={{ flex: 1, minWidth: 260 }}>
-                                <h4>편집 영역</h4>
+                            <h4>편집 영역</h4>
 
-                                <div style={{ marginBottom: 8 }}>
-                                    <label>타이틀</label>
-                                    <input
-                                        style={inputStyle}
-                                        value={formData?.title || ""}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, title: e.target.value })
-                                        }
-                                    />
-                                </div>
-
-                                <div style={{ marginBottom: 8 }}>
-                                    <label>FOC 정책</label>
-                                    <input
-                                        style={inputStyle}
-                                        value={formData?.focPolicy || ""}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, focPolicy: e.target.value })
-                                        }
-                                    />
-                                </div>
-
-                                <div style={{ marginBottom: 8 }}>
-                                    <label>상태</label>
-                                    <select
-                                        style={inputStyle}
-                                        value={formData?.status || "open"}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, status: e.target.value })
-                                        }
-                                    >
-                                        <option value="open">open</option>
-                                        <option value="closed">closed</option>
-                                        <option value="cancelled">cancelled</option>
-                                    </select>
-                                </div>
-
-                                <button
-                                    style={{
-                                        marginTop: 10,
-                                        padding: "6px 12px",
-                                        backgroundColor: "#1976d2",
-                                        color: "#fff",
-                                        border: "none",
-                                        borderRadius: 4,
-                                        cursor: "pointer",
-                                    }}
-                                    onClick={async () => {
-                                        try {
-                                            const res = await fetch(
-                                                `${API_BASE}/api/admin/special-trips`,
-                                                {
-                                                    method: "POST",
-                                                    headers: { "Content-Type": "application/json" },
-                                                    body: JSON.stringify(formData),
-                                                }
-                                            );
-
-                                            if (!res.ok) {
-                                                throw new Error("저장 실패");
-                                            }
-
-                                            alert("저장 완료");
-
-                                        } catch (err) {
-                                            alert("저장 중 오류 발생");
-                                        }
-                                    }}
-                                >
-                                    저장
-                                </button>
+                            <div style={{ marginBottom: 8 }}>
+                                <label>타이틀</label>
+                                <input
+                                    style={inputStyle}
+                                    value={formData.title || ""}
+                                    onChange={handleFieldChange("title")}
+                                />
                             </div>
+
+                            <div style={{ marginBottom: 8 }}>
+                                <label>FOC 정책</label>
+                                <input
+                                    style={inputStyle}
+                                    value={formData.focPolicy || ""}
+                                    onChange={handleFieldChange("focPolicy")}
+                                />
+                            </div>
+
+                            <div style={{ marginBottom: 8 }}>
+                                <label>상태</label>
+                                <select
+                                    style={inputStyle}
+                                    value={formData.status || "open"}
+                                    onChange={handleFieldChange("status")}
+                                >
+                                    <option value="open">open</option>
+                                    <option value="closed">closed</option>
+                                    <option value="cancelled">cancelled</option>
+                                </select>
+                            </div>
+
+                            <button
+                                style={{
+                                    marginTop: 10,
+                                    padding: "6px 12px",
+                                    backgroundColor: saving ? "#90caf9" : "#1976d2",
+                                    color: "#fff",
+                                    border: "none",
+                                    borderRadius: 4,
+                                    cursor: saving ? "default" : "pointer",
+                                }}
+                                onClick={saving ? undefined : handleSave}
+                            >
+                                {saving ? "저장 중..." : "저장"}
+                            </button>
                         </div>
                     </div>
                 </div>
