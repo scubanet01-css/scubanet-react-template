@@ -83,13 +83,51 @@ export default function AdminSpecialTrips() {
         }));
     };
 
+    // ─────────────────────────────
+    // 배 이름 → vesselId 자동 생성을 위한 slug
+    // ─────────────────────────────
+    const slugifySimple = (text) => {
+        return String(text || "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, " ")   // 영문+숫자만 남기고 나머지는 공백 처리
+            .trim()
+            .replace(/\s+/g, "");          // 공백 제거 → molamola01
+    };
+
     // 배 이름으로부터 자동 vesselId 생성
     const makeAutoVesselId = (boatName) => {
         if (!boatName) return "";
-        const slug = boatName
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, ""); // 영문+숫자만 남김
+        const slug = slugifySimple(boatName);
         return `vessel_scuba_${slug}`;
+    };
+
+    // specialTripId 자동 생성 (규칙: special_{boatSlug}_{year}_{destSlug}_{MMDD})
+    const makeAutoSpecialTripId = (trip) => {
+        if (!trip) return "";
+
+        const boatSlug = slugifySimple(trip.boatName || "");
+        const destSlug = slugifySimple(trip.destination || "");
+
+        if (!boatSlug || !destSlug || !trip.startDate) return "";
+
+        let year = "";
+        let mm = "";
+        let dd = "";
+
+        try {
+            const d = new Date(trip.startDate);
+            if (!Number.isNaN(d.getTime())) {
+                year = String(d.getFullYear());
+                mm = String(d.getMonth() + 1).padStart(2, "0");
+                dd = String(d.getDate()).padStart(2, "0");
+            }
+        } catch {
+            // 날짜 파싱 실패 시 자동 생성 포기
+        }
+
+        if (!year || !mm || !dd) return "";
+
+        return `special_${boatSlug}_${year}_${destSlug}_${mm}${dd}`;
     };
 
     // 배 이름 변경 시: boatName + (필요하면) vesselId 자동 세팅
@@ -106,6 +144,22 @@ export default function AdminSpecialTrips() {
                 ...prev,
                 boatName,
                 vesselId: nextVesselId,
+            };
+        });
+    };
+
+    // ID 자동 생성 버튼 클릭 시
+    const handleAutoSpecialTripId = () => {
+        setFormData((prev) => {
+            if (!prev) return prev;
+            const autoId = makeAutoSpecialTripId(prev);
+            if (!autoId) {
+                alert("배 이름 / 목적지 / 승선일을 먼저 입력해야 ID를 생성할 수 있습니다.");
+                return prev;
+            }
+            return {
+                ...prev,
+                specialTripId: autoId,
             };
         });
     };
@@ -254,12 +308,38 @@ export default function AdminSpecialTrips() {
                                 <legend>기본 정보</legend>
 
                                 <div style={rowStyle}>
-                                    <label>ID</label>
-                                    <input
-                                        style={inputStyle}
-                                        value={formData.specialTripId || formData.id || ""}
-                                        readOnly
-                                    />
+                                    <label>ID (specialTripId)</label>
+                                    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                                        <input
+                                            style={{ ...inputStyle, flex: 1 }}
+                                            value={formData.specialTripId || ""}
+                                            onChange={(e) =>
+                                                setFormData((prev) => ({
+                                                    ...(prev || {}),
+                                                    specialTripId: e.target.value,
+                                                }))
+                                            }
+                                            placeholder="special_mola01_2026_komodo_0910"
+                                        />
+                                        <button
+                                            type="button"
+                                            style={{
+                                                padding: "4px 8px",
+                                                borderRadius: 4,
+                                                border: "1px solid #ccc",
+                                                background: "#f5f5f5",
+                                                fontSize: "0.8rem",
+                                                cursor: "pointer",
+                                            }}
+                                            onClick={handleAutoSpecialTripId}
+                                        >
+                                            자동
+                                        </button>
+                                    </div>
+                                    <div style={{ fontSize: "0.8rem", color: "#666", marginTop: 2 }}>
+                                        추천:{" "}
+                                        <code>{makeAutoSpecialTripId(formData) || "배 이름 / 목적지 / 승선일 입력 후 [자동]을 누르세요"}</code>
+                                    </div>
                                 </div>
 
                                 <div style={rowStyle}>
