@@ -22,7 +22,7 @@ export default function AdminSpecialTrips() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [selectedTrip, setSelectedTrip] = useState(null); // 선택된 트립
-    const [formData, setFormData] = useState(null);        // 편집용 폼 데이터
+    const [formData, setFormData] = useState(null);         // 편집용 폼 데이터
     const [saving, setSaving] = useState(false);
 
     // 최초 로딩: 목록 가져오기
@@ -67,7 +67,7 @@ export default function AdminSpecialTrips() {
                 instructorGroupPrice: null,
                 instructorFOCPolicy: "",
                 fullCharterPrice: null,
-                cabins: [],               // ⭐ 객실별 가격 기본 배열
+                cabins: [], // ⭐ 객실별 가격 기본 배열
             };
 
             setFormData({
@@ -75,7 +75,6 @@ export default function AdminSpecialTrips() {
                 pricing: {
                     ...fallbackPricing,
                     ...(selectedTrip.pricing || {}),
-                    // cabins 가 없으면 빈 배열로
                     cabins: Array.isArray(selectedTrip.pricing?.cabins)
                         ? selectedTrip.pricing.cabins
                         : [],
@@ -84,7 +83,16 @@ export default function AdminSpecialTrips() {
         }
     }, [selectedTrip]);
 
-    // trip-level pricing 필드 변경 (통화, 기준가, 할인율, FOC, 풀차터 등)
+    // ✅ 공통 필드 변경 핸들러 (기본 정보, 일정, 상태, 메모 등에서 사용)
+    const handleFieldChange = (field) => (e) => {
+        const value = e.target.value;
+        setFormData((prev) => ({
+            ...(prev || {}),
+            [field]: value,
+        }));
+    };
+
+    // (옵션) trip-level pricing 필드용 헬퍼 – 지금은 직접 setFormData를 써도 무방
     const handlePricingFieldChange = (field) => (e) => {
         const value = e.target.value;
         setFormData((prev) => {
@@ -112,7 +120,6 @@ export default function AdminSpecialTrips() {
             const nextCabins = prevCabins.map((cabin, i) => {
                 if (i !== index) return cabin;
 
-                // 숫자 필드는 number 로 저장
                 if (field === "publicPrice" || field === "instructorGroupPrice") {
                     return {
                         ...cabin,
@@ -123,7 +130,6 @@ export default function AdminSpecialTrips() {
                     };
                 }
 
-                // 나머지는 문자열
                 return {
                     ...cabin,
                     [field]: raw,
@@ -191,9 +197,9 @@ export default function AdminSpecialTrips() {
     const slugifySimple = (text) => {
         return String(text || "")
             .toLowerCase()
-            .replace(/[^a-z0-9]+/g, " ")   // 영문+숫자만 남기고 나머지는 공백 처리
+            .replace(/[^a-z0-9]+/g, " ")
             .trim()
-            .replace(/\s+/g, "");          // 공백 제거 → molamola01
+            .replace(/\s+/g, "");
     };
 
     // 배 이름으로부터 자동 vesselId 생성
@@ -224,7 +230,7 @@ export default function AdminSpecialTrips() {
                 dd = String(d.getDate()).padStart(2, "0");
             }
         } catch {
-            // 날짜 파싱 실패 시 자동 생성 포기
+            // ignore
         }
 
         if (!year || !mm || !dd) return "";
@@ -238,8 +244,6 @@ export default function AdminSpecialTrips() {
         setFormData((prev) => {
             if (!prev) return prev;
             const autoId = makeAutoVesselId(boatName);
-
-            // 기존 vesselId가 비어 있으면 자동으로 채워줌
             const nextVesselId = prev.vesselId ? prev.vesselId : autoId;
 
             return {
@@ -250,7 +254,7 @@ export default function AdminSpecialTrips() {
         });
     };
 
-    // ID 자동 생성 버튼 클릭 시
+    // ID 자동 생성 버튼
     const handleAutoSpecialTripId = () => {
         setFormData((prev) => {
             if (!prev) return prev;
@@ -266,7 +270,7 @@ export default function AdminSpecialTrips() {
         });
     };
 
-    // salesMode 토글용 헬퍼
+    // salesMode 토글
     const toggleSalesMode = (modeKey) => {
         setFormData((prev) => {
             const current = Array.isArray(prev?.salesMode) ? prev.salesMode : [];
@@ -284,7 +288,7 @@ export default function AdminSpecialTrips() {
         });
     };
 
-    // 저장 버튼 클릭
+    // 저장
     const handleSave = async () => {
         if (!formData) return;
 
@@ -303,7 +307,6 @@ export default function AdminSpecialTrips() {
 
             alert("✅ 저장 완료");
 
-            // 저장 후 리스트도 최신 상태로 반영 (간단히 메모리 업데이트)
             setTrips((prev) => {
                 const id = formData.specialTripId || formData.id;
                 const copied = [...prev];
@@ -329,8 +332,8 @@ export default function AdminSpecialTrips() {
         <div style={{ padding: "20px" }}>
             <h2>스페셜 트립 관리 (읽기 전용 1단계 + 간단 편집)</h2>
             <p style={{ color: "#666", marginBottom: 16 }}>
-                /var/scubanet-data/special-trips.json 내용을 API(4002)에서 불러와서
-                표시합니다. 선택된 트립의 일부 필드는 여기서 바로 수정할 수 있습니다.
+                /var/scubanet-data/special-trips.json 내용을 API(4002)에서 불러와서 표시합니다.
+                선택된 트립의 모든 핵심 필드를 여기에서 입력/수정할 수 있습니다.
             </p>
 
             {loading && <div>불러오는 중...</div>}
@@ -344,7 +347,6 @@ export default function AdminSpecialTrips() {
                 <div>등록된 스페셜 트립이 없습니다.</div>
             )}
 
-            {/* ✅ 선택된 스페셜 트립 상세 + 편집 폼 */}
             {selectedTrip && formData && (
                 <div
                     style={{
@@ -359,10 +361,6 @@ export default function AdminSpecialTrips() {
                     <h3 style={{ marginTop: 0, marginBottom: 8 }}>
                         선택된 스페셜 트립 상세
                     </h3>
-                    <p style={{ fontSize: "0.9rem", color: "#555", marginTop: 0 }}>
-                        이 영역은 다음 단계에서 <strong>입력/수정 전체 폼</strong>으로 확장할 예정입니다.
-                        지금은 타이틀 / FOC / 상태 정도만 서버에 저장해 보는 단계입니다.
-                    </p>
 
                     <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
                         {/* 왼쪽: 요약 정보 */}
@@ -440,7 +438,10 @@ export default function AdminSpecialTrips() {
                                     </div>
                                     <div style={{ fontSize: "0.8rem", color: "#666", marginTop: 2 }}>
                                         추천:{" "}
-                                        <code>{makeAutoSpecialTripId(formData) || "배 이름 / 목적지 / 승선일 입력 후 [자동]을 누르세요"}</code>
+                                        <code>
+                                            {makeAutoSpecialTripId(formData) ||
+                                                "배 이름 / 목적지 / 승선일 입력 후 [자동]을 누르세요"}
+                                        </code>
                                     </div>
                                 </div>
 
@@ -453,7 +454,13 @@ export default function AdminSpecialTrips() {
                                         placeholder="예: Molamola01"
                                     />
                                     {formData.boatName && (
-                                        <div style={{ fontSize: "0.8rem", color: "#666", marginTop: 2 }}>
+                                        <div
+                                            style={{
+                                                fontSize: "0.8rem",
+                                                color: "#666",
+                                                marginTop: 2,
+                                            }}
+                                        >
                                             자동 추천 vesselId:{" "}
                                             <code>{makeAutoVesselId(formData.boatName)}</code>
                                         </div>
@@ -782,7 +789,13 @@ export default function AdminSpecialTrips() {
                                     <div style={{ fontWeight: 600, marginBottom: 4 }}>
                                         객실 타입별 가격
                                     </div>
-                                    <p style={{ fontSize: "0.8rem", color: "#666", marginTop: 0 }}>
+                                    <p
+                                        style={{
+                                            fontSize: "0.8rem",
+                                            color: "#666",
+                                            marginTop: 0,
+                                        }}
+                                    >
                                         예: lower_twin / Lower Deck Twin, upper_double / Upper Deck Double 등
                                     </p>
 
@@ -827,7 +840,10 @@ export default function AdminSpecialTrips() {
                                                             type="number"
                                                             style={inputStyle}
                                                             value={cabin.publicPrice ?? ""}
-                                                            onChange={handleCabinFieldChange(idx, "publicPrice")}
+                                                            onChange={handleCabinFieldChange(
+                                                                idx,
+                                                                "publicPrice",
+                                                            )}
                                                         />
                                                     </td>
                                                     <td style={tdStyle}>
@@ -967,7 +983,7 @@ export default function AdminSpecialTrips() {
                 </div>
             )}
 
-            {/* ✅ 리스트 테이블 */}
+            {/* 리스트 테이블 */}
             {!loading && !error && trips.length > 0 && (
                 <table
                     style={{
@@ -1063,7 +1079,8 @@ export default function AdminSpecialTrips() {
 }
 
 const thStyle = {
-    borderBottom: "1px solid #ddd",
+    borderBottom: "1px solid " +
+        "#ddd",
     padding: "6px 8px",
     backgroundColor: "#f5f5f5",
     textAlign: "left",
