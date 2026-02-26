@@ -60,27 +60,129 @@ export default function AdminSpecialTrips() {
     // 선택된 트립이 바뀔 때마다 폼 데이터 동기화
     useEffect(() => {
         if (selectedTrip) {
+            const fallbackPricing = {
+                currency: "USD",
+                basePrice: null,
+                publicDiscountPercent: 0,
+                instructorGroupPrice: null,
+                instructorFOCPolicy: "",
+                fullCharterPrice: null,
+                cabins: [],               // ⭐ 객실별 가격 기본 배열
+            };
+
             setFormData({
                 ...selectedTrip,
-                pricing: selectedTrip.pricing || {
-                    currency: "USD",
-                    basePrice: null,
-                    publicDiscountPercent: 0,
-                    instructorGroupPrice: null,
-                    instructorFOCPolicy: "",
-                    fullCharterPrice: null,
+                pricing: {
+                    ...fallbackPricing,
+                    ...(selectedTrip.pricing || {}),
+                    // cabins 가 없으면 빈 배열로
+                    cabins: Array.isArray(selectedTrip.pricing?.cabins)
+                        ? selectedTrip.pricing.cabins
+                        : [],
                 },
             });
         }
     }, [selectedTrip]);
 
-    // 공통 change 핸들러
-    const handleFieldChange = (field) => (e) => {
+    // trip-level pricing 필드 변경 (통화, 기준가, 할인율, FOC, 풀차터 등)
+    const handlePricingFieldChange = (field) => (e) => {
         const value = e.target.value;
-        setFormData((prev) => ({
-            ...(prev || {}),
-            [field]: value,
-        }));
+        setFormData((prev) => {
+            const prevPricing = prev?.pricing || {};
+            return {
+                ...(prev || {}),
+                pricing: {
+                    ...prevPricing,
+                    [field]: value,
+                },
+            };
+        });
+    };
+
+    // 특정 객실(row)의 특정 필드 변경
+    const handleCabinFieldChange = (index, field) => (e) => {
+        const raw = e.target.value;
+
+        setFormData((prev) => {
+            const prevPricing = prev?.pricing || {};
+            const prevCabins = Array.isArray(prevPricing.cabins)
+                ? prevPricing.cabins
+                : [];
+
+            const nextCabins = prevCabins.map((cabin, i) => {
+                if (i !== index) return cabin;
+
+                // 숫자 필드는 number 로 저장
+                if (field === "publicPrice" || field === "instructorGroupPrice") {
+                    return {
+                        ...cabin,
+                        [field]:
+                            raw === "" || raw === null
+                                ? null
+                                : Number(raw),
+                    };
+                }
+
+                // 나머지는 문자열
+                return {
+                    ...cabin,
+                    [field]: raw,
+                };
+            });
+
+            return {
+                ...(prev || {}),
+                pricing: {
+                    ...prevPricing,
+                    cabins: nextCabins,
+                },
+            };
+        });
+    };
+
+    // 객실 row 추가
+    const handleAddCabinRow = () => {
+        setFormData((prev) => {
+            const prevPricing = prev?.pricing || {};
+            const prevCabins = Array.isArray(prevPricing.cabins)
+                ? prevPricing.cabins
+                : [];
+
+            const newCabin = {
+                cabinCode: "",
+                cabinName: "",
+                publicPrice: null,
+                instructorGroupPrice: null,
+            };
+
+            return {
+                ...(prev || {}),
+                pricing: {
+                    ...prevPricing,
+                    cabins: [...prevCabins, newCabin],
+                },
+            };
+        });
+    };
+
+    // 객실 row 삭제
+    const handleRemoveCabinRow = (index) => () => {
+        setFormData((prev) => {
+            const prevPricing = prev?.pricing || {};
+            const prevCabins = Array.isArray(prevPricing.cabins)
+                ? prevPricing.cabins
+                : [];
+
+            const nextCabins = prevCabins.filter((_, i) => i !== index);
+
+            return {
+                ...(prev || {}),
+                pricing: {
+                    ...prevPricing,
+                    cabins: nextCabins,
+                },
+            };
+        });
     };
 
     // ─────────────────────────────
@@ -667,6 +769,115 @@ export default function AdminSpecialTrips() {
                                             }))
                                         }
                                     />
+                                </div>
+
+                                {/* 객실 타입별 가격 */}
+                                <div
+                                    style={{
+                                        marginTop: 12,
+                                        paddingTop: 8,
+                                        borderTop: "1px solid #ddd",
+                                    }}
+                                >
+                                    <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                                        객실 타입별 가격
+                                    </div>
+                                    <p style={{ fontSize: "0.8rem", color: "#666", marginTop: 0 }}>
+                                        예: lower_twin / Lower Deck Twin, upper_double / Upper Deck Double 등
+                                    </p>
+
+                                    <table
+                                        style={{
+                                            width: "100%",
+                                            borderCollapse: "collapse",
+                                            fontSize: "0.8rem",
+                                            marginBottom: 8,
+                                        }}
+                                    >
+                                        <thead>
+                                            <tr>
+                                                <th style={thStyle}>코드</th>
+                                                <th style={thStyle}>객실명</th>
+                                                <th style={thStyle}>공개가 (1인)</th>
+                                                <th style={thStyle}>강사 소그룹가 (1인)</th>
+                                                <th style={thStyle}></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {(formData.pricing?.cabins || []).map((cabin, idx) => (
+                                                <tr key={idx}>
+                                                    <td style={tdStyle}>
+                                                        <input
+                                                            style={inputStyle}
+                                                            value={cabin.cabinCode || ""}
+                                                            onChange={handleCabinFieldChange(idx, "cabinCode")}
+                                                            placeholder="lower_twin"
+                                                        />
+                                                    </td>
+                                                    <td style={tdStyle}>
+                                                        <input
+                                                            style={inputStyle}
+                                                            value={cabin.cabinName || ""}
+                                                            onChange={handleCabinFieldChange(idx, "cabinName")}
+                                                            placeholder="Lower Deck Twin (2인)"
+                                                        />
+                                                    </td>
+                                                    <td style={tdStyle}>
+                                                        <input
+                                                            type="number"
+                                                            style={inputStyle}
+                                                            value={cabin.publicPrice ?? ""}
+                                                            onChange={handleCabinFieldChange(idx, "publicPrice")}
+                                                        />
+                                                    </td>
+                                                    <td style={tdStyle}>
+                                                        <input
+                                                            type="number"
+                                                            style={inputStyle}
+                                                            value={cabin.instructorGroupPrice ?? ""}
+                                                            onChange={handleCabinFieldChange(
+                                                                idx,
+                                                                "instructorGroupPrice",
+                                                            )}
+                                                        />
+                                                    </td>
+                                                    <td style={tdStyle}>
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleRemoveCabinRow(idx)}
+                                                            style={{
+                                                                padding: "4px 8px",
+                                                                fontSize: "0.75rem",
+                                                                backgroundColor: "#e57373",
+                                                                color: "#fff",
+                                                                border: "none",
+                                                                borderRadius: 4,
+                                                                cursor: "pointer",
+                                                            }}
+                                                        >
+                                                            삭제
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleAddCabinRow}
+                                        style={{
+                                            padding: "4px 8px",
+                                            fontSize: "0.8rem",
+                                            backgroundColor: "#4caf50",
+                                            color: "#fff",
+                                            border: "none",
+                                            borderRadius: 4,
+                                            cursor: "pointer",
+                                        }}
+                                    >
+                                        + 객실 타입 추가
+                                    </button>
                                 </div>
                             </fieldset>
 
