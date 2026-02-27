@@ -122,10 +122,10 @@ function loadJsonArray(filePath, label) {
  *  - /var/scubanet-data/special-trips.json 한 건을
  *  - uts-trips.json에 들어가는 trip 객체 형태로 변환
  */
+// ⭐ 스페셜 트립 → UTS 트립 구조로 변환
 function mapSpecialTripToUTS(specialTrip) {
     const {
         specialTripId,
-        id,
         vesselId,
         boatName: boatNameInput,
         title,
@@ -144,37 +144,62 @@ function mapSpecialTripToUTS(specialTrip) {
         optionSpaces = 0,
         bookedSpaces = 0,
         status,
-        salesMode,
         focPolicy,
-        internalNote,
+        pricing = {},          // <-- Admin 에서 저장한 pricing 전체
     } = specialTrip;
-
-    // 🔑 기본 ID (specialTripId 우선, 없으면 id 사용)
-    const baseId = specialTripId || id;
-    if (!baseId) return null;
-
-    // 🛏 nights 계산 (필드가 없으면 날짜로 계산)
-    let finalNights = nights || null;
-    if (!finalNights && startDate && endDate) {
-        try {
-            const s = new Date(startDate);
-            const e = new Date(endDate);
-            finalNights = Math.round((e - s) / (1000 * 60 * 60 * 24));
-        } catch {
-            finalNights = null;
-        }
-    }
 
     // boat-assets에서 tripInfo / hero 이미지 가져오기 (있으면)
     const boatAssets = vesselId ? loadBoatAssetsForVessel(vesselId) : null;
     const tripInfo = boatAssets?.tripInfo || {};
 
     const boatNameFromAssets = boatAssets?.boatName || boatAssets?.name || "";
-    const boatName = boatNameInput || boatNameFromAssets || ""; // special-trips.json의 boatName이 가장 우선
+    const boatName = boatNameInput || boatNameFromAssets || "";
 
-    // 기존 Inseanq trip 구조에 최대한 맞춤
+    // 1) 가격 정보 머지
+    const mergedPricing = {
+        currency: pricing.currency || currency || "USD",
+        basePrice:
+            pricing.basePrice != null
+                ? pricing.basePrice
+                : publicPriceFrom != null
+                    ? publicPriceFrom
+                    : null,
+        publicDiscountPercent: pricing.publicDiscountPercent ?? 0,
+        instructorGroupPrice:
+            pricing.instructorGroupPrice != null
+                ? pricing.instructorGroupPrice
+                : null,
+        instructorFOCPolicy: pricing.instructorFOCPolicy || focPolicy || "",
+        fullCharterPrice:
+            pricing.fullCharterPrice != null ? pricing.fullCharterPrice : null,
+        cabins: Array.isArray(pricing.cabins) ? pricing.cabins : [],
+    };
+
+    // 2) 객실별 가격 → UTS cabins 구조로 변환
+    const cabinsForUTS = mergedPricing.cabins.map((cabin) => ({
+        cabinCode: cabin.cabinCode || null,
+        name: cabin.cabinName || "",
+        // 필요하면 deckCode, deckName 같은 필드도 여기서 확장 가능
+        ratePlans: [
+            {
+                code: "default",              // 스페셜 트립용 단일 요금제
+                price:
+                    cabin.publicPrice != null
+                        ? cabin.publicPrice
+                        : mergedPricing.basePrice, // 없으면 기준가 fallback
+                instructorGroupPrice:
+                    cabin.instructorGroupPrice != null
+                        ? cabin.instructorGroupPrice
+                        : mergedPricing.instructorGroupPrice ?? null,
+                currency: mergedPricing.currency,
+                source: "special",            // 나중에 구분용
+            },
+        ],
+    }));
+
+    // 3) 기존 Inseanq trip 구조에 최대한 맞춤
     return {
-        id: `SPC_${baseId}`,
+        id: `SPC_${specialTripId}`,
         source: "special",
         tripType: "liveaboard",
 
@@ -183,21 +208,20 @@ function mapSpecialTripToUTS(specialTrip) {
 
         title: title || `${destination || ""} Special Trip`.trim(),
 
-        country: region || "Others", // region을 country 역할로 사용 (예: "Indonesia")
+        country: region || "Others",
         destination:
             destination || extractDestinationBasic(routeSummary || title || ""),
 
         startDate,
         endDate,
-        nights: finalNights,
+        nights: nights || null,
 
-        // Inseanq는 객체 형태이므로 최소 name만 맞춰줌
         departurePort: embarkPort ? { name: embarkPort } : null,
         arrivalPort: disembarkPort ? { name: disembarkPort } : null,
 
         images: {
             cover: boatAssets?.assets?.hero?.url || "",
-            gallery: [], // 나중에 필요하면 boatAssets에서 추출
+            gallery: [],
         },
 
         spaces: {
@@ -212,23 +236,15 @@ function mapSpecialTripToUTS(specialTrip) {
             excluded: tripInfo.excluded || "",
         },
 
-        // 지금은 cabins 정보 없음 → 나중에 필요해지면 별도 설계
-        cabins: [],
+        // ⭐ 여기서부터가 핵심: 객실 + 요금제
+        cabins: cabinsForUTS,
 
-        // Special 표시용 플래그 (프론트에서 뱃지 표시할 때 사용)
+        // 필요하면 상위 레벨에도 pricing을 남겨두면 분석용으로 좋음 (프론트는 안 써도 됨)
+        pricing: mergedPricing,
+
         isSpecialTrip: true,
         specialType: "scubanet-charter",
         status: status || "open",
-
-        // 👉 TripList / InstructorList에서 사용할 메타 정보
-        specialMeta: {
-            salesMode: salesMode || [],          // ["full","group","open"] 이런 것
-            focPolicy: focPolicy || "",          // "3+1 또는 5+1 선택 가능"
-            publicPriceFrom: publicPriceFrom ?? null, // 일반 다이버용 from 가격
-            currency: currency || "USD",
-            internalNote: internalNote || "",
-            totalSpaces: totalSpaces ?? null,
-        },
     };
 }
 
