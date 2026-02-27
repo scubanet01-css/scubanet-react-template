@@ -43,6 +43,13 @@ function TripList() {
                 const list = Array.isArray(raw)
                     ? raw
                     : (raw && Array.isArray(raw.data) ? raw.data : []);
+
+                // ✅ 디버그용: special 트립 카운트 확인
+                const specialCount = list.filter(
+                    t => t.source === "special" || t.isSpecialTrip || (t.id || "").startsWith("SPC_")
+                ).length;
+                console.log("✅ uts-trips loaded:", list.length, "개 / special:", specialCount, "개");
+
                 setTrips(list);
             })
             .catch(err => {
@@ -56,6 +63,7 @@ function TripList() {
         setBoats(["전체", ...Array.from(boatSet).sort()]);
     }, [trips]);
 
+    // 🔍 필터링 로직
     // 🔍 필터링 로직
     const filteredTrips = useMemo(() => {
         let list = [...trips];
@@ -72,7 +80,6 @@ function TripList() {
                     ? t.destination.includes(selectedDestination)
                     : t.destination === selectedDestination;
             });
-
         }
 
         // Boat
@@ -89,6 +96,15 @@ function TripList() {
             );
         }
 
+        // ⭐ 스쿠버넷 스페셜 트립만
+        if (specialType === "special") {
+            list = list.filter(trip =>
+                trip.source === "special" ||
+                trip.isSpecialTrip === true ||
+                (trip.id || "").startsWith("SPC_")
+            );
+        }
+
         // 📅 날짜 필터
         if (startDate && endDate) {
             list = list.filter(t => {
@@ -99,6 +115,21 @@ function TripList() {
                 });
             });
         }
+
+        // 🔽 정렬: 스페셜 먼저, 그 다음 출발일 빠른 순 (아래 3번에서 설명)
+        list.sort((a, b) => {
+            const aSpecial = a.source === "special" || a.isSpecialTrip || (a.id || "").startsWith("SPC_");
+            const bSpecial = b.source === "special" || b.isSpecialTrip || (b.id || "").startsWith("SPC_");
+
+            if (aSpecial !== bSpecial) {
+                return aSpecial ? -1 : 1; // 스페셜 먼저
+            }
+
+            if (a.startDate && b.startDate) {
+                return new Date(a.startDate) - new Date(b.startDate);
+            }
+            return 0;
+        });
 
         return list;
     }, [
