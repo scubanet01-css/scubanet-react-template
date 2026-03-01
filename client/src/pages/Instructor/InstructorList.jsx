@@ -28,7 +28,7 @@ function InstructorList() {
   const [startDate, endDate] = dateRange;
 
   // -----------------------------
-  // 1) UTS JSON 로드 (TripList와 동일 구조)
+  // 1) UTS JSON 로드 (TripList와 동일한 소스)
   // -----------------------------
   useEffect(() => {
     const fetchData = async () => {
@@ -36,28 +36,37 @@ function InstructorList() {
         const res = await axios.get("/data/uts-trips.json");
         const raw = Array.isArray(res.data) ? res.data : res.data.data || [];
 
-        // 좌석 있는 상품만 (TripList 기준과 동일)
+        const specialCount = raw.filter((t) => t.isSpecialTrip).length;
+        console.log(
+          "📘 [InstructorList] uts-trips loaded:",
+          raw.length,
+          "개 / special:",
+          specialCount,
+          "개",
+        );
+
+        // 좌석 있는 상품만 노출 (강사용 리스트 정책)
         const withSeats = raw.filter(
-          (t) => Number(t?.spaces?.available || 0) > 0
+          (t) => Number(t?.spaces?.available || 0) > 0,
         );
 
         setTrips(withSeats);
 
         // Country 목록
         const countrySet = new Set(
-          withSeats.map((t) => t.country).filter(Boolean)
+          withSeats.map((t) => t.country).filter(Boolean),
         );
         const sortedCountries = Array.from(countrySet).sort((a, b) =>
-          a.localeCompare(b)
+          a.localeCompare(b),
         );
         setCountryList(["전체", ...sortedCountries]);
 
         // Boat 목록
         const boatSet = new Set(
-          withSeats.map((t) => t.boatName).filter(Boolean)
+          withSeats.map((t) => t.boatName).filter(Boolean),
         );
         const sortedBoats = Array.from(boatSet).sort((a, b) =>
-          a.localeCompare(b)
+          a.localeCompare(b),
         );
         setBoats(["전체", ...sortedBoats]);
       } catch (err) {
@@ -88,7 +97,7 @@ function InstructorList() {
         trips
           .filter((t) => t.country === selectedCountry)
           .map((t) => t.destination)
-          .filter(Boolean)
+          .filter(Boolean),
       );
     }
 
@@ -124,27 +133,39 @@ function InstructorList() {
         const cabins = trip.cabins || [];
         const allRates = cabins.flatMap((c) => c.ratePlans || []);
         const names = allRates.map((rp) =>
-          (rp.ratePlanName || rp.name || "").toLowerCase()
+          (rp.ratePlanName || rp.name || "").toLowerCase(),
         );
+
+        const pricing = trip.pricing || {};
+        const isSpecial = !!trip.isSpecialTrip;
 
         // ① 그룹 / FOC / 차터 성격 (강사용 오퍼)
         if (specialType === "group") {
-          return (
+          const hasInstructorRate =
             allRates.some((rp) => rp.isInstructorOnly) ||
             names.some(
               (n) =>
                 n.includes("group") ||
                 n.includes("charter") ||
-                n.includes("foc")
-            )
-          );
+                n.includes("foc"),
+            );
+
+          const hasSpecialGroupPrice =
+            isSpecial && pricing.instructorGroupPrice != null;
+
+          return hasInstructorRate || hasSpecialGroupPrice;
         }
 
         // ② 퍼블릭 할인상품 (할인율 있는 경우)
         if (specialType === "discount") {
-          return allRates.some(
-            (rp) => Number(rp.discountPercent || 0) > 0
+          const hasNormalDiscount = allRates.some(
+            (rp) => Number(rp.discountPercent || 0) > 0,
           );
+
+          const hasSpecialDiscount =
+            isSpecial && Number(pricing.publicDiscountPercent || 0) > 0;
+
+          return hasNormalDiscount || hasSpecialDiscount;
         }
 
         // ③ 풀차터 가능상품 (좌석이 전부 비어있을 때)
@@ -192,7 +213,7 @@ function InstructorList() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentTrips = filteredTrips.slice(
     startIndex,
-    startIndex + itemsPerPage
+    startIndex + itemsPerPage,
   );
 
   if (loading) return <p>데이터 불러오는 중...</p>;
