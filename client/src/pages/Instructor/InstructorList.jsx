@@ -127,48 +127,33 @@ function InstructorList() {
       list = list.filter((t) => t.boatName === selectedBoat);
     }
 
-    // Instructor 전용 special 필터
+    // 👉 여기까지는 기존 instructor 전용 specialType(group/discount/charter) 필터 그대로 유지
     if (specialType !== "전체") {
       list = list.filter((trip) => {
         const cabins = trip.cabins || [];
         const allRates = cabins.flatMap((c) => c.ratePlans || []);
         const names = allRates.map((rp) =>
-          (rp.ratePlanName || rp.name || "").toLowerCase(),
+          (rp.ratePlanName || rp.name || "").toLowerCase()
         );
 
-        const pricing = trip.pricing || {};
-        const isSpecial = !!trip.isSpecialTrip;
-
-        // ① 그룹 / FOC / 차터 성격 (강사용 오퍼)
         if (specialType === "group") {
-          const hasInstructorRate =
+          return (
             allRates.some((rp) => rp.isInstructorOnly) ||
             names.some(
               (n) =>
                 n.includes("group") ||
                 n.includes("charter") ||
-                n.includes("foc"),
-            );
-
-          const hasSpecialGroupPrice =
-            isSpecial && pricing.instructorGroupPrice != null;
-
-          return hasInstructorRate || hasSpecialGroupPrice;
-        }
-
-        // ② 퍼블릭 할인상품 (할인율 있는 경우)
-        if (specialType === "discount") {
-          const hasNormalDiscount = allRates.some(
-            (rp) => Number(rp.discountPercent || 0) > 0,
+                n.includes("foc")
+            )
           );
-
-          const hasSpecialDiscount =
-            isSpecial && Number(pricing.publicDiscountPercent || 0) > 0;
-
-          return hasNormalDiscount || hasSpecialDiscount;
         }
 
-        // ③ 풀차터 가능상품 (좌석이 전부 비어있을 때)
+        if (specialType === "discount") {
+          return allRates.some(
+            (rp) => Number(rp.discountPercent || 0) > 0
+          );
+        }
+
         if (specialType === "charter") {
           const s = trip.spaces || {};
           const available = Number(s.available || 0);
@@ -194,6 +179,27 @@ function InstructorList() {
         });
       });
     }
+
+    // ✅ TripList와 동일한 정렬: 스페셜 트립 먼저, 그 다음 출발일 빠른 순
+    list.sort((a, b) => {
+      const aSpecial =
+        a.source === "special" ||
+        a.isSpecialTrip ||
+        (a.id || "").startsWith("SPC_");
+      const bSpecial =
+        b.source === "special" ||
+        b.isSpecialTrip ||
+        (b.id || "").startsWith("SPC_");
+
+      if (aSpecial !== bSpecial) {
+        return aSpecial ? -1 : 1;    // 스페셜 먼저
+      }
+
+      if (a.startDate && b.startDate) {
+        return new Date(a.startDate) - new Date(b.startDate);
+      }
+      return 0;
+    });
 
     return list;
   }, [
