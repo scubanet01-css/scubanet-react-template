@@ -70,6 +70,19 @@ function TripDetail() {
   const excludedText = trip?.adminDetails?.excluded || "";
 
   // ===============================
+  // ✅ 0) 스페셜 트립 공통 플래그
+  // ===============================
+  const isSpecialTrip =
+    trip?.source === "special" ||
+    trip?.isSpecialTrip === true ||
+    (trip?.id || "").startsWith("SPC_");
+
+  const specialPricing = trip?.pricing || {};
+
+  console.log("🔎 TripDetail - isSpecialTrip:", isSpecialTrip);
+  console.log("🔎 TripDetail - specialPricing:", specialPricing);
+
+  // ===============================
   // ✅ vesselId 결정 규칙
   // ===============================
   function getVesselId(t) {
