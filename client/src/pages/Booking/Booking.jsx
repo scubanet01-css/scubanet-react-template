@@ -1,34 +1,43 @@
-import React, { useState, useEffect } from 'react';  // ✅ useEffect 포함!
-import { useParams, useLocation } from 'react-router-dom';
-import SelectCabin from './SelectCabin';
-import ConfirmBooking from './ConfirmBooking';
-import BookingComplete from './BookingComplete';
+import React, { useState, useEffect } from "react";
+import { useParams, useLocation } from "react-router-dom";
+import SelectCabin from "./SelectCabin";
+import ConfirmBooking from "./ConfirmBooking";
+import BookingComplete from "./BookingComplete";
 
 function Booking() {
-  const { tripId } = useParams(); // ✅ URL 파라미터로부터 tripId 추출
-  console.log("🔍 현재 tripId:", tripId);  // ← 이거 추가
+  const { tripId } = useParams();
   const location = useLocation();
+
+  // ✅ state로 넘어온 trip 기준
   const { trip, ratePlans, cabins } = location.state || {};
+
+  // ✅ 핵심: state.cabins가 없으면 trip.cabins를 기본값으로 사용
+  const initialCabins = cabins || trip?.cabins || [];
+  const initialRatePlans = ratePlans || trip?.ratePlans || [];
 
   const [step, setStep] = useState(1);
   const [bookingData, setBookingData] = useState({
     tripId,
     trip,
-    ratePlans,
-    cabins
+    ratePlans: initialRatePlans,
+    cabins: initialCabins,
   });
 
-
   useEffect(() => {
-    console.log('받은 tripId:', tripId);
-    console.log('📦 trip:', trip);
-    console.log('📦 ratePlans:', ratePlans);
-    console.log("📥 받은 cabins:", bookingData.cabins);
-  }, [bookingData]);
+    console.log("📦 [Booking] tripId =", tripId);
+    console.log("📦 [Booking] trip =", trip);
+    console.log("📦 [Booking] trip.spaces =", trip?.spaces);
+    console.log("📦 [Booking] trip.cabins =", trip?.cabins);
+    console.log("📦 [Booking] bookingData.cabins =", bookingData.cabins);
+    console.log("📦 [Booking] first cabin =", bookingData.cabins?.[0]);
+  }, [tripId, trip, bookingData]);
+
+  if (!trip) {
+    return <p>잘못된 접근입니다. trip 정보가 없습니다.</p>;
+  }
 
   const goNext = () => setStep((prev) => prev + 1);
   const goBack = () => setStep((prev) => prev - 1);
-
 
   return (
     <div className="booking-container">
@@ -53,35 +62,6 @@ function Booking() {
 
       {step === 3 && <BookingComplete bookingData={bookingData} />}
     </div>
-  );
-}
-
-function TripList() {
-  const [selectedTrip, setSelectedTrip] = useState(null);
-
-  return (
-    <>
-      {trips.map((trip) => (
-        <div key={trip.id} className="trip-card">
-          <h3>{trip.boat.name}</h3>
-          <p>{trip.startDate} ~ {trip.endDate}</p>
-          <p>USD {trip.price}</p>
-
-          <button onClick={() => navigate(`/booking/${trip.id}`, { state: { trip } })}>
-            예약하기
-          </button>
-          <button onClick={() => setSelectedTrip(trip)}>상세보기</button>
-        </div>
-      ))}
-
-      {selectedTrip && (
-        <TripDetailModal
-          trip={selectedTrip}
-          boatDetail={boatDetails.find(b => b.id === selectedTrip.boat?.id)}
-          onClose={() => setSelectedTrip(null)}
-        />
-      )}
-    </>
   );
 }
 
