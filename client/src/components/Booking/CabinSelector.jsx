@@ -1,138 +1,173 @@
-import React, { useState } from 'react';
-import { formatCurrency } from '../../utils/formatCurrency';
+import React from "react";
+import { formatCurrency } from "../../utils/formatCurrency";
 
-function CabinSelector({ trip, selectedCabins, onChange, currency }) {
-  const [expandedCabinId, setExpandedCabinId] = useState(null);
+function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }) {
+  // ✅ cabins prop이 있으면 우선 사용, 없으면 trip.cabins 사용
+  const cabinList = Array.isArray(cabins) && cabins.length > 0
+    ? cabins
+    : (trip?.cabins || []);
 
-  const spaceCabins = trip?.spaces?.cabinTypes || [];
-  const ratePlans = trip?.ratePlansRetail || [];
+  // ✅ occupancy id -> label
+  const getOccupancyLabel = (occId) => {
+    if (String(occId) === "1") return "1인 예약";
+    if (String(occId) === "2") return "2인 예약";
+    if (String(occId) === "3") return "독실 예약";
+    return `${occId}인 예약`;
+  };
 
-  // 최저 요금이 있는 요금제를 자동 적용
-  const lowestRatePlan = ratePlans.reduce((minPlan, currentPlan) => {
-    const currentMin = Math.min(
-      ...(currentPlan?.cabinTypes || []).flatMap(ct =>
-        ct.occupancy.map(o => parseFloat(o.price))
-      )
-    );
-    const minMin = minPlan
-      ? Math.min(
-        ...(minPlan?.cabinTypes || []).flatMap(ct =>
-          ct.occupancy.map(o => parseFloat(o.price))
-        )
-      )
-      : Infinity;
-    return currentMin < minMin ? currentPlan : minPlan;
-  }, null);
+  // ✅ cabin 하나에서 선택 가능한 옵션 만들기
+  const getPriceOptions = (cabin) => {
+    const ratePlans = Array.isArray(cabin?.ratePlans) ? cabin.ratePlans : [];
+    if (!ratePlans.length) return [];
 
-  const ratePlanCabins = lowestRatePlan?.cabinTypes || [];
+    // ratePlan 안에 occupancy 구조가 있으면 그걸 사용
+    const occOptions = ratePlans.flatMap((rp) => {
+      if (Array.isArray(rp.occupancy) && rp.occupancy.length > 0) {
+        return rp.occupancy.map((opt) => ({
+          occupancy: String(opt.id),
+          price: parseFloat(opt.price),
+          label: getOccupancyLabel(opt.id),
+        }));
+      }
 
-  // 요금 정보 매핑: cabinTypeId → priceOptions[]
-  const priceMap = {};
+      // ✅ occupancy 정보가 없으면 기본 1인 예약 옵션 생성
+      if (rp.price != null) {
+        return [
+          {
+            occupancy: "1",
+            price: parseFloat(rp.price),
+            label: "1인 예약",
+          },
+        ];
+      }
 
-  ratePlanCabins.forEach(cabin => {
-    if (!cabin?.id || !Array.isArray(cabin.occupancy)) return;
-
-    // 🔸 baseOptions를 여기서 선언
-    const baseOptions = cabin.occupancy.map(opt => {
-      const occupancy = String(opt.id);
-      let label = '';
-      if (opt.id === 3) label = '독실 예약';
-      else if (opt.id === 2) label = '2인 예약';
-      else if (opt.id === 1) label = '1인 예약';
-      return {
-        occupancy,
-        price: parseFloat(opt.price),
-        label
-      };
+      return [];
     });
 
-    // ✅ 자동 2인 예약 옵션 추가 (id: 2가 없고, 1인 요금이 있으면)
-    const hasOnePerson = baseOptions.find(o => o.occupancy === '1');
-    const hasTwoPerson = baseOptions.find(o => o.occupancy === '2');
-    if (!hasTwoPerson && hasOnePerson) {
-      baseOptions.push({
-        occupancy: '2',
-        price: hasOnePerson.price,
-        label: '2인 예약'
+    // 중복 제거 (occupancy + price 기준)
+    const uniqueMap = new Map();
+    occOptions.forEach((opt) => {
+      const key = `${opt.occupancy}-${opt.price}`;
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, opt);
+      }
+    });
+
+    let finalOptions = Array.from(uniqueMap.values());
+
+    // ✅ 1인만 있고 2인이 없으면 자동으로 2인 예약 추가
+    const hasOne = finalOptions.some((o) => o.occupancy === "1");
+    const hasTwo = finalOptions.some((o) => o.occupancy === "2");
+
+    if (hasOne && !hasTwo) {
+      const one = finalOptions.find((o) => o.occupancy === "1");
+      finalOptions.push({
+        occupancy: "2",
+        price: one.price,
+        label: "2인 예약",
       });
     }
 
+    return finalOptions;
+  };
 
+  // ✅ 드롭다운 선택 시 bookingData.selectedCabins 갱신
+  const handleOccupancyChange = (
+    cabin,
+    occupancy,
+    price,
+    cabinName,
+    label
+  ) => {
+    const updated = selectedCabins.filter((sc) => sc.cabinId !== cabin.cabinId);
 
-    // 🔸 최종적으로 priceMap에 저장
-    priceMap[cabin.id] = baseOptions;
-  });
-
-  const handleOccupancyChange = (cabinId, occupancy, price, cabinName, label) => {
-    const updated = selectedCabins.filter(sc => sc.cabinId !== cabinId);
     updated.push({
-      cabinId,
-      cabinName,              // ✅ 객실 이름 저장
-      occupancyType: label,   // ✅ "1인 예약" 또는 "독방사용" 등 표시용 저장
-      occupancyValue: occupancy, // ✅ 숫자값도 저장 (계산용)
-      price
+      cabinId: cabin.cabinId,
+      cabinName,
+      occupancyType: label,
+      occupancyValue: occupancy,
+      price,
     });
+
     onChange(updated);
   };
 
+  console.log("🛏 [CabinSelector] cabinList =", cabinList);
 
   return (
     <div>
       <h3>🛏 객실과 인원을 선택해주세요!</h3>
-      {spaceCabins.map((cabinType) => {
-        const { id, name, cabins = [], availableSpaces = 0 } = cabinType;
-        const priceOptions = priceMap[id] || [];
-        const lowestPrice = priceOptions.length > 0
-          ? Math.min(...priceOptions.map(p => p.price))
-          : null;
+
+      {(!cabinList || cabinList.length === 0) && (
+        <p style={{ color: "#888" }}>선택 가능한 객실 정보가 없습니다.</p>
+      )}
+
+      {cabinList.map((cabin, index) => {
+        const cabinId = cabin.cabinId || cabin.id || `cabin_${index}`;
+        const cabinName = cabin.name || cabin.type || `객실 ${index + 1}`;
+        const remaining = Number(cabin.remaining ?? cabin.availableSpaces ?? 0);
+
+        const priceOptions = getPriceOptions(cabin);
+
+        const lowestPrice =
+          priceOptions.length > 0
+            ? Math.min(...priceOptions.map((p) => p.price))
+            : null;
 
         return (
           <div
-            key={id}
-            style={{ border: '1px solid #ccc', padding: '12px', marginBottom: '16px', borderRadius: '6px' }}
+            key={cabinId}
+            style={{
+              border: "1px solid #ccc",
+              padding: "12px",
+              marginBottom: "16px",
+              borderRadius: "6px",
+            }}
           >
             <h4>
-              {name} {lowestPrice && <span style={{ color: '#555' }}>(from ${lowestPrice.toLocaleString()})</span>}
+              {cabinName}{" "}
+              {lowestPrice != null && (
+                <span style={{ color: "#555" }}>
+                  (from {formatCurrency(lowestPrice, currency)} /인)
+                </span>
+              )}
             </h4>
-            <p>가용 인원: {availableSpaces} / 객실 수: {cabins.length}</p>
 
-            {/* 객실 리스트 노출 */}
-            {cabins.map(cabin => (
-              <div key={cabin.id} style={{ marginTop: '8px', borderTop: '1px dashed #ccc', paddingTop: '8px' }}>
-                <strong>{cabin.name}</strong> - 가용 인원: {cabin.availableSpaces || 0}
-                <br />
-                {priceOptions.length > 0 && cabin.availableSpaces > 0 ? (
-                  <select
-                    defaultValue=""
-                    onChange={(e) => {
-                      const occupancy = e.target.value;
-                      const selected = priceOptions.find(p => p.occupancy === occupancy);
-                      if (selected) {
-                        handleOccupancyChange(
-                          cabin.id,
-                          occupancy,
-                          selected.price,
-                          cabin.name,
-                          selected.label
-                        );
-                      }
-                    }}
-                  >
-                    <option value="">-- 인원 선택 --</option>
+            <p>가용 인원: {remaining}</p>
 
-                    {priceOptions.map((opt, idx) => (
-                      <option key={idx} value={opt.occupancy}>
-                        {opt.label} : {formatCurrency(opt.price, currency)} /인
-                      </option>
-                    ))}
+            {remaining > 0 && priceOptions.length > 0 ? (
+              <select
+                value={
+                  selectedCabins.find((sc) => sc.cabinId === cabinId)
+                    ?.occupancyValue || ""
+                }
+                onChange={(e) => {
+                  const occupancy = e.target.value;
+                  const selected = priceOptions.find(
+                    (p) => p.occupancy === occupancy
+                  );
+                  if (selected) {
+                    handleOccupancyChange(
+                      { ...cabin, cabinId },
+                      occupancy,
+                      selected.price,
+                      cabinName,
+                      selected.label
+                    );
+                  }
+                }}
+              >
+                <option value="">-- 인원 선택 --</option>
 
-                  </select>
-                ) : (
-                  <p style={{ color: '#888' }}>예약 가능 인원이 없습니다</p>
-                )}
-
-              </div>
-            ))}
+                {priceOptions.map((opt, idx) => (
+                  <option key={idx} value={opt.occupancy}>
+                    {opt.label} : {formatCurrency(opt.price, currency)} /인
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <p style={{ color: "#888" }}>예약 가능 인원이 없습니다</p>
+            )}
           </div>
         );
       })}

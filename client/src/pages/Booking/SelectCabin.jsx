@@ -51,6 +51,7 @@ function SelectCabin({ bookingData }) {
     <div className="select-cabin">
       <CabinSelector
         trip={trip}
+        cabins={cabins}
         selectedRatePlan={selectedRatePlan}
         selectedCabins={selectedCabins}
         onChange={setSelectedCabins}
