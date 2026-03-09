@@ -20,17 +20,20 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
     const ratePlans = Array.isArray(cabin?.ratePlans) ? cabin.ratePlans : [];
     if (!ratePlans.length) return [];
 
-    // ratePlan 안에 occupancy 구조가 있으면 그걸 사용
-    const occOptions = ratePlans.flatMap((rp) => {
+    // 1) 모든 occupancy 후보를 일단 펼친다
+    const rawOptions = ratePlans.flatMap((rp) => {
+      // occupancy 구조가 있는 경우
       if (Array.isArray(rp.occupancy) && rp.occupancy.length > 0) {
-        return rp.occupancy.map((opt) => ({
-          occupancy: String(opt.id),
-          price: parseFloat(opt.price),
-          label: getOccupancyLabel(opt.id),
-        }));
+        return rp.occupancy
+          .filter((opt) => opt && opt.price != null)
+          .map((opt) => ({
+            occupancy: String(opt.id),
+            price: parseFloat(opt.price),
+            label: getOccupancyLabel(opt.id),
+          }));
       }
 
-      // ✅ occupancy 정보가 없으면 기본 1인 예약 옵션 생성
+      // occupancy 구조가 없고 단일 price만 있는 경우
       if (rp.price != null) {
         return [
           {
@@ -44,18 +47,22 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
       return [];
     });
 
-    // 중복 제거 (occupancy + price 기준)
-    const uniqueMap = new Map();
-    occOptions.forEach((opt) => {
-      const key = `${opt.occupancy}-${opt.price}`;
-      if (!uniqueMap.has(key)) {
-        uniqueMap.set(key, opt);
+    // 2) occupancy별 최저가 1개만 남긴다
+    const bestByOccupancy = new Map();
+
+    rawOptions.forEach((opt) => {
+      if (!opt || !opt.occupancy || isNaN(opt.price)) return;
+
+      const existing = bestByOccupancy.get(opt.occupancy);
+
+      if (!existing || opt.price < existing.price) {
+        bestByOccupancy.set(opt.occupancy, opt);
       }
     });
 
-    let finalOptions = Array.from(uniqueMap.values());
+    let finalOptions = Array.from(bestByOccupancy.values());
 
-    // ✅ 1인만 있고 2인이 없으면 자동으로 2인 예약 추가
+    // 3) 2인 옵션이 없고 1인 옵션만 있으면 2인 예약을 자동 생성
     const hasOne = finalOptions.some((o) => o.occupancy === "1");
     const hasTwo = finalOptions.some((o) => o.occupancy === "2");
 
@@ -67,6 +74,12 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
         label: "2인 예약",
       });
     }
+
+    // 4) occupancy 순서 정렬: 1인 → 2인 → 독실
+    const order = { "1": 1, "2": 2, "3": 3 };
+    finalOptions.sort((a, b) => {
+      return (order[a.occupancy] || 99) - (order[b.occupancy] || 99);
+    });
 
     return finalOptions;
   };
