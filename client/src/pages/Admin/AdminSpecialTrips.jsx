@@ -84,6 +84,37 @@ export default function AdminSpecialTrips() {
                 ];
             }
 
+            function getInventoryPresetByVesselId(vesselId) {
+                if (vesselId === "vessel_scuba_molamola01") {
+                    return [
+                        { roomId: "1", roomName: "Lower Deck Twin 1", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "2", roomName: "Lower Deck Twin 2", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "3", roomName: "Lower Deck Twin 3", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "4", roomName: "Lower Deck Twin 4", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "5", roomName: "Upper Deck Twin 5", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "6", roomName: "Upper Deck Twin 6", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "7", roomName: "Upper Deck Twin 7", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "8", roomName: "Upper Deck Twin 8", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
+                    ];
+                }
+
+                if (vesselId === "vessel_scuba_molamola02") {
+                    return [
+                        { roomId: "1", roomName: "Upper Deck Twin 1", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "2", roomName: "Upper Deck Twin 2", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "3", roomName: "Upper Deck Twin 3", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "4", roomName: "Upper Deck Twin 4", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "5", roomName: "Lower Deck Twin 5", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "6", roomName: "Lower Deck Twin 6", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "7", roomName: "Lower Deck Twin 7", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "8", roomName: "Lower Deck Twin 8", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
+                        { roomId: "9", roomName: "Lower Deck Quad 9", cabinType: "Lower Deck Quad", capacity: 4, status: "available" },
+                    ];
+                }
+
+                return [];
+            }
+
             setFormData({
                 ...selectedTrip,
                 pricing: {
@@ -93,9 +124,10 @@ export default function AdminSpecialTrips() {
                         ? selectedTrip.pricing.cabins
                         : [],
                 },
-                inventory: Array.isArray(selectedTrip.inventory) && selectedTrip.inventory.length > 0
-                    ? selectedTrip.inventory
-                    : getDefaultInventory(),
+                inventory:
+                    Array.isArray(selectedTrip.inventory) && selectedTrip.inventory.length > 0
+                        ? selectedTrip.inventory
+                        : getInventoryPresetByVesselId(selectedTrip.vesselId),
             });
         }
     }, [selectedTrip]);
@@ -489,7 +521,17 @@ export default function AdminSpecialTrips() {
                                     <input
                                         style={inputStyle}
                                         value={formData.vesselId || ""}
-                                        onChange={handleFieldChange("vesselId")}
+                                        onChange={(e) => {
+                                            const vesselId = e.target.value;
+                                            setFormData((prev) => ({
+                                                ...(prev || {}),
+                                                vesselId,
+                                                inventory:
+                                                    Array.isArray(prev?.inventory) && prev.inventory.length > 0
+                                                        ? prev.inventory
+                                                        : getInventoryPresetByVesselId(vesselId),
+                                            }));
+                                        }}
                                         placeholder="vessel_scuba_molamola01"
                                     />
                                 </div>
