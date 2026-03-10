@@ -8,77 +8,108 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
     : (trip?.cabins || []);
 
   // ✅ occupancy id -> label
-  const getOccupancyLabel = (occId) => {
-    if (String(occId) === "1") return "1인 예약";
-    if (String(occId) === "2") return "2인 예약";
-    if (String(occId) === "3") return "독실 예약";
-    return `${occId}인 예약`;
+  const getOccupancyLabel = (occId, rp = {}) => {
+    const id = String(occId ?? "");
+    const text = [
+      rp?.ratePlanName,
+      rp?.name,
+      rp?.code,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    // 키워드 우선
+    if (
+      text.includes("single use") ||
+      text.includes("sole use") ||
+      text.includes("single supplement") ||
+      text.includes("single cabin") ||
+      text.includes("독실")
+    ) {
+      return "독실 예약";
+    }
+
+    // occupancyId 기준
+    if (id === "1") return "1인 예약";
+    if (id === "2") return "2인 예약";
+    if (id === "3") return "독실 예약";
+
+    return `${id}인 예약`;
   };
 
   // ✅ cabin 하나에서 선택 가능한 옵션 만들기
   const getPriceOptions = (cabin) => {
     const ratePlans = Array.isArray(cabin?.ratePlans) ? cabin.ratePlans : [];
     if (!ratePlans.length) return [];
+
     console.log("🧪 [CabinSelector] cabin ratePlans =", cabin.name, ratePlans);
-    // 1) 모든 occupancy 후보를 일단 펼친다
-    const rawOptions = ratePlans.flatMap((rp) => {
-      // occupancy 구조가 있는 경우
-      if (Array.isArray(rp.occupancy) && rp.occupancy.length > 0) {
-        return rp.occupancy
-          .filter((opt) => opt && opt.price != null)
-          .map((opt) => ({
-            occupancy: String(opt.id),
-            price: parseFloat(opt.price),
-            label: getOccupancyLabel(opt.id),
-          }));
-      }
 
-      // occupancy 구조가 없고 단일 price만 있는 경우
-      if (rp.price != null) {
-        return [
-          {
-            occupancy: "1",
-            price: parseFloat(rp.price),
-            label: "1인 예약",
-          },
-        ];
-      }
+    // 1) UTS ratePlans를 직접 읽는다
+    //    occupancyId가 핵심
+    const rawOptions = ratePlans
+      .filter((rp) => rp && rp.price != null)
+      .map((rp) => {
+        const occId =
+          rp.occupancyId != null
+            ? rp.occupancyId
+            : rp.occupancy?.[0]?.id ?? 1;
 
-      return [];
-    });
+        return {
+          occupancy: String(occId),
+          price: parseFloat(rp.price),
+          label: getOccupancyLabel(occId, rp),
+          ratePlanName: rp.ratePlanName || rp.name || "",
+          discountPercent: Number(rp.discountPercent || 0),
+          isInstructorOnly: !!rp.isInstructorOnly,
+        };
+      });
 
-    // 2) occupancy별 최저가 1개만 남긴다
-    const bestByOccupancy = new Map();
+    // 2) 일반 예약 화면에서는 instructor 전용 요금 제외
+    const publicOptions = rawOptions.filter((opt) => !opt.isInstructorOnly);
 
-    rawOptions.forEach((opt) => {
-      if (!opt || !opt.occupancy || isNaN(opt.price)) return;
+    // public 옵션이 있으면 그걸 우선, 없으면 rawOptions 사용
+    const sourceOptions = publicOptions.length > 0 ? publicOptions : rawOptions;
 
-      const existing = bestByOccupancy.get(opt.occupancy);
+    // 3) "1인 예약", "2인 예약", "독실 예약" 별로 최저가 하나만 남긴다
+    const bestByLabel = new Map();
 
+    sourceOptions.forEach((opt) => {
+      if (!opt || !opt.label || isNaN(opt.price)) return;
+
+      const existing = bestByLabel.get(opt.label);
       if (!existing || opt.price < existing.price) {
-        bestByOccupancy.set(opt.occupancy, opt);
+        bestByLabel.set(opt.label, opt);
       }
     });
 
-    let finalOptions = Array.from(bestByOccupancy.values());
+    let finalOptions = Array.from(bestByLabel.values());
 
-    // 3) 2인 옵션이 없고 1인 옵션만 있으면 2인 예약을 자동 생성
-    const hasOne = finalOptions.some((o) => o.occupancy === "1");
-    const hasTwo = finalOptions.some((o) => o.occupancy === "2");
+    // 4) 2인 예약이 없고 1인 예약만 있으면 자동 생성
+    const hasOne = finalOptions.some((o) => o.label === "1인 예약");
+    const hasTwo = finalOptions.some((o) => o.label === "2인 예약");
 
     if (hasOne && !hasTwo) {
-      const one = finalOptions.find((o) => o.occupancy === "1");
+      const one = finalOptions.find((o) => o.label === "1인 예약");
       finalOptions.push({
         occupancy: "2",
         price: one.price,
         label: "2인 예약",
+        ratePlanName: "Auto-generated",
+        discountPercent: 0,
+        isInstructorOnly: false,
       });
     }
 
-    // 4) occupancy 순서 정렬: 1인 → 2인 → 독실
-    const order = { "1": 1, "2": 2, "3": 3 };
+    // 5) 순서 정렬
+    const order = {
+      "1인 예약": 1,
+      "2인 예약": 2,
+      "독실 예약": 3,
+    };
+
     finalOptions.sort((a, b) => {
-      return (order[a.occupancy] || 99) - (order[b.occupancy] || 99);
+      return (order[a.label] || 99) - (order[b.label] || 99);
     });
 
     return finalOptions;
