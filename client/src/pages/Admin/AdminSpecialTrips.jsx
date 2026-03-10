@@ -70,6 +70,20 @@ export default function AdminSpecialTrips() {
                 cabins: [], // ⭐ 객실별 가격 기본 배열
             };
 
+            function getDefaultInventory() {
+                return [
+                    { roomId: "1", roomName: "Upper Deck Twin 1", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
+                    { roomId: "2", roomName: "Upper Deck Twin 2", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
+                    { roomId: "3", roomName: "Upper Deck Twin 3", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
+                    { roomId: "4", roomName: "Upper Deck Twin 4", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
+                    { roomId: "5", roomName: "Lower Deck Twin 5", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
+                    { roomId: "6", roomName: "Lower Deck Twin 6", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
+                    { roomId: "7", roomName: "Lower Deck Twin 7", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
+                    { roomId: "8", roomName: "Lower Deck Twin 8", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
+                    { roomId: "9", roomName: "Lower Deck Quad 9", cabinType: "Lower Deck Quad", capacity: 4, status: "available" },
+                ];
+            }
+
             setFormData({
                 ...selectedTrip,
                 pricing: {
@@ -79,6 +93,9 @@ export default function AdminSpecialTrips() {
                         ? selectedTrip.pricing.cabins
                         : [],
                 },
+                inventory: Array.isArray(selectedTrip.inventory) && selectedTrip.inventory.length > 0
+                    ? selectedTrip.inventory
+                    : getDefaultInventory(),
             });
         }
     }, [selectedTrip]);
