@@ -19,7 +19,7 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
   const getPriceOptions = (cabin) => {
     const ratePlans = Array.isArray(cabin?.ratePlans) ? cabin.ratePlans : [];
     if (!ratePlans.length) return [];
-
+    console.log("🧪 [CabinSelector] cabin ratePlans =", cabin.name, ratePlans);
     // 1) 모든 occupancy 후보를 일단 펼친다
     const rawOptions = ratePlans.flatMap((rp) => {
       // occupancy 구조가 있는 경우
