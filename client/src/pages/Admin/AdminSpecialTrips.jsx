@@ -87,28 +87,76 @@ export default function AdminSpecialTrips() {
             function getInventoryPresetByVesselId(vesselId) {
                 if (vesselId === "vessel_scuba_molamola01") {
                     return [
-                        { roomId: "1", roomName: "Lower Deck Twin 1", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
-                        { roomId: "2", roomName: "Lower Deck Twin 2", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
-                        { roomId: "3", roomName: "Lower Deck Twin 3", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
-                        { roomId: "4", roomName: "Lower Deck Twin 4", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
-                        { roomId: "5", roomName: "Upper Deck Twin 5", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
-                        { roomId: "6", roomName: "Upper Deck Twin 6", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
-                        { roomId: "7", roomName: "Upper Deck Twin 7", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
+                        {
+                            roomId: "1", roomName: "Lower Deck Twin 1", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
+                        {
+                            roomId: "2", roomName: "Lower Deck Twin 2", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
+                        {
+                            roomId: "3", roomName: "Lower Deck Twin 3", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
+                        {
+                            roomId: "4", roomName: "Lower Deck Twin 4", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
+                        {
+                            roomId: "5", roomName: "Upper Deck Twin 5", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
+                        {
+                            roomId: "6", roomName: "Upper Deck Twin 6", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
+                        {
+                            roomId: "7", roomName: "Upper Deck Twin 7", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
                         { roomId: "8", roomName: "Upper Deck Twin 8", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
                     ];
                 }
 
                 if (vesselId === "vessel_scuba_molamola02") {
                     return [
-                        { roomId: "1", roomName: "Upper Deck Twin 1", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
-                        { roomId: "2", roomName: "Upper Deck Twin 2", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
-                        { roomId: "3", roomName: "Upper Deck Twin 3", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
-                        { roomId: "4", roomName: "Upper Deck Twin 4", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
-                        { roomId: "5", roomName: "Lower Deck Twin 5", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
-                        { roomId: "6", roomName: "Lower Deck Twin 6", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
-                        { roomId: "7", roomName: "Lower Deck Twin 7", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
-                        { roomId: "8", roomName: "Lower Deck Twin 8", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
-                        { roomId: "9", roomName: "Lower Deck Quad 9", cabinType: "Lower Deck Quad", capacity: 4, status: "available" },
+                        {
+                            roomId: "1", roomName: "Upper Deck Twin 1", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
+                        {
+                            roomId: "2", roomName: "Upper Deck Twin 2", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
+                        {
+                            roomId: "3", roomName: "Upper Deck Twin 3", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
+                        {
+                            roomId: "4", roomName: "Upper Deck Twin 4", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
+                        {
+                            roomId: "5", roomName: "Lower Deck Twin 5", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
+                        {
+                            roomId: "6", roomName: "Lower Deck Twin 6", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
+                        {
+                            roomId: "7", roomName: "Lower Deck Twin 7", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
+                        {
+                            roomId: "8", roomName: "Lower Deck Twin 8", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
+                        {
+                            roomId: "9", roomName: "Lower Deck Quad 9", cabinType: "Lower Deck Quad", capacity: 4, occupied: 0,
+                            sharePolicy: "none", status: "available"
+                        },
                     ];
                 }
 
@@ -252,9 +300,9 @@ export default function AdminSpecialTrips() {
                 return {
                     ...room,
                     [field]:
-                        field === "capacity"
+                        field === "capacity" || field === "occupied"
                             ? value === ""
-                                ? null
+                                ? 0
                                 : Number(value)
                             : value,
                 };
@@ -280,6 +328,8 @@ export default function AdminSpecialTrips() {
                         roomName: "",
                         cabinType: "",
                         capacity: 2,
+                        occupied: 0,
+                        sharePolicy: "none",
                         status: "available",
                     },
                 ],
@@ -1037,6 +1087,8 @@ export default function AdminSpecialTrips() {
                                             <th style={thStyle}>객실명</th>
                                             <th style={thStyle}>객실타입</th>
                                             <th style={thStyle}>정원</th>
+                                            <th style={thStyle}>점유</th>
+                                            <th style={thStyle}>쉐어정책</th>
                                             <th style={thStyle}>상태</th>
                                             <th style={thStyle}></th>
                                         </tr>
@@ -1082,12 +1134,37 @@ export default function AdminSpecialTrips() {
                                                 </td>
 
                                                 <td style={tdStyle}>
+                                                    <input
+                                                        type="number"
+                                                        style={inputStyle}
+                                                        value={room.occupied ?? 0}
+                                                        onChange={handleInventoryFieldChange(idx, "occupied")}
+                                                        min="0"
+                                                        max={room.capacity ?? 0}
+                                                    />
+                                                </td>
+
+                                                <td style={tdStyle}>
+                                                    <select
+                                                        style={inputStyle}
+                                                        value={room.sharePolicy || "none"}
+                                                        onChange={handleInventoryFieldChange(idx, "sharePolicy")}
+                                                    >
+                                                        <option value="none">none</option>
+                                                        <option value="male">male</option>
+                                                        <option value="female">female</option>
+                                                        <option value="mixed">mixed</option>
+                                                    </select>
+                                                </td>
+
+                                                <td style={tdStyle}>
                                                     <select
                                                         style={inputStyle}
                                                         value={room.status || "available"}
                                                         onChange={handleInventoryFieldChange(idx, "status")}
                                                     >
                                                         <option value="available">available</option>
+                                                        <option value="share">share</option>
                                                         <option value="holding">holding</option>
                                                         <option value="booked">booked</option>
                                                         <option value="maintenance">maintenance</option>
