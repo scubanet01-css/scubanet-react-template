@@ -240,6 +240,64 @@ export default function AdminSpecialTrips() {
         });
     };
 
+    const handleInventoryFieldChange = (index, field) => (e) => {
+        const value = e.target.value;
+
+        setFormData((prev) => {
+            const prevInventory = Array.isArray(prev?.inventory) ? prev.inventory : [];
+
+            const nextInventory = prevInventory.map((room, i) => {
+                if (i !== index) return room;
+
+                return {
+                    ...room,
+                    [field]:
+                        field === "capacity"
+                            ? value === ""
+                                ? null
+                                : Number(value)
+                            : value,
+                };
+            });
+
+            return {
+                ...(prev || {}),
+                inventory: nextInventory,
+            };
+        });
+    };
+
+    const handleAddInventoryRow = () => {
+        setFormData((prev) => {
+            const prevInventory = Array.isArray(prev?.inventory) ? prev.inventory : [];
+
+            return {
+                ...(prev || {}),
+                inventory: [
+                    ...prevInventory,
+                    {
+                        roomId: "",
+                        roomName: "",
+                        cabinType: "",
+                        capacity: 2,
+                        status: "available",
+                    },
+                ],
+            };
+        });
+    };
+
+    const handleRemoveInventoryRow = (index) => () => {
+        setFormData((prev) => {
+            const prevInventory = Array.isArray(prev?.inventory) ? prev.inventory : [];
+
+            return {
+                ...(prev || {}),
+                inventory: prevInventory.filter((_, i) => i !== index),
+            };
+        });
+    };
+
     // ─────────────────────────────
     // 배 이름 → vesselId 자동 생성을 위한 slug
     // ─────────────────────────────
@@ -954,6 +1012,125 @@ export default function AdminSpecialTrips() {
                                         + 객실 타입 추가
                                     </button>
                                 </div>
+                            </fieldset>
+
+                            {/* 객실 인벤토리 */}
+                            <fieldset style={fsStyle}>
+                                <legend>객실 인벤토리</legend>
+
+                                <p style={{ fontSize: "0.8rem", color: "#666", marginTop: 0 }}>
+                                    실제 객실 번호별 상태를 관리합니다. 예약 화면에서는 이 정보를 기준으로
+                                    어떤 객실이 예약 가능 / 홀딩 / 확정인지 표시하게 됩니다.
+                                </p>
+
+                                <table
+                                    style={{
+                                        width: "100%",
+                                        borderCollapse: "collapse",
+                                        fontSize: "0.85rem",
+                                        marginBottom: 8,
+                                    }}
+                                >
+                                    <thead>
+                                        <tr>
+                                            <th style={thStyle}>객실번호</th>
+                                            <th style={thStyle}>객실명</th>
+                                            <th style={thStyle}>객실타입</th>
+                                            <th style={thStyle}>정원</th>
+                                            <th style={thStyle}>상태</th>
+                                            <th style={thStyle}></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(formData.inventory || []).map((room, idx) => (
+                                            <tr key={idx}>
+                                                <td style={tdStyle}>
+                                                    <input
+                                                        style={inputStyle}
+                                                        value={room.roomId || ""}
+                                                        onChange={handleInventoryFieldChange(idx, "roomId")}
+                                                        placeholder="1"
+                                                    />
+                                                </td>
+
+                                                <td style={tdStyle}>
+                                                    <input
+                                                        style={inputStyle}
+                                                        value={room.roomName || ""}
+                                                        onChange={handleInventoryFieldChange(idx, "roomName")}
+                                                        placeholder="Upper Deck Twin 1"
+                                                    />
+                                                </td>
+
+                                                <td style={tdStyle}>
+                                                    <input
+                                                        style={inputStyle}
+                                                        value={room.cabinType || ""}
+                                                        onChange={handleInventoryFieldChange(idx, "cabinType")}
+                                                        placeholder="Upper Deck Twin"
+                                                    />
+                                                </td>
+
+                                                <td style={tdStyle}>
+                                                    <input
+                                                        type="number"
+                                                        style={inputStyle}
+                                                        value={room.capacity ?? 2}
+                                                        onChange={handleInventoryFieldChange(idx, "capacity")}
+                                                        min="1"
+                                                    />
+                                                </td>
+
+                                                <td style={tdStyle}>
+                                                    <select
+                                                        style={inputStyle}
+                                                        value={room.status || "available"}
+                                                        onChange={handleInventoryFieldChange(idx, "status")}
+                                                    >
+                                                        <option value="available">available</option>
+                                                        <option value="holding">holding</option>
+                                                        <option value="booked">booked</option>
+                                                        <option value="maintenance">maintenance</option>
+                                                    </select>
+                                                </td>
+
+                                                <td style={tdStyle}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleRemoveInventoryRow(idx)}
+                                                        style={{
+                                                            padding: "4px 8px",
+                                                            fontSize: "0.75rem",
+                                                            backgroundColor: "#e57373",
+                                                            color: "#fff",
+                                                            border: "none",
+                                                            borderRadius: 4,
+                                                            cursor: "pointer",
+                                                        }}
+                                                    >
+                                                        삭제
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                <button
+                                    type="button"
+                                    onClick={handleAddInventoryRow}
+                                    style={{
+                                        padding: "4px 8px",
+                                        fontSize: "0.8rem",
+                                        backgroundColor: "#4caf50",
+                                        color: "#fff",
+                                        border: "none",
+                                        borderRadius: 4,
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    + 객실 추가
+                                </button>
                             </fieldset>
 
                             {/* 판매 모드 / 상태 / 내부 메모 */}
