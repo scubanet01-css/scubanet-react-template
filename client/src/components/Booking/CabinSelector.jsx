@@ -1,6 +1,29 @@
 import React from "react";
 import { formatCurrency } from "../../utils/formatCurrency";
 
+function getCabinStatusLabel(cabin) {
+  const capacity = Number(cabin.capacity || 0);
+  const occupied = Number(cabin.occupied || 0);
+  const sharePolicy = cabin.sharePolicy || "none";
+  const status = cabin.status || "available";
+
+  if (status === "maintenance") return "Maintenance";
+  if (status === "holding") return "Holding";
+  if (status === "booked") return "Booked";
+
+  if (occupied === 0) return "Available";
+
+  if (occupied > 0 && occupied < capacity) {
+    if (sharePolicy === "male") return `Male Share (${occupied}/${capacity})`;
+    if (sharePolicy === "female") return `Female Share (${occupied}/${capacity})`;
+    if (sharePolicy === "mixed") return `Share (${occupied}/${capacity})`;
+
+    return `Partially Occupied (${occupied}/${capacity})`;
+  }
+
+  return "Available";
+}
+
 function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }) {
   // ✅ cabins prop이 있으면 우선 사용, 없으면 trip.cabins 사용
   const cabinList = Array.isArray(cabins) && cabins.length > 0
@@ -152,7 +175,8 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
         const remaining = Number(cabin.remaining ?? cabin.availableSpaces ?? 0);
 
         const priceOptions = getPriceOptions(cabin);
-
+        const statusLabel = getCabinStatusLabel(cabin);
+        const isSelectable = cabin.status === "available" && remaining > 0;
         const lowestPrice =
           priceOptions.length > 0
             ? Math.min(...priceOptions.map((p) => p.price))
@@ -177,9 +201,15 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
               )}
             </h4>
 
-            <p>가용 인원: {remaining}</p>
+            <p>
+              상태:{" "}
+              <strong>
+                {statusLabel}
+              </strong>
+            </p>
 
-            {remaining > 0 && priceOptions.length > 0 ? (
+            <p>가용 인원: {remaining}</p>
+            {isSelectable && priceOptions.length > 0 ? (
               <select
                 value={
                   selectedCabins.find((sc) => sc.cabinId === cabinId)
@@ -210,7 +240,15 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
                 ))}
               </select>
             ) : (
-              <p style={{ color: "#888" }}>예약 가능 인원이 없습니다</p>
+              <p style={{ color: "#888" }}>
+                {cabin.status === "holding"
+                  ? "현재 홀딩 중인 객실입니다"
+                  : cabin.status === "booked"
+                    ? "이미 예약 완료된 객실입니다"
+                    : cabin.status === "maintenance"
+                      ? "현재 사용 불가 객실입니다"
+                      : "예약 가능 인원이 없습니다"}
+              </p>
             )}
           </div>
         );
