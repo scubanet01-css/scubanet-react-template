@@ -19,10 +19,141 @@ function safeReadJson(filePath) {
     return data;
 }
 
-function normalizeTrip(trip, fallbackSource) {
+function toNumber(value) {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : 0;
+}
+
+function normalizeInseanqTrip(trip) {
     return {
         ...trip,
-        source: trip.source || fallbackSource || "unknown",
+        id: trip.id || trip.tripId || null,
+        source: trip.source || "inseanq",
+    };
+}
+
+function convertScubadatesTripToInseanqStyle(trip) {
+    const cabins = Array.isArray(trip.cabins) ? trip.cabins : [];
+
+    const convertedCabins = cabins.map((cabin, index) => {
+        const ratePlans = Array.isArray(cabin.ratePlans) ? cabin.ratePlans : [];
+        const totalSpaces = toNumber(cabin?.spaces?.totalSpaces);
+        const availableSpaces = toNumber(cabin?.spaces?.availableSpaces);
+        const bookedSpaces = toNumber(cabin?.spaces?.bookedSpaces);
+        const optionSpaces = toNumber(cabin?.spaces?.optionSpaces);
+
+        return {
+            cabinId: cabin.cabinTypeId || `scubadates_cabin_${index + 1}`,
+            name: cabin.name || "",
+            type: cabin.name || "",
+            remaining: availableSpaces,
+            ratePlans: ratePlans.map((plan, rpIndex) => ({
+                ratePlanId: `${cabin.cabinTypeId || index + 1}_${plan.rateCode || rpIndex}`,
+                ratePlanName: plan.rateName || plan.rateCode || "Standard",
+                kind: "retail",
+                cabinTypeId: cabin.sourceCabinTypeId || cabin.cabinTypeId || null,
+                occupancyId: plan.occupancyType || null,
+                price: toNumber(plan.price),
+                parentPrice: plan.originalPrice != null ? toNumber(plan.originalPrice) : null,
+                discountPercent:
+                    plan.originalPrice && plan.originalPrice > plan.price
+                        ? Math.round(((plan.originalPrice - plan.price) / plan.originalPrice) * 100)
+                        : 0,
+                isInstructorOnly: false,
+            })),
+            images: [],
+            deckCode: cabin.deck || null,
+            bedType: null,
+            quality: null,
+            tags: [],
+            canonicalType: cabin.name || "",
+            meta: {
+                totalSpaces,
+                availableSpaces,
+                bookedSpaces,
+                optionSpaces,
+                shareMaleSpaces: toNumber(cabin?.spaces?.shareMaleSpaces),
+                shareFemaleSpaces: toNumber(cabin?.spaces?.shareFemaleSpaces),
+                numberOfCabins: toNumber(cabin.numberOfCabins),
+                spacesPerCabin: toNumber(cabin.spacesPerCabin),
+            },
+        };
+    });
+
+    const titleParts = [];
+    if (trip.itineraryName) titleParts.push(trip.itineraryName);
+    if (trip.boatName) titleParts.push(trip.boatName);
+
+    const embarkPortName = trip?.embarkation?.port || "";
+    const disembarkPortName = trip?.disembarkation?.port || "";
+
+    return {
+        id: trip.tripId,
+        source: "scubadates",
+        sourceTripId: trip.sourceTripId || trip.tripId,
+        tripType: "liveaboard",
+        vesselId: trip.vesselId || null,
+        boatName: trip.boatName || "",
+        title: titleParts.join(" - "),
+        country: trip.destination || "",
+        destination: trip.destination || "",
+        startDate: trip.startDate || "",
+        endDate: trip.endDate || "",
+        nights: trip.nights || null,
+
+        departurePort: {
+            id: null,
+            name: embarkPortName,
+        },
+
+        arrivalPort: {
+            id: null,
+            name: disembarkPortName,
+        },
+
+        images: {
+            cover: "",
+            gallery: [],
+        },
+
+        spaces: {
+            available: toNumber(trip?.spaces?.availableSpaces),
+            booked: toNumber(trip?.spaces?.bookedSpaces),
+            holding: toNumber(trip?.spaces?.optionSpaces),
+        },
+
+        adminDetails: {
+            itinerary: "",
+            included: "",
+            excluded: "",
+        },
+
+        cabins: convertedCabins,
+
+        inventory: [],
+
+        pricing: {
+            currency: trip.currency || "",
+            basePrice: trip.priceFrom != null ? toNumber(trip.priceFrom) : null,
+            publicDiscountPercent:
+                trip.originalPriceFrom && trip.originalPriceFrom > trip.priceFrom
+                    ? Math.round(((trip.originalPriceFrom - trip.priceFrom) / trip.originalPriceFrom) * 100)
+                    : 0,
+            instructorGroupPrice: null,
+            instructorFOCPolicy: null,
+            fullCharterPrice: null,
+            cabins: [],
+        },
+
+        isSpecialTrip: false,
+        specialType: null,
+        status: "open",
+
+        departureConfirmed: !!trip.departureConfirmed,
+        lastUpdate: trip.lastUpdate || "",
+        mandatoryFees: Array.isArray(trip.mandatoryFees) ? trip.mandatoryFees : [],
+        originalPriceFrom: trip.originalPriceFrom ?? null,
+        isDiscounted: !!trip.isDiscounted,
     };
 }
 
@@ -30,19 +161,18 @@ function dedupeTrips(trips) {
     const map = new Map();
 
     for (const trip of trips) {
-        const key = trip.tripId;
+        const key = trip.id || trip.tripId;
 
         if (!key) {
-            console.warn("⚠️ tripId 없는 trip 발견, 건너뜀:", trip);
+            console.warn("⚠️ id 없는 trip 발견, 건너뜀:", trip);
             continue;
         }
 
         if (!map.has(key)) {
             map.set(key, trip);
-            continue;
+        } else {
+            console.warn(`⚠️ 중복 trip 발견: ${key} → 기존 항목 유지`);
         }
-
-        console.warn(`⚠️ 중복 tripId 발견: ${key} → 기존 항목 유지`);
     }
 
     return Array.from(map.values());
@@ -67,13 +197,11 @@ function sortTrips(trips) {
 function main() {
     console.log("🚀 UTS 통합 시작");
 
-    const inseanqTrips = safeReadJson(INSEANQ_FILE).map((trip) =>
-        normalizeTrip(trip, "inseanq")
-    );
+    const inseanqTrips = safeReadJson(INSEANQ_FILE)
+        .filter((trip) => trip.source === "inseanq")
+        .map(normalizeInseanqTrip);
 
-    const scubadatesTrips = safeReadJson(SCUBADATES_FILE).map((trip) =>
-        normalizeTrip(trip, "scubadates")
-    );
+    const scubadatesTrips = safeReadJson(SCUBADATES_FILE).map(convertScubadatesTripToInseanqStyle);
 
     console.log(`- Inseanq trips: ${inseanqTrips.length}`);
     console.log(`- Scubadates trips: ${scubadatesTrips.length}`);
@@ -86,7 +214,7 @@ function main() {
     fs.chmodSync(OUTPUT_FILE, 0o644);
 
     try {
-        fs.chownSync(OUTPUT_FILE, 33, 33); // www-data:www-data
+        fs.chownSync(OUTPUT_FILE, 33, 33);
     } catch (e) {
         console.warn("⚠️ chown 실패:", e.message);
     }
@@ -108,7 +236,7 @@ function main() {
     if (sorted.length > 0) {
         const first = sorted[0];
         console.log("🔎 첫 trip 확인:");
-        console.log(`- tripId: ${first.tripId}`);
+        console.log(`- id: ${first.id}`);
         console.log(`- source: ${first.source}`);
         console.log(`- boatName: ${first.boatName}`);
         console.log(`- startDate: ${first.startDate}`);
