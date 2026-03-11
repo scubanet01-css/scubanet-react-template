@@ -452,10 +452,18 @@ export default function AdminSpecialTrips() {
         try {
             setSaving(true);
 
+            const payload = {
+                ...formData,
+                totalSpaces: computedTotalSpaces,
+                availableSpaces: computedAvailableSpaces,
+                optionSpaces: computedHoldingSpaces,
+                bookedSpaces: computedBookedSpaces,
+            };
+
             const res = await fetch(`${API_BASE}/api/admin/special-trips`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             });
 
             if (!res.ok) {
@@ -465,18 +473,20 @@ export default function AdminSpecialTrips() {
             alert("✅ 저장 완료");
 
             setTrips((prev) => {
-                const id = formData.specialTripId || formData.id;
+                const id = payload.specialTripId || payload.id;
                 const copied = [...prev];
                 const idx = copied.findIndex(
                     (t) => (t.specialTripId || t.id) === id
                 );
                 if (idx >= 0) {
-                    copied[idx] = formData;
+                    copied[idx] = payload;
                 }
                 return copied;
             });
 
-            setSelectedTrip(formData);
+            setSelectedTrip(payload);
+            setFormData(payload);
+
         } catch (err) {
             console.error("❌ 저장 중 오류:", err);
             alert("저장 중 오류가 발생했습니다.");
@@ -484,6 +494,29 @@ export default function AdminSpecialTrips() {
             setSaving(false);
         }
     };
+
+    const inventoryList = Array.isArray(formData?.inventory) ? formData.inventory : [];
+
+    const computedTotalSpaces = inventoryList.reduce(
+        (sum, room) => sum + Number(room.capacity || 0),
+        0
+    );
+
+    const computedBookedSpaces = inventoryList
+        .filter((room) => room.status === "booked")
+        .reduce((sum, room) => sum + Number(room.capacity || 0), 0);
+
+    const computedHoldingSpaces = inventoryList
+        .filter((room) => room.status === "holding")
+        .reduce((sum, room) => sum + Number(room.capacity || 0), 0);
+
+    const computedAvailableSpaces = inventoryList
+        .filter((room) => room.status === "available")
+        .reduce((sum, room) => {
+            const capacity = Number(room.capacity || 0);
+            const occupied = Number(room.occupied || 0);
+            return sum + Math.max(capacity - occupied, 0);
+        }, 0);
 
     return (
         <div style={{ padding: "20px" }}>
@@ -742,76 +775,28 @@ export default function AdminSpecialTrips() {
                             <fieldset style={fsStyle}>
                                 <legend>좌석 정보</legend>
 
+                                <p style={{ fontSize: "0.8rem", color: "#666", marginTop: 0 }}>
+                                    아래 값은 객실 인벤토리 기준으로 자동 계산됩니다.
+                                </p>
+
                                 <div style={rowStyle}>
                                     <label>총 정원 (totalSpaces)</label>
-                                    <input
-                                        type="number"
-                                        style={inputStyle}
-                                        value={formData.totalSpaces ?? ""}
-                                        onChange={(e) =>
-                                            setFormData((prev) => ({
-                                                ...(prev || {}),
-                                                totalSpaces:
-                                                    e.target.value === ""
-                                                        ? null
-                                                        : Number(e.target.value),
-                                            }))
-                                        }
-                                    />
+                                    <div style={readonlyBoxStyle}>{computedTotalSpaces}</div>
                                 </div>
 
                                 <div style={rowStyle}>
                                     <label>예약 가능 (availableSpaces)</label>
-                                    <input
-                                        type="number"
-                                        style={inputStyle}
-                                        value={formData.availableSpaces ?? ""}
-                                        onChange={(e) =>
-                                            setFormData((prev) => ({
-                                                ...(prev || {}),
-                                                availableSpaces:
-                                                    e.target.value === ""
-                                                        ? null
-                                                        : Number(e.target.value),
-                                            }))
-                                        }
-                                    />
+                                    <div style={readonlyBoxStyle}>{computedAvailableSpaces}</div>
                                 </div>
 
                                 <div style={rowStyle}>
                                     <label>홀딩 (optionSpaces)</label>
-                                    <input
-                                        type="number"
-                                        style={inputStyle}
-                                        value={formData.optionSpaces ?? ""}
-                                        onChange={(e) =>
-                                            setFormData((prev) => ({
-                                                ...(prev || {}),
-                                                optionSpaces:
-                                                    e.target.value === ""
-                                                        ? null
-                                                        : Number(e.target.value),
-                                            }))
-                                        }
-                                    />
+                                    <div style={readonlyBoxStyle}>{computedHoldingSpaces}</div>
                                 </div>
 
                                 <div style={rowStyle}>
                                     <label>확정 (bookedSpaces)</label>
-                                    <input
-                                        type="number"
-                                        style={inputStyle}
-                                        value={formData.bookedSpaces ?? ""}
-                                        onChange={(e) =>
-                                            setFormData((prev) => ({
-                                                ...(prev || {}),
-                                                bookedSpaces:
-                                                    e.target.value === ""
-                                                        ? null
-                                                        : Number(e.target.value),
-                                            }))
-                                        }
-                                    />
+                                    <div style={readonlyBoxStyle}>{computedBookedSpaces}</div>
                                 </div>
                             </fieldset>
 
@@ -1164,7 +1149,6 @@ export default function AdminSpecialTrips() {
                                                         onChange={handleInventoryFieldChange(idx, "status")}
                                                     >
                                                         <option value="available">available</option>
-                                                        <option value="share">share</option>
                                                         <option value="holding">holding</option>
                                                         <option value="booked">booked</option>
                                                         <option value="maintenance">maintenance</option>
@@ -1429,4 +1413,18 @@ const rowStyle = {
 const textareaStyle = {
     ...inputStyle,
     resize: "vertical",
+};
+
+const readonlyBoxStyle = {
+    width: "100%",
+    padding: "8px 10px",
+    marginTop: "4px",
+    borderRadius: "4px",
+    border: "1px solid #ccc",
+    backgroundColor: "#f7f7f7",
+    color: "#333",
+    minHeight: "36px",
+    display: "flex",
+    alignItems: "center",
+    boxSizing: "border-box",
 };
