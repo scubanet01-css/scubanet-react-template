@@ -163,19 +163,63 @@ export default function AdminSpecialTrips() {
                 return [];
             }
 
+            function getUniqueCabinTypesFromInventory(inventory = []) {
+                const seen = new Set();
+                const result = [];
+
+                (inventory || []).forEach((room) => {
+                    const cabinType = String(room?.cabinType || "").trim();
+                    if (!cabinType) return;
+
+                    if (!seen.has(cabinType)) {
+                        seen.add(cabinType);
+                        result.push(cabinType);
+                    }
+                });
+
+                return result;
+            }
+
+            function syncPricingCabinsWithInventory(inventory = [], pricing = {}) {
+                const cabinTypes = getUniqueCabinTypesFromInventory(inventory);
+                const existingCabins = Array.isArray(pricing?.cabins) ? pricing.cabins : [];
+
+                const syncedCabins = cabinTypes.map((cabinType) => {
+                    const existing = existingCabins.find(
+                        (c) => String(c?.cabinName || "").trim() === cabinType
+                    );
+
+                    return {
+                        cabinCode:
+                            existing?.cabinCode ||
+                            cabinType.toLowerCase().replace(/[^a-z0-9]+/g, "_"),
+                        cabinName: cabinType,
+                        publicPrice: existing?.publicPrice ?? pricing?.basePrice ?? null,
+                        instructorGroupPrice:
+                            existing?.instructorGroupPrice ?? pricing?.instructorGroupPrice ?? null,
+                    };
+                });
+
+                return {
+                    ...(pricing || {}),
+                    cabins: syncedCabins,
+                };
+            }
+
+            const nextInventory =
+                Array.isArray(selectedTrip.inventory) && selectedTrip.inventory.length > 0
+                    ? selectedTrip.inventory
+                    : getInventoryPresetByVesselId(selectedTrip.vesselId);
+
+            const nextPricing = syncPricingCabinsWithInventory(nextInventory, {
+                ...fallbackPricing,
+                ...(selectedTrip.pricing || {}),
+            });
+
             setFormData({
                 ...selectedTrip,
-                pricing: {
-                    ...fallbackPricing,
-                    ...(selectedTrip.pricing || {}),
-                    cabins: Array.isArray(selectedTrip.pricing?.cabins)
-                        ? selectedTrip.pricing.cabins
-                        : [],
-                },
-                inventory:
-                    Array.isArray(selectedTrip.inventory) && selectedTrip.inventory.length > 0
-                        ? selectedTrip.inventory
-                        : getInventoryPresetByVesselId(selectedTrip.vesselId),
+                pricing: nextPricing,
+                inventory: nextInventory,
             });
         }
     }, [selectedTrip]);
@@ -311,6 +355,7 @@ export default function AdminSpecialTrips() {
             return {
                 ...(prev || {}),
                 inventory: nextInventory,
+                pricing: syncPricingCabinsWithInventory(nextInventory, prev?.pricing || {}),
             };
         });
     };
@@ -319,20 +364,23 @@ export default function AdminSpecialTrips() {
         setFormData((prev) => {
             const prevInventory = Array.isArray(prev?.inventory) ? prev.inventory : [];
 
+            const nextInventory = [
+                ...prevInventory,
+                {
+                    roomId: "",
+                    roomName: "",
+                    cabinType: "",
+                    capacity: 2,
+                    occupied: 0,
+                    sharePolicy: "none",
+                    status: "available",
+                },
+            ];
+
             return {
                 ...(prev || {}),
-                inventory: [
-                    ...prevInventory,
-                    {
-                        roomId: "",
-                        roomName: "",
-                        cabinType: "",
-                        capacity: 2,
-                        occupied: 0,
-                        sharePolicy: "none",
-                        status: "available",
-                    },
-                ],
+                inventory: nextInventory,
+                pricing: syncPricingCabinsWithInventory(nextInventory, prev?.pricing || {}),
             };
         });
     };
@@ -341,9 +389,12 @@ export default function AdminSpecialTrips() {
         setFormData((prev) => {
             const prevInventory = Array.isArray(prev?.inventory) ? prev.inventory : [];
 
+            const nextInventory = prevInventory.filter((_, i) => i !== index);
+
             return {
                 ...(prev || {}),
-                inventory: prevInventory.filter((_, i) => i !== index),
+                inventory: nextInventory,
+                pricing: syncPricingCabinsWithInventory(nextInventory, prev?.pricing || {}),
             };
         });
     };
@@ -973,18 +1024,16 @@ export default function AdminSpecialTrips() {
                                                 <tr key={idx}>
                                                     <td style={tdStyle}>
                                                         <input
-                                                            style={inputStyle}
+                                                            style={{ ...inputStyle, backgroundColor: "#f7f7f7" }}
                                                             value={cabin.cabinCode || ""}
-                                                            onChange={handleCabinFieldChange(idx, "cabinCode")}
-                                                            placeholder="lower_twin"
+                                                            readOnly
                                                         />
                                                     </td>
                                                     <td style={tdStyle}>
                                                         <input
-                                                            style={inputStyle}
+                                                            style={{ ...inputStyle, backgroundColor: "#f7f7f7" }}
                                                             value={cabin.cabinName || ""}
-                                                            onChange={handleCabinFieldChange(idx, "cabinName")}
-                                                            placeholder="Lower Deck Twin (2인)"
+                                                            readOnly
                                                         />
                                                     </td>
                                                     <td style={tdStyle}>
@@ -1030,22 +1079,6 @@ export default function AdminSpecialTrips() {
                                             ))}
                                         </tbody>
                                     </table>
-
-                                    <button
-                                        type="button"
-                                        onClick={handleAddCabinRow}
-                                        style={{
-                                            padding: "4px 8px",
-                                            fontSize: "0.8rem",
-                                            backgroundColor: "#4caf50",
-                                            color: "#fff",
-                                            border: "none",
-                                            borderRadius: 4,
-                                            cursor: "pointer",
-                                        }}
-                                    >
-                                        + 객실 타입 추가
-                                    </button>
                                 </div>
                             </fieldset>
 
