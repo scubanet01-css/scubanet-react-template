@@ -555,21 +555,29 @@ export default function AdminSpecialTrips() {
         0
     );
 
-    const computedBookedSpaces = inventoryList
-        .filter((room) => room.status === "booked")
-        .reduce((sum, room) => sum + Number(room.capacity || 0), 0);
+    // ✅ 확정 좌석 = status와 상관없이 occupied 합계
+    const computedBookedSpaces = inventoryList.reduce(
+        (sum, room) => sum + Number(room.occupied || 0),
+        0
+    );
 
-    const computedHoldingSpaces = inventoryList
-        .filter((room) => room.status === "holding")
-        .reduce((sum, room) => sum + Number(room.capacity || 0), 0);
+    // ✅ 홀딩 좌석 = holding 상태 객실의 남은 자리만
+    const computedHoldingSpaces = inventoryList.reduce((sum, room) => {
+        if (room.status !== "holding") return sum;
 
-    const computedAvailableSpaces = inventoryList
-        .filter((room) => room.status === "available")
-        .reduce((sum, room) => {
-            const capacity = Number(room.capacity || 0);
-            const occupied = Number(room.occupied || 0);
-            return sum + Math.max(capacity - occupied, 0);
-        }, 0);
+        const capacity = Number(room.capacity || 0);
+        const occupied = Number(room.occupied || 0);
+        return sum + Math.max(capacity - occupied, 0);
+    }, 0);
+
+    // ✅ 예약 가능 좌석 = available 상태 객실의 남은 자리만
+    const computedAvailableSpaces = inventoryList.reduce((sum, room) => {
+        if (room.status !== "available") return sum;
+
+        const capacity = Number(room.capacity || 0);
+        const occupied = Number(room.occupied || 0);
+        return sum + Math.max(capacity - occupied, 0);
+    }, 0);
 
     return (
         <div style={{ padding: "20px" }}>
