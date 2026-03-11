@@ -117,6 +117,146 @@ function loadJsonArray(filePath, label) {
     throw new Error(`❌ ${label} JSON 구조 오류: 배열이 아닙니다.`);
 }
 
+
+function normalizeText(value) {
+    return String(value || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9가-힣]+/g, "");
+}
+
+function findMatchingSpecialCabinPrice(room, pricingCabins = [], fallbackPricing = {}) {
+    const roomTypeKey = normalizeText(room?.cabinType);
+    const roomNameKey = normalizeText(room?.roomName);
+
+    const matched = (pricingCabins || []).find((c) => {
+        const cabinCodeKey = normalizeText(c?.cabinCode);
+        const cabinNameKey = normalizeText(c?.cabinName);
+
+        return (
+            (roomTypeKey && roomTypeKey === cabinNameKey) ||
+            (roomTypeKey && roomTypeKey === cabinCodeKey) ||
+            (roomNameKey && roomNameKey === cabinNameKey) ||
+            (roomNameKey && roomNameKey === cabinCodeKey)
+        );
+    });
+
+    return {
+        publicPrice:
+            matched?.publicPrice != null
+                ? Number(matched.publicPrice)
+                : fallbackPricing?.basePrice != null
+                    ? Number(fallbackPricing.basePrice)
+                    : null,
+        instructorGroupPrice:
+            matched?.instructorGroupPrice != null
+                ? Number(matched.instructorGroupPrice)
+                : fallbackPricing?.instructorGroupPrice != null
+                    ? Number(fallbackPricing.instructorGroupPrice)
+                    : null,
+    };
+}
+
+function buildSpecialInventorySummary(inventory = []) {
+    const activeRooms = (inventory || []).filter((room) => room?.status !== "maintenance");
+
+    const totalSpaces = activeRooms.reduce(
+        (sum, room) => sum + Number(room.capacity || 0),
+        0,
+    );
+
+    const availableSpaces = activeRooms.reduce((sum, room) => {
+        if (room.status !== "available") return sum;
+        const capacity = Number(room.capacity || 0);
+        const occupied = Number(room.occupied || 0);
+        return sum + Math.max(capacity - occupied, 0);
+    }, 0);
+
+    const optionSpaces = activeRooms.reduce((sum, room) => {
+        if (room.status !== "holding") return sum;
+        const capacity = Number(room.capacity || 0);
+        const occupied = Number(room.occupied || 0);
+        return sum + Math.max(capacity - occupied, 0);
+    }, 0);
+
+    const bookedSpaces = activeRooms.reduce((sum, room) => {
+        if (room.status !== "booked") return sum;
+        const occupied = Number(room.occupied || 0);
+        const capacity = Number(room.capacity || 0);
+        return sum + (occupied > 0 ? occupied : capacity);
+    }, 0);
+
+    return {
+        totalSpaces,
+        availableSpaces,
+        optionSpaces,
+        bookedSpaces,
+    };
+}
+
+function buildSpecialCabinsFromInventory(inventory = [], mergedPricing = {}) {
+    const pricingCabins = Array.isArray(mergedPricing?.cabins) ? mergedPricing.cabins : [];
+
+    return (inventory || [])
+        .filter((room) => room?.status !== "maintenance")
+        .map((room, index) => {
+            const capacity = Number(room.capacity || 0);
+            const occupied = Number(room.occupied || 0);
+            const status = room.status || "available";
+
+            const remaining =
+                status === "available"
+                    ? Math.max(capacity - occupied, 0)
+                    : 0;
+
+            const matchedPrice = findMatchingSpecialCabinPrice(room, pricingCabins, mergedPricing);
+
+            const occupancyOptions = [];
+
+            if (matchedPrice.publicPrice != null) {
+                occupancyOptions.push({
+                    id: 1,
+                    price: matchedPrice.publicPrice,
+                });
+
+                if (capacity >= 2) {
+                    occupancyOptions.push({
+                        id: 2,
+                        price: matchedPrice.publicPrice,
+                    });
+                }
+            }
+
+            return {
+                cabinId: room.roomId || `special_room_${index + 1}`,
+                cabinCode: room.roomId || `special_room_${index + 1}`,
+                name: room.roomName || `Room ${index + 1}`,
+                type: room.cabinType || room.roomName || `Room ${index + 1}`,
+                remaining,
+                capacity,
+                occupied,
+                sharePolicy: room.sharePolicy || "none",
+                status,
+                images: [],
+                ratePlans: matchedPrice.publicPrice != null
+                    ? [
+                        {
+                            code: "special_room_rate",
+                            ratePlanId: "special_room_rate",
+                            ratePlanName: "Special Trip Rate",
+                            price: matchedPrice.publicPrice,
+                            parentPrice: matchedPrice.publicPrice,
+                            discountPercent: Number(mergedPricing?.publicDiscountPercent || 0),
+                            instructorGroupPrice: matchedPrice.instructorGroupPrice,
+                            currency: mergedPricing?.currency || "USD",
+                            source: "special",
+                            occupancy: occupancyOptions,
+                        },
+                    ]
+                    : [],
+            };
+        });
+}
+
 /**
  * ✅ Special Trip → UTS trip 변환
  *  - /var/scubanet-data/special-trips.json 한 건을
@@ -175,27 +315,10 @@ function mapSpecialTripToUTS(specialTrip) {
         cabins: Array.isArray(pricing.cabins) ? pricing.cabins : [],
     };
 
-    // 2) 객실별 가격 → UTS cabins 구조로 변환
-    const cabinsForUTS = mergedPricing.cabins.map((cabin) => ({
-        cabinCode: cabin.cabinCode || null,
-        name: cabin.cabinName || "",
-        // 필요하면 deckCode, deckName 같은 필드도 여기서 확장 가능
-        ratePlans: [
-            {
-                code: "default",              // 스페셜 트립용 단일 요금제
-                price:
-                    cabin.publicPrice != null
-                        ? cabin.publicPrice
-                        : mergedPricing.basePrice, // 없으면 기준가 fallback
-                instructorGroupPrice:
-                    cabin.instructorGroupPrice != null
-                        ? cabin.instructorGroupPrice
-                        : mergedPricing.instructorGroupPrice ?? null,
-                currency: mergedPricing.currency,
-                source: "special",            // 나중에 구분용
-            },
-        ],
-    }));
+    const inventory = Array.isArray(specialTrip.inventory) ? specialTrip.inventory : [];
+    const inventorySummary = buildSpecialInventorySummary(inventory);
+    const cabinsForUTS = buildSpecialCabinsFromInventory(inventory, mergedPricing);
+
 
     // 3) 기존 Inseanq trip 구조에 최대한 맞춤
     return {
@@ -225,9 +348,18 @@ function mapSpecialTripToUTS(specialTrip) {
         },
 
         spaces: {
-            available: availableSpaces ?? 0,
-            booked: bookedSpaces ?? 0,
-            holding: optionSpaces ?? 0,
+            available:
+                inventory.length > 0
+                    ? inventorySummary.availableSpaces
+                    : availableSpaces ?? 0,
+            booked:
+                inventory.length > 0
+                    ? inventorySummary.bookedSpaces
+                    : bookedSpaces ?? 0,
+            holding:
+                inventory.length > 0
+                    ? inventorySummary.optionSpaces
+                    : optionSpaces ?? 0,
         },
 
         adminDetails: {
@@ -238,6 +370,7 @@ function mapSpecialTripToUTS(specialTrip) {
 
         // ⭐ 여기서부터가 핵심: 객실 + 요금제
         cabins: cabinsForUTS,
+        inventory,
 
         // 필요하면 상위 레벨에도 pricing을 남겨두면 분석용으로 좋음 (프론트는 안 써도 됨)
         pricing: mergedPricing,
