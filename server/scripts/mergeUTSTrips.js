@@ -6,7 +6,7 @@ const SCUBADATES_FILE = "/var/scubanet-data/scubadates-uts-trips.json";
 
 const OUTPUT_MERGED_FILE = "/var/scubanet-data/merged-uts-trips.json";
 const OUTPUT_DEV_FILE = "/root/scubanet-react-template/client/public/data/uts-trips.json";
-const OUTPUT_PROD_FILE = "/var/www/scubanet/data/uts-trips.json";
+const OUTPUT_PROD_FILE = "/var/scubanet-data/uts-trips.json";
 
 function safeReadJson(filePath) {
     if (!fs.existsSync(filePath)) {
