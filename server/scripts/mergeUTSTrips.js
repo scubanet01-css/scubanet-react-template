@@ -73,7 +73,18 @@ function convertScubadatesTripToInseanqStyle(trip) {
                 ratePlanName: plan.rateName || plan.rateCode || "Standard",
                 kind: "retail",
                 cabinTypeId: cabin.sourceCabinTypeId || cabin.cabinTypeId || null,
-                occupancyId: plan.occupancyType || null,
+                occupancyId:
+                    plan.occupancyType === "single"
+                        ? 1
+                        : plan.occupancyType === "double"
+                            ? 2
+                            : null,
+                occupancyValue:
+                    plan.occupancyType === "single"
+                        ? "1"
+                        : plan.occupancyType === "double"
+                            ? "2"
+                            : "",
                 price: toNumber(plan.price),
                 parentPrice: plan.originalPrice != null ? toNumber(plan.originalPrice) : null,
                 discountPercent:
