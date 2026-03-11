@@ -157,20 +157,21 @@ function findMatchingSpecialCabinPrice(room, pricingCabins = [], fallbackPricing
 }
 
 function buildSpecialInventorySummary(inventory = []) {
-    const activeRooms = (inventory || []).filter((room) => room?.status !== "maintenance");
+    const activeRooms = (inventory || []).filter(
+        (room) => room?.status !== "maintenance"
+    );
 
     const totalSpaces = activeRooms.reduce(
         (sum, room) => sum + Number(room.capacity || 0),
         0,
     );
 
-    const availableSpaces = activeRooms.reduce((sum, room) => {
-        if (room.status !== "available") return sum;
-        const capacity = Number(room.capacity || 0);
-        const occupied = Number(room.occupied || 0);
-        return sum + Math.max(capacity - occupied, 0);
+    // ✅ 이미 점유된 인원은 status와 관계없이 booked로 본다
+    const bookedSpaces = activeRooms.reduce((sum, room) => {
+        return sum + Number(room.occupied || 0);
     }, 0);
 
+    // ✅ holding은 남은 자리만 holding으로 계산
     const optionSpaces = activeRooms.reduce((sum, room) => {
         if (room.status !== "holding") return sum;
         const capacity = Number(room.capacity || 0);
@@ -178,11 +179,12 @@ function buildSpecialInventorySummary(inventory = []) {
         return sum + Math.max(capacity - occupied, 0);
     }, 0);
 
-    const bookedSpaces = activeRooms.reduce((sum, room) => {
-        if (room.status !== "booked") return sum;
-        const occupied = Number(room.occupied || 0);
+    // ✅ available은 남은 자리만 available로 계산
+    const availableSpaces = activeRooms.reduce((sum, room) => {
+        if (room.status !== "available") return sum;
         const capacity = Number(room.capacity || 0);
-        return sum + (occupied > 0 ? occupied : capacity);
+        const occupied = Number(room.occupied || 0);
+        return sum + Math.max(capacity - occupied, 0);
     }, 0);
 
     return {
