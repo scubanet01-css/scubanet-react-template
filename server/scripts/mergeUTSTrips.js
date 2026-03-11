@@ -1,8 +1,12 @@
+const path = require("path");
 const fs = require("fs");
 
 const INSEANQ_FILE = "/var/scubanet-data/uts-trips.json";
 const SCUBADATES_FILE = "/var/scubanet-data/scubadates-uts-trips.json";
-const OUTPUT_FILE = "/var/scubanet-data/merged-uts-trips.json";
+
+const OUTPUT_MERGED_FILE = "/var/scubanet-data/merged-uts-trips.json";
+const OUTPUT_DEV_FILE = "/root/scubanet-react-template/client/public/data/uts-trips.json";
+const OUTPUT_PROD_FILE = "/var/www/scubanet/data/uts-trips.json";
 
 function safeReadJson(filePath) {
     if (!fs.existsSync(filePath)) {
@@ -17,6 +21,23 @@ function safeReadJson(filePath) {
     }
 
     return data;
+}
+
+function writeJsonFile(filePath, data) {
+    const dir = path.dirname(filePath);
+
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+    fs.chmodSync(filePath, 0o644);
+
+    try {
+        fs.chownSync(filePath, 33, 33);
+    } catch (e) {
+        console.warn(`⚠️ chown 실패 (${filePath}):`, e.message);
+    }
 }
 
 function toNumber(value) {
@@ -210,16 +231,13 @@ function main() {
     const deduped = dedupeTrips(merged);
     const sorted = sortTrips(deduped);
 
-    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(sorted, null, 2), "utf-8");
-    fs.chmodSync(OUTPUT_FILE, 0o644);
+    writeJsonFile(OUTPUT_MERGED_FILE, sorted);
+    writeJsonFile(OUTPUT_DEV_FILE, sorted);
+    writeJsonFile(OUTPUT_PROD_FILE, sorted);
 
-    try {
-        fs.chownSync(OUTPUT_FILE, 33, 33);
-    } catch (e) {
-        console.warn("⚠️ chown 실패:", e.message);
-    }
-
-    console.log(`✅ 통합 완료: ${OUTPUT_FILE}`);
+    console.log(`✅ 통합 완료: ${OUTPUT_MERGED_FILE}`);
+    console.log(`✅ 개발용 반영: ${OUTPUT_DEV_FILE}`);
+    console.log(`✅ 서비스용 반영: ${OUTPUT_PROD_FILE}`);
     console.log(`✅ 최종 trip 수: ${sorted.length}`);
 
     const sourceCounts = sorted.reduce((acc, trip) => {
