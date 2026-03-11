@@ -36,7 +36,14 @@ async function fetchScubadatesData() {
 
         fs.writeFileSync(TMP_FILE, JSON.stringify(data, null, 2), "utf-8");
         fs.renameSync(TMP_FILE, OUTPUT_FILE);
+        // 권한 설정
+        fs.chmodSync(OUTPUT_FILE, 0o644);
 
+        try {
+            fs.chownSync(OUTPUT_FILE, 33, 33); // www-data
+        } catch (e) {
+            console.warn("⚠️ chown 실패:", e.message);
+        }
         console.log(`✅ 저장 완료: ${OUTPUT_FILE}`);
         console.log(`✅ 총 trip 수: ${data.length}`);
 
