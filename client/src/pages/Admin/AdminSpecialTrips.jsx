@@ -17,6 +17,49 @@ function formatDate(iso) {
     }
 }
 
+function getUniqueCabinTypesFromInventory(inventory = []) {
+    const seen = new Set();
+    const result = [];
+
+    (inventory || []).forEach((room) => {
+        const cabinType = String(room?.cabinType || "").trim();
+        if (!cabinType) return;
+
+        if (!seen.has(cabinType)) {
+            seen.add(cabinType);
+            result.push(cabinType);
+        }
+    });
+
+    return result;
+}
+
+function syncPricingCabinsWithInventory(inventory = [], pricing = {}) {
+    const cabinTypes = getUniqueCabinTypesFromInventory(inventory);
+    const existingCabins = Array.isArray(pricing?.cabins) ? pricing.cabins : [];
+
+    const syncedCabins = cabinTypes.map((cabinType) => {
+        const existing = existingCabins.find(
+            (c) => String(c?.cabinName || "").trim() === cabinType
+        );
+
+        return {
+            cabinCode:
+                existing?.cabinCode ||
+                cabinType.toLowerCase().replace(/[^a-z0-9]+/g, "_"),
+            cabinName: cabinType,
+            publicPrice: existing?.publicPrice ?? pricing?.basePrice ?? null,
+            instructorGroupPrice:
+                existing?.instructorGroupPrice ?? pricing?.instructorGroupPrice ?? null,
+        };
+    });
+
+    return {
+        ...(pricing || {}),
+        cabins: syncedCabins,
+    };
+}
+
 export default function AdminSpecialTrips() {
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -163,48 +206,7 @@ export default function AdminSpecialTrips() {
                 return [];
             }
 
-            function getUniqueCabinTypesFromInventory(inventory = []) {
-                const seen = new Set();
-                const result = [];
 
-                (inventory || []).forEach((room) => {
-                    const cabinType = String(room?.cabinType || "").trim();
-                    if (!cabinType) return;
-
-                    if (!seen.has(cabinType)) {
-                        seen.add(cabinType);
-                        result.push(cabinType);
-                    }
-                });
-
-                return result;
-            }
-
-            function syncPricingCabinsWithInventory(inventory = [], pricing = {}) {
-                const cabinTypes = getUniqueCabinTypesFromInventory(inventory);
-                const existingCabins = Array.isArray(pricing?.cabins) ? pricing.cabins : [];
-
-                const syncedCabins = cabinTypes.map((cabinType) => {
-                    const existing = existingCabins.find(
-                        (c) => String(c?.cabinName || "").trim() === cabinType
-                    );
-
-                    return {
-                        cabinCode:
-                            existing?.cabinCode ||
-                            cabinType.toLowerCase().replace(/[^a-z0-9]+/g, "_"),
-                        cabinName: cabinType,
-                        publicPrice: existing?.publicPrice ?? pricing?.basePrice ?? null,
-                        instructorGroupPrice:
-                            existing?.instructorGroupPrice ?? pricing?.instructorGroupPrice ?? null,
-                    };
-                });
-
-                return {
-                    ...(pricing || {}),
-                    cabins: syncedCabins,
-                };
-            }
 
             const nextInventory =
                 Array.isArray(selectedTrip.inventory) && selectedTrip.inventory.length > 0
