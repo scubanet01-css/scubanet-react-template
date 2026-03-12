@@ -636,8 +636,6 @@ export default function AdminSpecialTrips() {
                 선택된 트립의 모든 핵심 필드를 여기에서 입력/수정할 수 있습니다.
             </p>
 
-//수정했는데..
-
             {loading && <div>불러오는 중...</div>}
             {error && (
                 <div style={{ color: "red", marginBottom: 12 }}>
