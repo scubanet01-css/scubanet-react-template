@@ -113,7 +113,7 @@ export default function AdminSpecialTrips() {
 
     const handleCreateNew = () => {
         const emptyTrip = createEmptySpecialTrip();
-        setSelectedTrip(emptyTrip);
+        setSelectedTrip(null);
         setFormData(emptyTrip);
     };
 
@@ -151,128 +151,115 @@ export default function AdminSpecialTrips() {
 
     // 선택된 트립이 바뀔 때마다 폼 데이터 동기화
     useEffect(() => {
-        if (selectedTrip) {
-            const fallbackPricing = {
-                currency: "USD",
-                basePrice: null,
-                publicDiscountPercent: 0,
-                instructorGroupPrice: null,
-                instructorFOCPolicy: "",
-                fullCharterPrice: null,
-                cabins: [], // ⭐ 객실별 가격 기본 배열
-            };
+        if (!selectedTrip) return;
 
-            function getDefaultInventory() {
+        const fallbackPricing = {
+            currency: "USD",
+            basePrice: null,
+            publicDiscountPercent: 0,
+            instructorGroupPrice: null,
+            instructorFOCPolicy: "",
+            fullCharterPrice: null,
+            cabins: [],
+        };
+
+        function getInventoryPresetByVesselId(vesselId) {
+            if (vesselId === "vessel_scuba_molamola01") {
                 return [
-                    { roomId: "1", roomName: "Upper Deck Twin 1", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
-                    { roomId: "2", roomName: "Upper Deck Twin 2", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
-                    { roomId: "3", roomName: "Upper Deck Twin 3", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
-                    { roomId: "4", roomName: "Upper Deck Twin 4", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
-                    { roomId: "5", roomName: "Lower Deck Twin 5", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
-                    { roomId: "6", roomName: "Lower Deck Twin 6", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
-                    { roomId: "7", roomName: "Lower Deck Twin 7", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
-                    { roomId: "8", roomName: "Lower Deck Twin 8", cabinType: "Lower Deck Twin", capacity: 2, status: "available" },
-                    { roomId: "9", roomName: "Lower Deck Quad 9", cabinType: "Lower Deck Quad", capacity: 4, status: "available" },
+                    {
+                        roomId: "1", roomName: "Lower Deck Twin 1", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "2", roomName: "Lower Deck Twin 2", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "3", roomName: "Lower Deck Twin 3", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "4", roomName: "Lower Deck Twin 4", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "5", roomName: "Upper Deck Twin 5", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "6", roomName: "Upper Deck Twin 6", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "7", roomName: "Upper Deck Twin 7", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "8", roomName: "Upper Deck Twin 8", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
                 ];
             }
 
-            function getInventoryPresetByVesselId(vesselId) {
-                if (vesselId === "vessel_scuba_molamola01") {
-                    return [
-                        {
-                            roomId: "1", roomName: "Lower Deck Twin 1", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        {
-                            roomId: "2", roomName: "Lower Deck Twin 2", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        {
-                            roomId: "3", roomName: "Lower Deck Twin 3", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        {
-                            roomId: "4", roomName: "Lower Deck Twin 4", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        {
-                            roomId: "5", roomName: "Upper Deck Twin 5", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        {
-                            roomId: "6", roomName: "Upper Deck Twin 6", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        {
-                            roomId: "7", roomName: "Upper Deck Twin 7", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        { roomId: "8", roomName: "Upper Deck Twin 8", cabinType: "Upper Deck Twin", capacity: 2, status: "available" },
-                    ];
-                }
-
-                if (vesselId === "vessel_scuba_molamola02") {
-                    return [
-                        {
-                            roomId: "1", roomName: "Upper Deck Twin 1", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        {
-                            roomId: "2", roomName: "Upper Deck Twin 2", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        {
-                            roomId: "3", roomName: "Upper Deck Twin 3", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        {
-                            roomId: "4", roomName: "Upper Deck Twin 4", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        {
-                            roomId: "5", roomName: "Lower Deck Twin 5", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        {
-                            roomId: "6", roomName: "Lower Deck Twin 6", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        {
-                            roomId: "7", roomName: "Lower Deck Twin 7", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        {
-                            roomId: "8", roomName: "Lower Deck Twin 8", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                        {
-                            roomId: "9", roomName: "Lower Deck Quad 9", cabinType: "Lower Deck Quad", capacity: 4, occupied: 0,
-                            sharePolicy: "none", status: "available"
-                        },
-                    ];
-                }
-
-                return [];
+            if (vesselId === "vessel_scuba_molamola02") {
+                return [
+                    {
+                        roomId: "1", roomName: "Upper Deck Twin 1", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "2", roomName: "Upper Deck Twin 2", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "3", roomName: "Upper Deck Twin 3", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "4", roomName: "Upper Deck Twin 4", cabinType: "Upper Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "5", roomName: "Lower Deck Twin 5", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "6", roomName: "Lower Deck Twin 6", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "7", roomName: "Lower Deck Twin 7", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "8", roomName: "Lower Deck Twin 8", cabinType: "Lower Deck Twin", capacity: 2, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                    {
+                        roomId: "9", roomName: "Lower Deck Quad 9", cabinType: "Lower Deck Quad", capacity: 4, occupied: 0,
+                        sharePolicy: "none", status: "available"
+                    },
+                ];
             }
 
-
-
-            const nextInventory =
-                Array.isArray(selectedTrip.inventory) && selectedTrip.inventory.length > 0
-                    ? selectedTrip.inventory
-                    : getInventoryPresetByVesselId(selectedTrip.vesselId);
-
-            const nextPricing = syncPricingCabinsWithInventory(nextInventory, {
-                ...fallbackPricing,
-                ...(selectedTrip.pricing || {}),
-            });
-
-            setFormData({
-                ...selectedTrip,
-                pricing: nextPricing,
-                inventory: nextInventory,
-            });
+            return [];
         }
+
+        const nextInventory =
+            Array.isArray(selectedTrip.inventory) && selectedTrip.inventory.length > 0
+                ? selectedTrip.inventory
+                : getInventoryPresetByVesselId(selectedTrip.vesselId);
+
+        const nextPricing = syncPricingCabinsWithInventory(nextInventory, {
+            ...fallbackPricing,
+            ...(selectedTrip.pricing || {}),
+        });
+
+        setFormData({
+            ...selectedTrip,
+            pricing: nextPricing,
+            inventory: nextInventory,
+        });
     }, [selectedTrip]);
 
     // ✅ 공통 필드 변경 핸들러 (기본 정보, 일정, 상태, 메모 등에서 사용)
@@ -499,16 +486,17 @@ export default function AdminSpecialTrips() {
 
     // 배 이름 변경 시: boatName + (필요하면) vesselId 자동 세팅
     const handleBoatNameChange = (e) => {
-        const boatName = e.target.value;
+        const value = e.target.value;
+
         setFormData((prev) => {
-            if (!prev) return prev;
-            const autoId = makeAutoVesselId(boatName);
-            const nextVesselId = prev.vesselId ? prev.vesselId : autoId;
+            if (!prev) return createEmptySpecialTrip();
+
+            const suggestedVesselId = makeVesselIdFromBoatName(value);
 
             return {
                 ...prev,
-                boatName,
-                vesselId: nextVesselId,
+                boatName: value,
+                vesselId: prev.vesselId || suggestedVesselId,
             };
         });
     };
@@ -767,7 +755,7 @@ export default function AdminSpecialTrips() {
                                     <label>배 이름 (표시용)</label>
                                     <input
                                         style={inputStyle}
-                                        value={formData.boatName || ""}
+                                        value={formData?.boatName || ""}
                                         onChange={handleBoatNameChange}
                                         placeholder="예: Molamola01"
                                     />
@@ -809,7 +797,7 @@ export default function AdminSpecialTrips() {
                                     <label>상품명 (title)</label>
                                     <input
                                         style={inputStyle}
-                                        value={formData.title || ""}
+                                        value={formData?.title || ""}
                                         onChange={handleFieldChange("title")}
                                     />
                                 </div>
@@ -823,7 +811,7 @@ export default function AdminSpecialTrips() {
                                     <label>지역 (region)</label>
                                     <input
                                         style={inputStyle}
-                                        value={formData.region || ""}
+                                        value={formData?.region || ""}
                                         onChange={handleFieldChange("region")}
                                         placeholder="Indonesia"
                                     />
@@ -833,7 +821,7 @@ export default function AdminSpecialTrips() {
                                     <label>목적지 (destination)</label>
                                     <input
                                         style={inputStyle}
-                                        value={formData.destination || ""}
+                                        value={formData?.destination || ""}
                                         onChange={handleFieldChange("destination")}
                                         placeholder="Komodo / Raja Ampat ..."
                                     />
@@ -844,7 +832,7 @@ export default function AdminSpecialTrips() {
                                     <textarea
                                         style={textareaStyle}
                                         rows={2}
-                                        value={formData.routeSummary || ""}
+                                        value={formData?.routeSummary || ""}
                                         onChange={handleFieldChange("routeSummary")}
                                         placeholder="Labuan Bajo 왕복 / Central + North Komodo"
                                     />
@@ -884,7 +872,7 @@ export default function AdminSpecialTrips() {
                                     <label>출발 항구 (embarkPort)</label>
                                     <input
                                         style={inputStyle}
-                                        value={formData.embarkPort || ""}
+                                        value={formData?.embarkPort || ""}
                                         onChange={handleFieldChange("embarkPort")}
                                     />
                                 </div>
@@ -893,7 +881,7 @@ export default function AdminSpecialTrips() {
                                     <label>귀환 항구 (disembarkPort)</label>
                                     <input
                                         style={inputStyle}
-                                        value={formData.disembarkPort || ""}
+                                        value={formData?.disembarkPort || ""}
                                         onChange={handleFieldChange("disembarkPort")}
                                     />
                                 </div>
@@ -936,7 +924,7 @@ export default function AdminSpecialTrips() {
                                     <label>통화</label>
                                     <select
                                         style={inputStyle}
-                                        value={formData.pricing?.currency || "USD"}
+                                        value={formData?.pricing?.currency || "USD"}
                                         onChange={(e) =>
                                             setFormData((prev) => ({
                                                 ...(prev || {}),
@@ -959,7 +947,7 @@ export default function AdminSpecialTrips() {
                                     <input
                                         type="number"
                                         style={inputStyle}
-                                        value={formData.pricing?.basePrice ?? ""}
+                                        value={formData?.pricing?.basePrice ?? ""}
                                         onChange={(e) =>
                                             setFormData((prev) => ({
                                                 ...(prev || {}),
@@ -982,7 +970,7 @@ export default function AdminSpecialTrips() {
                                         min="0"
                                         max="50"
                                         style={inputStyle}
-                                        value={formData.pricing?.publicDiscountPercent ?? 0}
+                                        value={formData?.pricing?.publicDiscountPercent ?? 0}
                                         onChange={(e) =>
                                             setFormData((prev) => ({
                                                 ...(prev || {}),
@@ -1003,7 +991,7 @@ export default function AdminSpecialTrips() {
                                     <input
                                         type="number"
                                         style={inputStyle}
-                                        value={formData.pricing?.instructorGroupPrice ?? ""}
+                                        value={formData?.pricing?.instructorGroupPrice ?? ""}
                                         onChange={(e) =>
                                             setFormData((prev) => ({
                                                 ...(prev || {}),
@@ -1023,7 +1011,7 @@ export default function AdminSpecialTrips() {
                                     <label>강사 FOC</label>
                                     <input
                                         style={inputStyle}
-                                        value={formData.pricing?.instructorFOCPolicy || ""}
+                                        value={formData?.pricing?.instructorFOCPolicy || ""}
                                         onChange={(e) =>
                                             setFormData((prev) => ({
                                                 ...(prev || {}),
@@ -1042,7 +1030,7 @@ export default function AdminSpecialTrips() {
                                     <input
                                         type="number"
                                         style={inputStyle}
-                                        value={formData.pricing?.fullCharterPrice ?? ""}
+                                        value={formData?.pricing?.fullCharterPrice ?? ""}
                                         onChange={(e) =>
                                             setFormData((prev) => ({
                                                 ...(prev || {}),
@@ -1097,7 +1085,7 @@ export default function AdminSpecialTrips() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {(formData.pricing?.cabins || []).map((cabin, idx) => (
+                                            {(formData?.pricing?.cabins || []).map((cabin, idx) => (
                                                 <tr key={idx}>
                                                     <td style={tdStyle}>
                                                         <input
@@ -1189,7 +1177,7 @@ export default function AdminSpecialTrips() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {(formData.inventory || []).map((room, idx) => (
+                                        {(formData?.inventory || []).map((room, idx) => (
                                             <tr key={idx}>
                                                 <td style={tdStyle}>
                                                     <input
@@ -1351,7 +1339,7 @@ export default function AdminSpecialTrips() {
                                     <label>상태 (status)</label>
                                     <select
                                         style={inputStyle}
-                                        value={formData.status || "open"}
+                                        value={formData?.status || "open"}
                                         onChange={handleFieldChange("status")}
                                     >
                                         <option value="open">open</option>
@@ -1365,13 +1353,14 @@ export default function AdminSpecialTrips() {
                                     <textarea
                                         style={textareaStyle}
                                         rows={2}
-                                        value={formData.internalNote || ""}
+                                        value={formData?.internalNote || ""}
                                         onChange={handleFieldChange("internalNote")}
                                     />
                                 </div>
                             </fieldset>
 
                             <button
+                                type="button"
                                 style={{
                                     marginTop: 10,
                                     padding: "6px 12px",
