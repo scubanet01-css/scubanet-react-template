@@ -20,7 +20,7 @@ const {
 } = require("./utils/specialTripsStore");
 
 const app = express();
-const port = 4002;
+const port = 3002;
 
 // Inseanq API 설정
 const API_URL = "https://app.inseanq.com/api/v2/availability-detailed";
