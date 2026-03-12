@@ -113,7 +113,7 @@ export default function AdminSpecialTrips() {
 
     const handleCreateNew = () => {
         const emptyTrip = createEmptySpecialTrip();
-        setSelectedTrip(null);
+        setSelectedTrip(emptyTrip);
         setFormData(emptyTrip);
     };
 
