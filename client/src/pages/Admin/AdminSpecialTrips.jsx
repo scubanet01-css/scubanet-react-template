@@ -585,6 +585,42 @@ export default function AdminSpecialTrips() {
         }
     };
 
+    const handleDelete = async () => {
+        const targetId = formData?.specialTripId || formData?.id;
+
+        if (!targetId) {
+            alert("삭제할 스페셜 트립 ID가 없습니다.");
+            return;
+        }
+
+        const ok = window.confirm(`정말 삭제하시겠습니까?\n\n${targetId}`);
+        if (!ok) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/special-trips/${targetId}`, {
+                method: "DELETE",
+            });
+
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
+
+            alert("삭제되었습니다.");
+
+            setTrips((prev) =>
+                (prev || []).filter(
+                    (trip) => (trip.specialTripId || trip.id) !== targetId
+                )
+            );
+
+            setSelectedTrip(null);
+            setFormData(null);
+        } catch (err) {
+            console.error("❌ 삭제 중 오류:", err);
+            alert("삭제 중 오류가 발생했습니다.");
+        }
+    };
+
     const inventoryList = Array.isArray(formData?.inventory) ? formData.inventory : [];
 
     const computedTotalSpaces = inventoryList.reduce(
@@ -1405,6 +1441,26 @@ export default function AdminSpecialTrips() {
                             >
                                 {saving ? "저장 중..." : "저장"}
                             </button>
+
+                            {(formData?.specialTripId || formData?.id) && (
+                                <button
+                                    type="button"
+                                    onClick={handleDelete}
+                                    style={{
+                                        marginTop: 10,
+                                        marginLeft: 8,
+                                        padding: "6px 12px",
+                                        backgroundColor: "#d32f2f",
+                                        color: "#fff",
+                                        border: "none",
+                                        borderRadius: 4,
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    삭제
+                                </button>
+                            )}
+
                         </div>
                     </div>
                 </div>
