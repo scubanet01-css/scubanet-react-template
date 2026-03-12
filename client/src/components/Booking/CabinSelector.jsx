@@ -68,33 +68,51 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
 
     console.log("🧪 [CabinSelector] cabin ratePlans =", cabin.name, ratePlans);
 
-    // 1) UTS ratePlans를 직접 읽는다
-    //    occupancyId가 핵심
+    const makeFallbackLabel = (occId, rp) => {
+      const occ = String(occId ?? "").trim();
+      const planName = String(rp?.ratePlanName || rp?.name || "").toLowerCase();
+
+      // 1) occupancyId 기준 우선
+      if (occ === "1") return "1인 예약";
+      if (occ === "2") return "2인 예약";
+
+      // 2) ratePlanName 기준 보조 판단
+      if (planName.includes("single")) return "1인 예약";
+      if (planName.includes("double")) return "2인 예약";
+      if (planName.includes("twin")) return "2인 예약";
+      if (planName.includes("solo")) return "독실 예약";
+      if (planName.includes("private")) return "독실 예약";
+
+      // 3) 원래 함수 결과가 있으면 그걸 쓰고, 없으면 occupancy 기반 기본값
+      const originalLabel = getOccupancyLabel(occId, rp);
+      if (originalLabel) return originalLabel;
+
+      return occ === "1" ? "1인 예약" : occ === "2" ? "2인 예약" : "";
+    };
+
     const rawOptions = ratePlans
       .filter((rp) => rp && rp.price != null)
       .map((rp) => {
         const occId =
           rp.occupancyId != null
             ? rp.occupancyId
-            : rp.occupancy?.[0]?.id ?? 1;
+            : rp.occupancyValue != null
+              ? Number(rp.occupancyValue)
+              : rp.occupancy?.[0]?.id ?? 1;
 
         return {
           occupancy: String(occId),
           price: parseFloat(rp.price),
-          label: getOccupancyLabel(occId, rp),
+          label: makeFallbackLabel(occId, rp),
           ratePlanName: rp.ratePlanName || rp.name || "",
           discountPercent: Number(rp.discountPercent || 0),
           isInstructorOnly: !!rp.isInstructorOnly,
         };
       });
 
-    // 2) 일반 예약 화면에서는 instructor 전용 요금 제외
     const publicOptions = rawOptions.filter((opt) => !opt.isInstructorOnly);
-
-    // public 옵션이 있으면 그걸 우선, 없으면 rawOptions 사용
     const sourceOptions = publicOptions.length > 0 ? publicOptions : rawOptions;
 
-    // 3) "1인 예약", "2인 예약", "독실 예약" 별로 최저가 하나만 남긴다
     const bestByLabel = new Map();
 
     sourceOptions.forEach((opt) => {
@@ -108,7 +126,6 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
 
     let finalOptions = Array.from(bestByLabel.values());
 
-    // 4) 2인 예약이 없고 1인 예약만 있으면 자동 생성
     const hasOne = finalOptions.some((o) => o.label === "1인 예약");
     const hasTwo = finalOptions.some((o) => o.label === "2인 예약");
 
@@ -124,7 +141,6 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
       });
     }
 
-    // 5) 순서 정렬
     const order = {
       "1인 예약": 1,
       "2인 예약": 2,
