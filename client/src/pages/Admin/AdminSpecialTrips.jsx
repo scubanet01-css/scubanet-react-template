@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 
 // 개발용 API 서버 주소
-const API_BASE = "http://210.114.22.82:4002";
+const API_BASE = "http://210.114.22.82:3002";
 
 function formatDate(iso) {
     if (!iso) return "";
@@ -583,7 +583,7 @@ export default function AdminSpecialTrips() {
         <div style={{ padding: "20px" }}>
             <h2>스페셜 트립 관리 (읽기 전용 1단계 + 간단 편집)</h2>
             <p style={{ color: "#666", marginBottom: 16 }}>
-                /var/scubanet-data/special-trips.json 내용을 API(4002)에서 불러와서 표시합니다.
+                /var/scubanet-data/special-trips.json 내용을 API(3002)에서 불러와서 표시합니다.
                 선택된 트립의 모든 핵심 필드를 여기에서 입력/수정할 수 있습니다.
             </p>
 
