@@ -4,6 +4,49 @@ import React, { useEffect, useState } from "react";
 // 개발용 API 서버 주소
 const API_BASE = "http://210.114.22.82:3002";
 
+function createEmptySpecialTrip() {
+    return {
+        specialTripId: "",
+        vesselId: "",
+        boatName: "",
+        title: "",
+        region: "",
+        destination: "",
+        routeSummary: "",
+        startDate: "",
+        endDate: "",
+        nights: 7,
+        embarkPort: "",
+        disembarkPort: "",
+        currency: "USD",
+
+        totalSpaces: 0,
+        availableSpaces: 0,
+        optionSpaces: 0,
+        bookedSpaces: 0,
+
+        status: "open",
+        isScubanetSpecial: true,
+        salesMode: ["group", "open"],
+
+        focPolicy: "",
+        internalNote: "",
+
+        pricing: {
+            currency: "USD",
+            basePrice: null,
+            publicDiscountPercent: 0,
+            instructorGroupPrice: null,
+            instructorFOCPolicy: "",
+            fullCharterPrice: null,
+            cabins: [],
+        },
+
+        inventory: [],
+    };
+}
+
+
 function formatDate(iso) {
     if (!iso) return "";
     try {
@@ -67,6 +110,12 @@ export default function AdminSpecialTrips() {
     const [selectedTrip, setSelectedTrip] = useState(null); // 선택된 트립
     const [formData, setFormData] = useState(null);         // 편집용 폼 데이터
     const [saving, setSaving] = useState(false);
+
+    const handleCreateNew = () => {
+        const emptyTrip = createEmptySpecialTrip();
+        setSelectedTrip(emptyTrip);
+        setFormData(emptyTrip);
+    };
 
     // 최초 로딩: 목록 가져오기
     useEffect(() => {
@@ -599,6 +648,24 @@ export default function AdminSpecialTrips() {
             {!loading && !error && trips.length === 0 && (
                 <div>등록된 스페셜 트립이 없습니다.</div>
             )}
+
+            <div style={{ marginBottom: 12 }}>
+                <button
+                    type="button"
+                    onClick={handleCreateNew}
+                    style={{
+                        padding: "8px 14px",
+                        backgroundColor: "#2e7d32",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 6,
+                        cursor: "pointer",
+                        fontWeight: 600,
+                    }}
+                >
+                    + 새 스페셜 트립 만들기
+                </button>
+            </div>
 
             {selectedTrip && formData && (
                 <div
@@ -1324,6 +1391,7 @@ export default function AdminSpecialTrips() {
                     </div>
                 </div>
             )}
+
 
             {/* 리스트 테이블 */}
             {!loading && !error && trips.length > 0 && (
