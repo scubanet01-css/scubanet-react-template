@@ -319,6 +319,14 @@ function buildSpecialCabinsFromInventory(inventory = [], mergedPricing = {}) {
                 }
             }
 
+            const discountPercent = Number(mergedPricing?.publicDiscountPercent || 0);
+            const basePrice = Number(matchedPrice.publicPrice || 0);
+
+            const finalPrice =
+                discountPercent > 0
+                    ? Math.round(basePrice * (100 - discountPercent) / 100)
+                    : basePrice;
+
             return {
                 cabinId: room.roomId || `special_room_${index + 1}`,
                 cabinCode: room.roomId || `special_room_${index + 1}`,
@@ -337,9 +345,11 @@ function buildSpecialCabinsFromInventory(inventory = [], mergedPricing = {}) {
                                 code: "special_room_rate",
                                 ratePlanId: "special_room_rate",
                                 ratePlanName: "Special Trip Rate",
-                                price: matchedPrice.publicPrice,
-                                parentPrice: matchedPrice.publicPrice,
-                                discountPercent: Number(mergedPricing?.publicDiscountPercent || 0),
+
+                                price: finalPrice,
+                                parentPrice: basePrice,
+
+                                discountPercent: discountPercent,
                                 instructorGroupPrice: matchedPrice.instructorGroupPrice,
                                 currency: mergedPricing?.currency || "USD",
                                 source: "special",
@@ -449,6 +459,29 @@ function mapSpecialTripToUTS(specialTrip) {
         isSpecialTrip: true,
         specialType: "scubanet-charter",
         status: status || "open",
+    };
+}
+
+function applyPercentDiscount(price, discountPercent) {
+    const basePrice = Number(price || 0);
+    const percent = Number(discountPercent || 0);
+
+    if (!basePrice || !percent) {
+        return {
+            price: basePrice,
+            originalPrice: basePrice,
+            discountPercent: 0,
+            isDiscounted: false,
+        };
+    }
+
+    const discountedPrice = Math.round(basePrice * (100 - percent) / 100);
+
+    return {
+        price: discountedPrice,
+        originalPrice: basePrice,
+        discountPercent: percent,
+        isDiscounted: true,
     };
 }
 
