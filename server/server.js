@@ -17,6 +17,7 @@ const adminBoatAssetsRoutes = require("./routes/adminBoatAssets");
 const {
   loadSpecialTrips,
   upsertSpecialTrip,
+  deleteSpecialTrip,
 } = require("./utils/specialTripsStore");
 
 const app = express();
@@ -95,6 +96,31 @@ app.post("/api/admin/special-trips", (req, res) => {
   } catch (err) {
     console.error("❌ [POST /api/admin/special-trips] 오류:", err);
     res.status(500).json({ error: "Failed to save special trip" });
+  }
+});
+
+app.delete("/api/admin/special-trips/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = deleteSpecialTrip(id);
+
+    if (!deleted) {
+      return res.status(404).json({
+        error: "Special trip not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "스페셜 트립이 삭제되었습니다.",
+      deletedId: id,
+    });
+  } catch (err) {
+    console.error("❌ [DELETE /api/admin/special-trips/:id] 오류:", err);
+    return res.status(500).json({
+      error: "Failed to delete special trip",
+    });
   }
 });
 

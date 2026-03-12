@@ -71,8 +71,24 @@ function upsertSpecialTrip(trip) {
     return trip;
 }
 
+function deleteSpecialTrip(id) {
+    const trips = loadSpecialTrips();
+
+    const nextTrips = trips.filter(
+        (trip) => (trip.specialTripId || trip.id) !== id
+    );
+
+    if (nextTrips.length === trips.length) {
+        return false;
+    }
+
+    fs.writeFileSync(SPECIAL_PATH, JSON.stringify(nextTrips, null, 2), "utf-8");
+    return true;
+}
+
 module.exports = {
     loadSpecialTrips,
     saveSpecialTrips,
     upsertSpecialTrip,
+    deleteSpecialTrip,
 };
