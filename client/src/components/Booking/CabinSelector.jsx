@@ -192,7 +192,8 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
 
         const priceOptions = getPriceOptions(cabin);
         const statusLabel = getCabinStatusLabel(cabin);
-        const isSelectable = cabin.status === "available" && remaining > 0;
+        const cabinStatus = cabin.status || "available";
+        const isSelectable = cabinStatus === "available" && remaining > 0;
         const lowestPrice =
           priceOptions.length > 0
             ? Math.min(...priceOptions.map((p) => p.price))
