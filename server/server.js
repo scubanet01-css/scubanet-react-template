@@ -31,12 +31,11 @@ const API_KEY = "fa031783567788e568d8010a488a6c0f9cb860d0";
 // --------------------------------------------------
 // 공통 미들웨어
 // --------------------------------------------------
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST"],
-  }),
-);
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 app.use(express.json());
 app.use(bodyParser.json());
