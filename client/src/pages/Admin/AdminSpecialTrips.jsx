@@ -753,12 +753,43 @@ export default function AdminSpecialTrips() {
 
                                 <div style={rowStyle}>
                                     <label>배 이름 (표시용)</label>
-                                    <input
+                                    <select
                                         style={inputStyle}
-                                        value={formData?.boatName || ""}
-                                        onChange={handleBoatNameChange}
-                                        placeholder="예: Molamola01"
-                                    />
+                                        value={formData?.vesselId || ""}
+                                        onChange={(e) => {
+                                            const vesselId = e.target.value;
+
+                                            const boatNameMap = {
+                                                vessel_scuba_molamola01: "MolaMola01",
+                                                vessel_scuba_molamola02: "MolaMola02",
+                                            };
+
+                                            const nextInventory = getInventoryPresetByVesselId(vesselId);
+
+                                            setFormData((prev) => ({
+                                                ...(prev || createEmptySpecialTrip()),
+                                                vesselId,
+                                                boatName: boatNameMap[vesselId] || "",
+                                                inventory: nextInventory,
+                                                pricing: syncPricingCabinsWithInventory(
+                                                    nextInventory,
+                                                    {
+                                                        currency: prev?.pricing?.currency || "USD",
+                                                        basePrice: prev?.pricing?.basePrice ?? null,
+                                                        publicDiscountPercent: prev?.pricing?.publicDiscountPercent ?? 0,
+                                                        instructorGroupPrice: prev?.pricing?.instructorGroupPrice ?? null,
+                                                        instructorFOCPolicy: prev?.pricing?.instructorFOCPolicy || "",
+                                                        fullCharterPrice: prev?.pricing?.fullCharterPrice ?? null,
+                                                        cabins: prev?.pricing?.cabins || [],
+                                                    }
+                                                ),
+                                            }));
+                                        }}
+                                    >
+                                        <option value="">선박을 선택하세요</option>
+                                        <option value="vessel_scuba_molamola01">MolaMola01</option>
+                                        <option value="vessel_scuba_molamola02">MolaMola02</option>
+                                    </select>
                                     {formData.boatName && (
                                         <div
                                             style={{
