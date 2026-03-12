@@ -1,11 +1,11 @@
 const path = require("path");
 const fs = require("fs");
 
-const SPECIAL_FILE = "/var/scubanet-data/special-trips.json";
-const BOAT_ASSETS_DIR = "/var/scubanet-data/boats-assets";
-
 const INSEANQ_FILE = "/var/scubanet-data/uts-trips.json";
 const SCUBADATES_FILE = "/var/scubanet-data/scubadates-uts-trips.json";
+
+const SPECIAL_FILE = "/var/scubanet-data/special-trips.json";
+const BOAT_ASSETS_DIR = "/var/scubanet-data/boats-assets";
 
 const OUTPUT_MERGED_FILE = "/var/scubanet-data/merged-uts-trips.json";
 const OUTPUT_DEV_FILE = "/root/scubanet-react-template/client/public/data/uts-trips.json";
@@ -24,6 +24,174 @@ function safeReadJson(filePath) {
     }
 
     return data;
+}
+
+
+
+function writeJsonFile(filePath, data) {
+    const dir = path.dirname(filePath);
+
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+    fs.chmodSync(filePath, 0o644);
+
+    try {
+        fs.chownSync(filePath, 33, 33);
+    } catch (e) {
+        console.warn(`⚠️ chown 실패 (${filePath}):`, e.message);
+    }
+}
+
+function toNumber(value) {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : 0;
+}
+
+function normalizeInseanqTrip(trip) {
+    return {
+        ...trip,
+        id: trip.id || trip.tripId || null,
+        source: trip.source || "inseanq",
+    };
+}
+
+function convertScubadatesTripToInseanqStyle(trip) {
+    const cabins = Array.isArray(trip.cabins) ? trip.cabins : [];
+
+    const convertedCabins = cabins.map((cabin, index) => {
+        const ratePlans = Array.isArray(cabin.ratePlans) ? cabin.ratePlans : [];
+        const totalSpaces = toNumber(cabin?.spaces?.totalSpaces);
+        const availableSpaces = toNumber(cabin?.spaces?.availableSpaces);
+        const bookedSpaces = toNumber(cabin?.spaces?.bookedSpaces);
+        const optionSpaces = toNumber(cabin?.spaces?.optionSpaces);
+
+        return {
+            cabinId: cabin.cabinTypeId || `scubadates_cabin_${index + 1}`,
+            name: cabin.name || "",
+            type: cabin.name || "",
+            remaining: availableSpaces,
+            ratePlans: ratePlans.map((plan, rpIndex) => ({
+                ratePlanId: `${cabin.cabinTypeId || index + 1}_${plan.rateCode || rpIndex}`,
+                ratePlanName: plan.rateName || plan.rateCode || "Standard",
+                kind: "retail",
+                cabinTypeId: cabin.sourceCabinTypeId || cabin.cabinTypeId || null,
+                occupancyId:
+                    plan.occupancyType === "single"
+                        ? 1
+                        : plan.occupancyType === "double"
+                            ? 2
+                            : null,
+                occupancyValue:
+                    plan.occupancyType === "single"
+                        ? "1"
+                        : plan.occupancyType === "double"
+                            ? "2"
+                            : "",
+                price: toNumber(plan.price),
+                parentPrice: plan.originalPrice != null ? toNumber(plan.originalPrice) : null,
+                discountPercent:
+                    plan.originalPrice && plan.originalPrice > plan.price
+                        ? Math.round(((plan.originalPrice - plan.price) / plan.originalPrice) * 100)
+                        : 0,
+                isInstructorOnly: false,
+            })),
+            images: [],
+            deckCode: cabin.deck || null,
+            bedType: null,
+            quality: null,
+            tags: [],
+            canonicalType: cabin.name || "",
+            meta: {
+                totalSpaces,
+                availableSpaces,
+                bookedSpaces,
+                optionSpaces,
+                shareMaleSpaces: toNumber(cabin?.spaces?.shareMaleSpaces),
+                shareFemaleSpaces: toNumber(cabin?.spaces?.shareFemaleSpaces),
+                numberOfCabins: toNumber(cabin.numberOfCabins),
+                spacesPerCabin: toNumber(cabin.spacesPerCabin),
+            },
+        };
+    });
+
+    const titleParts = [];
+    if (trip.itineraryName) titleParts.push(trip.itineraryName);
+    if (trip.boatName) titleParts.push(trip.boatName);
+
+    const embarkPortName = trip?.embarkation?.port || "";
+    const disembarkPortName = trip?.disembarkation?.port || "";
+
+    return {
+        id: trip.tripId,
+        source: "scubadates",
+        sourceTripId: trip.sourceTripId || trip.tripId,
+        tripType: "liveaboard",
+        vesselId: trip.vesselId || null,
+        boatName: trip.boatName || "",
+        title: titleParts.join(" - "),
+        country: trip.destination || "",
+        destination: trip.destination || "",
+        startDate: trip.startDate || "",
+        endDate: trip.endDate || "",
+        nights: trip.nights || null,
+
+        departurePort: {
+            id: null,
+            name: embarkPortName,
+        },
+
+        arrivalPort: {
+            id: null,
+            name: disembarkPortName,
+        },
+
+        images: {
+            cover: "",
+            gallery: [],
+        },
+
+        spaces: {
+            available: toNumber(trip?.spaces?.availableSpaces),
+            booked: toNumber(trip?.spaces?.bookedSpaces),
+            holding: toNumber(trip?.spaces?.optionSpaces),
+        },
+
+        adminDetails: {
+            itinerary: "",
+            included: "",
+            excluded: "",
+        },
+
+        cabins: convertedCabins,
+
+        inventory: [],
+
+        pricing: {
+            currency: trip.currency || "",
+            basePrice: trip.priceFrom != null ? toNumber(trip.priceFrom) : null,
+            publicDiscountPercent:
+                trip.originalPriceFrom && trip.originalPriceFrom > trip.priceFrom
+                    ? Math.round(((trip.originalPriceFrom - trip.priceFrom) / trip.originalPriceFrom) * 100)
+                    : 0,
+            instructorGroupPrice: null,
+            instructorFOCPolicy: null,
+            fullCharterPrice: null,
+            cabins: [],
+        },
+
+        isSpecialTrip: false,
+        specialType: null,
+        status: "open",
+
+        departureConfirmed: !!trip.departureConfirmed,
+        lastUpdate: trip.lastUpdate || "",
+        mandatoryFees: Array.isArray(trip.mandatoryFees) ? trip.mandatoryFees : [],
+        originalPriceFrom: trip.originalPriceFrom ?? null,
+        isDiscounted: !!trip.isDiscounted,
+    };
 }
 
 function normalizeText(value) {
@@ -281,172 +449,6 @@ function mapSpecialTripToUTS(specialTrip) {
         isSpecialTrip: true,
         specialType: "scubanet-charter",
         status: status || "open",
-    };
-}
-
-function writeJsonFile(filePath, data) {
-    const dir = path.dirname(filePath);
-
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-    }
-
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
-    fs.chmodSync(filePath, 0o644);
-
-    try {
-        fs.chownSync(filePath, 33, 33);
-    } catch (e) {
-        console.warn(`⚠️ chown 실패 (${filePath}):`, e.message);
-    }
-}
-
-function toNumber(value) {
-    const num = Number(value);
-    return Number.isFinite(num) ? num : 0;
-}
-
-function normalizeInseanqTrip(trip) {
-    return {
-        ...trip,
-        id: trip.id || trip.tripId || null,
-        source: trip.source || "inseanq",
-    };
-}
-
-function convertScubadatesTripToInseanqStyle(trip) {
-    const cabins = Array.isArray(trip.cabins) ? trip.cabins : [];
-
-    const convertedCabins = cabins.map((cabin, index) => {
-        const ratePlans = Array.isArray(cabin.ratePlans) ? cabin.ratePlans : [];
-        const totalSpaces = toNumber(cabin?.spaces?.totalSpaces);
-        const availableSpaces = toNumber(cabin?.spaces?.availableSpaces);
-        const bookedSpaces = toNumber(cabin?.spaces?.bookedSpaces);
-        const optionSpaces = toNumber(cabin?.spaces?.optionSpaces);
-
-        return {
-            cabinId: cabin.cabinTypeId || `scubadates_cabin_${index + 1}`,
-            name: cabin.name || "",
-            type: cabin.name || "",
-            remaining: availableSpaces,
-            ratePlans: ratePlans.map((plan, rpIndex) => ({
-                ratePlanId: `${cabin.cabinTypeId || index + 1}_${plan.rateCode || rpIndex}`,
-                ratePlanName: plan.rateName || plan.rateCode || "Standard",
-                kind: "retail",
-                cabinTypeId: cabin.sourceCabinTypeId || cabin.cabinTypeId || null,
-                occupancyId:
-                    plan.occupancyType === "single"
-                        ? 1
-                        : plan.occupancyType === "double"
-                            ? 2
-                            : null,
-                occupancyValue:
-                    plan.occupancyType === "single"
-                        ? "1"
-                        : plan.occupancyType === "double"
-                            ? "2"
-                            : "",
-                price: toNumber(plan.price),
-                parentPrice: plan.originalPrice != null ? toNumber(plan.originalPrice) : null,
-                discountPercent:
-                    plan.originalPrice && plan.originalPrice > plan.price
-                        ? Math.round(((plan.originalPrice - plan.price) / plan.originalPrice) * 100)
-                        : 0,
-                isInstructorOnly: false,
-            })),
-            images: [],
-            deckCode: cabin.deck || null,
-            bedType: null,
-            quality: null,
-            tags: [],
-            canonicalType: cabin.name || "",
-            meta: {
-                totalSpaces,
-                availableSpaces,
-                bookedSpaces,
-                optionSpaces,
-                shareMaleSpaces: toNumber(cabin?.spaces?.shareMaleSpaces),
-                shareFemaleSpaces: toNumber(cabin?.spaces?.shareFemaleSpaces),
-                numberOfCabins: toNumber(cabin.numberOfCabins),
-                spacesPerCabin: toNumber(cabin.spacesPerCabin),
-            },
-        };
-    });
-
-    const titleParts = [];
-    if (trip.itineraryName) titleParts.push(trip.itineraryName);
-    if (trip.boatName) titleParts.push(trip.boatName);
-
-    const embarkPortName = trip?.embarkation?.port || "";
-    const disembarkPortName = trip?.disembarkation?.port || "";
-
-    return {
-        id: trip.tripId,
-        source: "scubadates",
-        sourceTripId: trip.sourceTripId || trip.tripId,
-        tripType: "liveaboard",
-        vesselId: trip.vesselId || null,
-        boatName: trip.boatName || "",
-        title: titleParts.join(" - "),
-        country: trip.destination || "",
-        destination: trip.destination || "",
-        startDate: trip.startDate || "",
-        endDate: trip.endDate || "",
-        nights: trip.nights || null,
-
-        departurePort: {
-            id: null,
-            name: embarkPortName,
-        },
-
-        arrivalPort: {
-            id: null,
-            name: disembarkPortName,
-        },
-
-        images: {
-            cover: "",
-            gallery: [],
-        },
-
-        spaces: {
-            available: toNumber(trip?.spaces?.availableSpaces),
-            booked: toNumber(trip?.spaces?.bookedSpaces),
-            holding: toNumber(trip?.spaces?.optionSpaces),
-        },
-
-        adminDetails: {
-            itinerary: "",
-            included: "",
-            excluded: "",
-        },
-
-        cabins: convertedCabins,
-
-        inventory: [],
-
-        pricing: {
-            currency: trip.currency || "",
-            basePrice: trip.priceFrom != null ? toNumber(trip.priceFrom) : null,
-            publicDiscountPercent:
-                trip.originalPriceFrom && trip.originalPriceFrom > trip.priceFrom
-                    ? Math.round(((trip.originalPriceFrom - trip.priceFrom) / trip.originalPriceFrom) * 100)
-                    : 0,
-            instructorGroupPrice: null,
-            instructorFOCPolicy: null,
-            fullCharterPrice: null,
-            cabins: [],
-        },
-
-        isSpecialTrip: false,
-        specialType: null,
-        status: "open",
-
-        departureConfirmed: !!trip.departureConfirmed,
-        lastUpdate: trip.lastUpdate || "",
-        mandatoryFees: Array.isArray(trip.mandatoryFees) ? trip.mandatoryFees : [],
-        originalPriceFrom: trip.originalPriceFrom ?? null,
-        isDiscounted: !!trip.isDiscounted,
     };
 }
 
