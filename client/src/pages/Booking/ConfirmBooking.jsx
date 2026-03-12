@@ -67,8 +67,7 @@ function ConfirmBooking() {
     };
 
     try {
-      const apiURL = import.meta.env.VITE_API_BASE_URL;
-      const response = await axios.post(`${apiURL}/api/create-invoice`, payload);
+      const response = await axios.post("/api/create-invoice", payload);
       if (response.status === 200) {
         alert('✅ 인보이스 생성 성공!');
         navigate('/booking/summary', {
