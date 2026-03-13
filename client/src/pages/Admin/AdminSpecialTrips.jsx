@@ -736,6 +736,10 @@ export default function AdminSpecialTrips() {
                                     : ""}
                             </div>
                             <div>
+                                <strong>FOC 정책: </strong>
+                                {formData?.focPolicy || formData?.pricing?.instructorFOCPolicy || ""}
+                            </div>
+                            <div>
                                 <strong>내부 메모: </strong>
                                 {formData.internalNote}
                             </div>
@@ -1078,16 +1082,19 @@ export default function AdminSpecialTrips() {
                                     <label>강사 FOC</label>
                                     <input
                                         style={inputStyle}
-                                        value={formData?.pricing?.instructorFOCPolicy || ""}
-                                        onChange={(e) =>
+                                        value={formData?.pricing?.instructorFOCPolicy || formData?.focPolicy || ""}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+
                                             setFormData((prev) => ({
                                                 ...(prev || {}),
+                                                focPolicy: value, // ✅ top-level도 같이 갱신
                                                 pricing: {
                                                     ...(prev?.pricing || {}),
-                                                    instructorFOCPolicy: e.target.value,
+                                                    instructorFOCPolicy: value, // ✅ pricing 안도 같이 갱신
                                                 },
-                                            }))
-                                        }
+                                            }));
+                                        }}
                                         placeholder="예: 3+1"
                                     />
                                 </div>
