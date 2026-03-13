@@ -1540,7 +1540,9 @@ export default function AdminSpecialTrips() {
                                             ? t.salesMode.join(", ")
                                             : ""}
                                     </td>
-                                    <td style={tdStyle}>{t.focPolicy}</td>
+                                    <td style={tdStyle}>
+                                        {t.focPolicy || t.pricing?.instructorFOCPolicy || ""}
+                                    </td>
                                     <td style={tdStyle}>
                                         {t.status}
                                         {t.isScubanetSpecial && (
