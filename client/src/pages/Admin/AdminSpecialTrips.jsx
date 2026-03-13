@@ -737,7 +737,7 @@ export default function AdminSpecialTrips() {
                             </div>
                             <div>
                                 <strong>FOC 정책: </strong>
-                                {formData?.focPolicy || formData?.pricing?.instructorFOCPolicy || ""}
+                                {formData?.pricing?.instructorFOCPolicy || formData?.focPolicy || ""}
                             </div>
                             <div>
                                 <strong>내부 메모: </strong>
@@ -1541,7 +1541,7 @@ export default function AdminSpecialTrips() {
                                             : ""}
                                     </td>
                                     <td style={tdStyle}>
-                                        {t.focPolicy || t.pricing?.instructorFOCPolicy || ""}
+                                        {t.pricing?.instructorFOCPolicy || t.focPolicy || ""}
                                     </td>
                                     <td style={tdStyle}>
                                         {t.status}
