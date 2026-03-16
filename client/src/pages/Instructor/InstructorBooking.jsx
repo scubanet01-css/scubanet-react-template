@@ -33,6 +33,14 @@ function InstructorBooking() {
   const navigate = useNavigate();
   const trip = state?.trip;
 
+  // 🔎 디버그 로그
+  console.log("=== TRIP DEBUG START ===");
+  console.log("trip =", trip);
+  console.log("trip.pricing =", trip?.pricing);
+  console.log("trip.cabins =", trip?.cabins);
+  console.log("trip.inventory =", trip?.inventory);
+  console.log("=== TRIP DEBUG END ===");
+
   const currency = getCurrencyForTrip(trip);
 
   const [selectedBookings, setSelectedBookings] = useState([]);
