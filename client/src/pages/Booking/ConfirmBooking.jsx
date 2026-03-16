@@ -102,7 +102,7 @@ function ConfirmBooking() {
 
   return (
     <div className="confirm-booking">
-      <h2>예약 확인</h2>
+      <h2 style={{ color: 'red' }}>예약 확인 TEST-12345</h2>
 
       {/* 여행 정보 */}
       <section>
