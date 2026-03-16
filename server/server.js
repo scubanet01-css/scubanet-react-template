@@ -12,6 +12,7 @@ const generateInvoicePDF = require("./utils/generateInvoicePDF");
 const sendInvoiceEmail = require("./utils/sendInvoiceEmail");
 const invoiceRoutes = require("./routes/invoiceRoutes");
 const adminBoatAssetsRoutes = require("./routes/adminBoatAssets");
+const bookingRoutes = require("./routes/bookingRoutes");
 
 // ✅ Special Trips 유틸 직접 사용
 const {
@@ -137,7 +138,9 @@ app.delete("/api/admin/special-trips/:id", (req, res) => {
 // 기존 라우트들
 // --------------------------------------------------
 app.use("/api", invoiceRoutes);
+app.use("/api", bookingRoutes);
 app.use("/admin/api/boats-assets", adminBoatAssetsRoutes);
+
 
 // 디버그용 POST 테스트
 app.post("/__debug_post_test__", (req, res) => {

@@ -134,6 +134,7 @@ function ConfirmBooking() {
             },
             totalPrice,
             invoiceFileUrl: response.data.fileUrl || null,
+            bookingId: response.data.bookingId || null,
             bookingType: 'general',
           },
         });
