@@ -50,6 +50,7 @@ function ConfirmBooking() {
     );
   }
   const handleConfirmBooking = async () => {
+    console.log("🔥 예약 확정 버튼 클릭됨");
     if (!guestName || !guestEmail || !guestPhone) {
       alert("예약자 정보를 모두 입력해주세요.");
       return;
@@ -66,7 +67,11 @@ function ConfirmBooking() {
       totalPrice,
     };
 
+    console.log("📦 send-invoice 요청 보냄", payload);
+    const response = await axios.post("/api/send-invoice", payload);
+
     try {
+
       const response = await axios.post("/api/send-invoice", payload);
 
       if (response.data?.success) {
