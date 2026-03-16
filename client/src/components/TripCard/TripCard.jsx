@@ -195,21 +195,38 @@ export default function TripCard({ trip, mode = "public" }) {
 
             {/* ✔ 버튼 */}
             <div className="trip-actions">
+
+                {/* 상세보기는 항상 동일 */}
                 <button
                     className="btn-detail"
-                    onClick={() => navigate(`/trip/${trip.id}`, { state: { trip } })}
+                    onClick={() =>
+                        navigate(`/trip/${trip.id}`, { state: { trip } })
+                    }
                 >
                     상세보기
                 </button>
 
+                {/* 예약하기는 mode로 분기 */}
                 <button
                     className="btn-reserve"
                     onClick={() =>
-                        navigate(`/booking/${trip.id}`, { state: { trip } })
+                        navigate(
+                            mode === "instructor"
+                                ? `/instructor/${trip.id}`
+                                : `/booking/${trip.id}`,
+                            {
+                                state: {
+                                    trip,
+                                    bookingType:
+                                        mode === "instructor" ? "instructor" : "general",
+                                },
+                            }
+                        )
                     }
                 >
-                    예약하기
+                    {mode === "instructor" ? "강사 예약" : "예약하기"}
                 </button>
+
             </div>
         </div>
     );
