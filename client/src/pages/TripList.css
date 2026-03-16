@@ -1,63 +1,78 @@
 /* TripList 전체 컨테이너 */
 .triplist-container {
-    max-width: 1080px;
-    margin: 40px auto;
-    padding: 0 16px;
+    max-width: 1040px;
+    margin: 36px auto 48px;
+    padding: 0 18px;
 }
 
 /* 페이지 제목 */
 .triplist-title {
-    font-size: 28px;
+    font-size: 30px;
     font-weight: 700;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
     text-align: center;
+    color: #1b1f23;
+    letter-spacing: -0.02em;
 }
 
-/* TripCard 리스트 (세로 1열) */
+/* TripCard 리스트 */
 .triplist-cards {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    /* 카드 간격 */
-    margin-top: 20px;
+    gap: 18px;
+    margin-top: 24px;
 }
 
 /* 검색 결과 없을 때 */
 .triplist-empty {
     text-align: center;
-    padding: 40px 0;
-    color: #777;
-    font-size: 18px;
+    padding: 52px 0;
+    color: #6b7280;
+    font-size: 1rem;
 }
 
 /* 페이지네이션 */
 .triplist-pagination {
-    margin-top: 30px;
+    margin-top: 36px;
     text-align: center;
 }
 
 .triplist-pagination button {
     margin: 0 4px;
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+    padding: 7px 11px;
+    border-radius: 8px;
+    border: 1px solid #d7dce1;
     background: #fff;
+    color: #333;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.triplist-pagination button:hover {
+    border-color: #b8c2cc;
+    background: #f8fafc;
 }
 
 .triplist-pagination button.active {
-    background: #007bff;
+    background: #1677ff;
     color: #fff;
-    border-color: #007bff;
+    border-color: #1677ff;
 }
 
 /* 반응형 */
 @media (max-width: 768px) {
     .triplist-container {
+        margin: 24px auto 36px;
         padding: 0 12px;
     }
 
     .triplist-title {
-        font-size: 22px;
+        font-size: 24px;
+        margin-bottom: 22px;
+    }
+
+    .triplist-cards {
+        gap: 14px;
+        margin-top: 18px;
     }
 }
