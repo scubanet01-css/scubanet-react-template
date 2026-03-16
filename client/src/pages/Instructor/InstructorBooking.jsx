@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { getBestFOCOffer } from "../../utils/getBestFOCOffer";
@@ -16,7 +16,7 @@ const formatCurrencyLocal = (amount, currency = "USD") => {
   return `$${formatted}`;
 };
 
-// ⭐ FOC 규칙 필터링 — 모든 규칙을 그대로 반환 (중복 제거 없음)
+// ⭐ FOC 규칙 필터링
 const filterFOCOffers = (offers) => {
   return offers.filter((offer) => {
     const name = offer.name || "";
@@ -28,14 +28,11 @@ const filterFOCOffers = (offers) => {
   });
 };
 
-
 function InstructorBooking() {
-
   const { state } = useLocation();
   const navigate = useNavigate();
   const trip = state?.trip;
 
-  // ⭐ Almonda 전용 통화 처리 (반드시 여기에 있어야 함)
   const currency = getCurrencyForTrip(trip);
 
   const [selectedBookings, setSelectedBookings] = useState([]);
@@ -43,49 +40,211 @@ function InstructorBooking() {
 
   if (!trip) return <p>잘못된 접근입니다.</p>;
 
-  const ratePlans = trip.ratePlansRetail || [];
-  const specialOffers = ratePlans.filter((p) =>
-    /(group|charter|foc|dema)/i.test(p.name)
-  );
+  // -----------------------------------
+  // 1) 기본 여행 정보 fallback
+  // -----------------------------------
+  const boatName =
+    trip?.boat?.name ||
+    trip?.boatName ||
+    "정보 없음";
 
-  // ✅ 중복 제거된 cabinType 리스트
-  const cabinsMap = new Map();
-  ratePlans.forEach((plan) => {
-    (plan.cabinTypes || []).forEach((cabin) => {
-      if (!cabinsMap.has(cabin.id)) {
-        cabinsMap.set(cabin.id, cabin);
-      }
-    });
-  });
-  const cabins = Array.from(cabinsMap.values())
-    .map(cabin => {
-      // ✅ 2인 요금 누락 시 자동 추가
-      const hasDouble = (cabin.occupancy || []).some(o => Number(o.id) === 2);
-      if (!hasDouble && Array.isArray(cabin.occupancy)) {
-        const single = cabin.occupancy.find(o => Number(o.id) === 1);
-        if (single) {
-          cabin.occupancy.push({
-            id: 2,
-            price: Number(single.price),   // ⭕ 인당 요금 그대로 저장
-            parentPrice: single.parentPrice ? Number(single.parentPrice) : undefined,
-            label: "Double (auto)",
-          });
+  const tripName =
+    trip?.product?.name ||
+    trip?.title ||
+    trip?.tripName ||
+    "정보 없음";
 
+  // -----------------------------------
+  // 2) UTS 기준 기본 강사 정보
+  // -----------------------------------
+  const instructorGroupPrice =
+    Number(trip?.pricing?.instructorGroupPrice || 0) || 0;
+
+  const instructorFOCPolicy =
+    trip?.pricing?.instructorFOCPolicy ||
+    trip?.focPolicy ||
+    "";
+
+  // -----------------------------------
+  // 3) specialOffers를 UTS 기준으로 재구성
+  // 기존 UI 유지용
+  // -----------------------------------
+  const specialOffers = useMemo(() => {
+    const offers = [];
+
+    if (trip?.pricing?.instructorFOCPolicy) {
+      offers.push({
+        name: trip.pricing.instructorFOCPolicy,
+      });
+    }
+
+    if (Number(trip?.pricing?.publicDiscountPercent || 0) > 0) {
+      offers.push({
+        name: `Public ${trip.pricing.publicDiscountPercent}% Off`,
+      });
+    }
+
+    if (Number(trip?.pricing?.fullCharterPrice || 0) > 0) {
+      offers.push({
+        name: "Full Charter",
+      });
+    }
+
+    return offers;
+  }, [trip]);
+
+  // -----------------------------------
+  // 4) 객실 리스트 구성 (UTS 기준)
+  //
+  // 우선순위:
+  // pricing.cabins → trip.cabins
+  // -----------------------------------
+  const cabins = useMemo(() => {
+    const pricingCabins = Array.isArray(trip?.pricing?.cabins)
+      ? trip.pricing.cabins
+      : [];
+
+    if (pricingCabins.length > 0) {
+      return pricingCabins.map((cabin, index) => {
+        const occ = Array.isArray(cabin?.occupancy) ? [...cabin.occupancy] : [];
+
+        const hasDouble = occ.some((o) => Number(o.id) === 2);
+        if (!hasDouble) {
+          const single = occ.find((o) => Number(o.id) === 1);
+          if (single) {
+            occ.push({
+              id: 2,
+              price: Number(single.price),
+              parentPrice: single.parentPrice
+                ? Number(single.parentPrice)
+                : undefined,
+              label: "Double (auto)",
+            });
+          }
         }
-      }
-      return cabin;
-    });
-  ;
 
-  // 파일 상단 유틸로 추가
+        // 독실 옵션이 없으면 single price 기준으로 fallback
+        const hasPrivate = occ.some((o) => Number(o.id) === 3);
+        if (!hasPrivate) {
+          const single = occ.find((o) => Number(o.id) === 1);
+          if (single) {
+            occ.push({
+              id: 3,
+              price: Number(single.price),
+              parentPrice: single.parentPrice
+                ? Number(single.parentPrice)
+                : undefined,
+              label: "Private (auto)",
+            });
+          }
+        }
+
+        return {
+          id: cabin?.id || cabin?.cabinId || `pricing-cabin-${index}`,
+          name: cabin?.name || cabin?.cabinName || `객실 ${index + 1}`,
+          occupancy: occ.length > 0
+            ? occ
+            : [
+              { id: 1, price: instructorGroupPrice },
+              { id: 2, price: instructorGroupPrice },
+              { id: 3, price: instructorGroupPrice },
+            ],
+        };
+      });
+    }
+
+    const tripCabins = Array.isArray(trip?.cabins) ? trip.cabins : [];
+
+    return tripCabins.map((cabin, index) => {
+      const basePrice =
+        Number(cabin?.instructorPrice) ||
+        instructorGroupPrice ||
+        Number(trip?.pricing?.basePrice || 0) ||
+        0;
+
+      return {
+        id: cabin?.id || cabin?.cabinId || `trip-cabin-${index}`,
+        name: cabin?.name || cabin?.cabinName || `객실 ${index + 1}`,
+        occupancy: [
+          { id: 1, price: basePrice },
+          { id: 2, price: basePrice },
+          { id: 3, price: basePrice },
+        ],
+      };
+    });
+  }, [trip, instructorGroupPrice]);
+
+  // -----------------------------------
+  // 5) inventory를 cabin별로 묶기
+  // 기존 UI의 subCabin 구조를 최대한 유지
+  // -----------------------------------
+  const cabinsWithRooms = useMemo(() => {
+    const inventory = Array.isArray(trip?.inventory) ? trip.inventory : [];
+
+    return cabins.map((cabin) => {
+      const subCabins = inventory
+        .filter((room) => {
+          return (
+            String(room?.cabinId) === String(cabin.id) ||
+            String(room?.cabinTypeId) === String(cabin.id) ||
+            String(room?.cabinType?.id) === String(cabin.id)
+          );
+        })
+        .map((room, idx) => ({
+          id: room?.id || room?.roomId || `${cabin.id}-room-${idx}`,
+          name:
+            room?.name ||
+            room?.roomName ||
+            room?.number ||
+            `${cabin.name} ${idx + 1}`,
+          availableSpaces:
+            Number(room?.availableSpaces) ||
+            Number(room?.available) ||
+            0,
+        }));
+
+      // inventory가 없으면 cabin 자체를 1개의 room처럼 표시
+      const fallbackSubCabins =
+        subCabins.length > 0
+          ? subCabins
+          : [
+            {
+              id: `${cabin.id}-fallback`,
+              name: cabin.name,
+              availableSpaces: 1,
+            },
+          ];
+
+      // cabin 단위 좌석 요약 (inventory 기준)
+      const available = fallbackSubCabins.reduce(
+        (sum, room) => sum + Number(room.availableSpaces || 0),
+        0
+      );
+
+      return {
+        ...cabin,
+        available,
+        option: 0,
+        booked: 0,
+        subCabins: fallbackSubCabins,
+      };
+    });
+  }, [trip, cabins]);
+
+  // -----------------------------------
+  // 6) occupancy label
+  // -----------------------------------
   const getOccLabelById = (id) => {
     if (Number(id) === 1) return "1인 예약";
     if (Number(id) === 2) return "2인 예약";
     if (Number(id) === 3) return "독실 예약";
-    return null; // 그 외는 숨김
+    return null;
   };
 
-  // ✅ 예약 추가
+  // -----------------------------------
+  // 7) 예약 추가
+  // 기존 selectedBookings 구조 최대 유지
+  // -----------------------------------
   const handleAddBooking = (room, occId, cabinName, basePrice) => {
     const occLabel = getOccLabelById(occId);
     const multiplier = Number(occId) === 2 ? 2 : 1;
@@ -95,30 +254,31 @@ function InstructorBooking() {
       id: room.id,
       cabin: cabinName,
       room: room.name,
-      occId,               // ✅ 반드시 저장
-      occLabel,            // ✅ 예약 유형 표시용
+      occId,
+      occLabel,
       price: finalPrice,
     };
 
-    // 중복 방지 — 이미 예약된 경우 추가 X
     setSelectedBookings((prev) => {
       const exists = prev.find((b) => b.id === room.id);
       if (exists) {
-        // 같은 방 재선택 시 기존 내용 교체
         return prev.map((b) => (b.id === room.id ? newBooking : b));
       }
       return [...prev, newBooking];
     });
   };
 
-
-  // ✅ 예약 취소
+  // -----------------------------------
+  // 8) 예약 취소
+  // -----------------------------------
   const removeBooking = (roomId) => {
     setSelectedBookings((prev) => prev.filter((b) => b.id !== roomId));
     setSelectedOcc((prev) => ({ ...prev, [roomId]: "" }));
   };
 
-  // ✅ 예약 변경 시 자동 추가 / 제거
+  // -----------------------------------
+  // 9) 예약 변경 시 자동 추가 / 제거
+  // -----------------------------------
   const handleOccChange = (room, occId, cabinName, cabin) => {
     setSelectedOcc((prev) => ({ ...prev, [room.id]: occId }));
 
@@ -127,11 +287,13 @@ function InstructorBooking() {
       return;
     }
 
-    // ✅ 선택된 요금 찾기
     const occ = (cabin.occupancy || []).find(
       (o) => Number(o.id) === Number(occId)
     );
-    const occPrice = parseFloat(occ?.price || 0);
+    const occPrice =
+      parseFloat(occ?.price || 0) ||
+      instructorGroupPrice ||
+      0;
 
     if (occPrice > 0) {
       handleAddBooking(room, occId, cabinName, occPrice);
@@ -140,24 +302,30 @@ function InstructorBooking() {
     }
   };
 
-
-  // ✅ 총 금액(선할인 전)
+  // -----------------------------------
+  // 10) 총 금액(선할인 전)
+  // -----------------------------------
   const baseTotal = selectedBookings.reduce((sum, b) => sum + b.price, 0);
 
-  // ✅ FOC(Free of Charge) 자동 할인 (복수 규칙 지원)
-  let focDiscount = 0;
-  let focDetails = [];
+  // -----------------------------------
+  // 11) FOC 오퍼 재구성
+  // UTS의 instructorFOCPolicy를 기존 getBestFOCOffer용 형태로 변환
+  // -----------------------------------
+  const focOffers = useMemo(() => {
+    const offers = [];
 
-  // 1) FOC/Group 오퍼 전체 탐색 (ratePlans + specialOffers 모두)
-  const focOffers = filterFOCOffers(
-    [
-      ...(ratePlans || []),
-      ...(specialOffers || []),
-    ].filter((p) => /(foc|group|charter)/i.test(p.name))
-  );
+    if (instructorFOCPolicy) {
+      offers.push({
+        name: instructorFOCPolicy,
+      });
+    }
 
+    return filterFOCOffers(offers);
+  }, [instructorFOCPolicy]);
 
-  // 2) pax(인원) 계산 및 1인분 단가 배열 만들기
+  // -----------------------------------
+  // 12) pax(인원) 계산 및 unit price 배열
+  // -----------------------------------
   let pax = 0;
   const unitPrices = [];
 
@@ -172,7 +340,11 @@ function InstructorBooking() {
     }
   });
 
-  // ⭐ getBestFOCOffer로 최종 FOC 결정
+  // -----------------------------------
+  // 13) FOC 계산
+  // -----------------------------------
+  let focDiscount = 0;
+  let focDetails = [];
   let bestFOC = null;
 
   if (pax > 0 && unitPrices.length > 0 && focOffers.length > 0) {
@@ -181,8 +353,9 @@ function InstructorBooking() {
 
   if (bestFOC) {
     const sorted = unitPrices.slice().sort((a, b) => a - b);
+    const freeCount = Number(bestFOC.free || bestFOC.bonus || 0);
     const discount = sorted
-      .slice(0, bestFOC.free)
+      .slice(0, freeCount)
       .reduce((sum, v) => sum + v, 0);
 
     focDiscount = discount;
@@ -192,25 +365,21 @@ function InstructorBooking() {
         offerName: bestFOC.name,
         req: bestFOC.req,
         bonus: bestFOC.bonus,
-        freeUnits: bestFOC.free,
+        freeUnits: freeCount,
         discount,
       },
     ];
   }
-
-
 
   // ✅ 최종 합계
   const totalPrice = baseTotal - focDiscount;
 
   console.log("🧩 FOC 계산 결과:", focDetails);
 
-
-
   return (
     <div className="instructor-detail-container">
-      <h2>{trip.boat?.name}</h2>
-      <p className="product-name">{trip.product?.name}</p>
+      <h2>{boatName}</h2>
+      <p className="product-name">{tripName}</p>
 
       <p>
         <strong>출발일:</strong> {trip.startDate} <br />
@@ -230,7 +399,10 @@ function InstructorBooking() {
 
       <p>
         <strong>좌석 현황:</strong>{" "}
-        {trip.spaces?.availableSpaces}/{trip.spaces?.maxSpaces}
+        {trip?.spaces?.available ?? 0} /{" "}
+        {(Number(trip?.spaces?.available || 0) +
+          Number(trip?.spaces?.holding || 0) +
+          Number(trip?.spaces?.booked || 0)) || 0}
       </p>
 
       <hr />
@@ -239,15 +411,11 @@ function InstructorBooking() {
 
       {/* ✅ 객실 리스트 */}
       <div className="cabin-list">
-        {cabins.map((cabin, index) => {
-          const matchingSpace = trip.spaces?.cabinTypes?.find(
-            (c) => c.id === cabin.id
-          );
-
-          const available = matchingSpace?.availableSpaces || 0;
-          const option = matchingSpace?.optionSpaces || 0;
-          const booked = matchingSpace?.bookedSpaces || 0;
-          const subCabins = matchingSpace?.cabins || [];
+        {cabinsWithRooms.map((cabin, index) => {
+          const available = cabin.available || 0;
+          const option = cabin.option || 0;
+          const booked = cabin.booked || 0;
+          const subCabins = cabin.subCabins || [];
 
           return (
             <div key={`${cabin.id}-${index}`} className="cabin-card">
@@ -294,20 +462,24 @@ function InstructorBooking() {
                           >
                             <option value="">예약 유형 선택</option>
                             {(cabin.occupancy || [])
-                              .filter(o => [1, 2, 3].includes(Number(o.id)) && parseFloat(o.price) > 0) // 유효만
+                              .filter(
+                                (o) =>
+                                  [1, 2, 3].includes(Number(o.id)) &&
+                                  parseFloat(o.price) > 0
+                              )
                               .map((o) => {
                                 const label = getOccLabelById(o.id);
-                                return label ? <option key={o.id} value={o.id}>{label}</option> : null;
+                                return label ? (
+                                  <option key={o.id} value={o.id}>
+                                    {label}
+                                  </option>
+                                ) : null;
                               })}
                           </select>
 
-
-
                           <button
                             className="book-btn"
-                            onClick={() =>
-                              removeBooking(room.id)
-                            }
+                            onClick={() => removeBooking(room.id)}
                             disabled={!selectedBookings.find((b) => b.id === room.id)}
                           >
                             예약 취소
@@ -319,20 +491,17 @@ function InstructorBooking() {
                 </div>
               )}
 
-              {/* ⭐ 객실 요금 표시 (label + price) */}
+              {/* ⭐ 객실 요금 표시 */}
               {cabin.occupancy?.map((occ, j) => {
                 let occLabel = "";
                 if (occ.id === 1) occLabel = "1인 예약";
                 else if (occ.id === 2) occLabel = "2인 예약";
                 else if (occ.id === 3) occLabel = "독실 예약";
 
-                // label 없으면 skip
                 if (!occLabel) return null;
 
                 return (
                   <div key={j} className="price-row">
-
-                    {/* ⭐ 여기가 사라졌던 구간! */}
                     <span>{occLabel}</span>
 
                     <span className="price">
@@ -347,7 +516,6 @@ function InstructorBooking() {
                   </div>
                 );
               })}
-
             </div>
           );
         })}
@@ -362,7 +530,6 @@ function InstructorBooking() {
               <li key={i}>
                 {b.cabin} / {b.room} / {b.occLabel} —{" "}
                 <strong>{formatCurrency(b.price, currency)}</strong>
-
               </li>
             ))}
           </ul>
@@ -371,30 +538,29 @@ function InstructorBooking() {
             <div style={{ color: "#007bff", fontWeight: "bold", marginTop: "10px" }}>
               {focDetails.map((f, i) => (
                 <p key={i}>
-                  {f.offerName || f.name}: {f.req}+{f.bonus} → 무료 {f.free}인
+                  {f.offerName || f.name}: {f.req}+{f.bonus} → 무료 {f.freeUnits}인
                   &nbsp;(-{formatCurrency(Math.round(f.discount), currency)})
                 </p>
-
               ))}
             </div>
           )}
 
-
-          <p><strong>총 합계:</strong> {formatCurrencyLocal(totalPrice, currency)}</p>
-
-
-
+          <p>
+            <strong>총 합계:</strong> {formatCurrencyLocal(totalPrice, currency)}
+          </p>
 
           <button
             className="confirm-btn"
             onClick={() =>
-              navigate("/instructor/${trip.id}/confirm", {
+              navigate(`/instructor/${trip.id}/confirm`, {
                 state: {
                   trip,
                   selectedBookings,
-                  totalPrice,   // ✅ 합계 전달
-                  focDiscount,  // ✅ FOC 할인액 전달
-                  focDetails       // ✅ FOC 구조 정보 전달 (예: 7+1 등)
+                  totalPrice,
+                  focDiscount,
+                  focDetails,
+                  bookingType: "instructor",
+                  currency,
                 },
               })
             }
@@ -407,7 +573,7 @@ function InstructorBooking() {
       {/* ✅ Footer */}
       <div className="footer-bar">
         <button
-          onClick={() => navigate("/instructor/bookings")}
+          onClick={() => navigate("/instructor")}
           className="back-btn"
         >
           ← 목록으로 돌아가기
