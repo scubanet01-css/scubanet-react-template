@@ -39,6 +39,8 @@ function InstructorBooking() {
   console.log("trip.pricing =", trip?.pricing);
   console.log("trip.cabins =", trip?.cabins);
   console.log("trip.inventory =", trip?.inventory);
+  console.log("trip.cabins[0] =", trip?.cabins?.[0]);
+  console.log("trip.cabins[0].ratePlans =", trip?.cabins?.[0]?.ratePlans);
   console.log("=== TRIP DEBUG END ===");
 
   const currency = getCurrencyForTrip(trip);
