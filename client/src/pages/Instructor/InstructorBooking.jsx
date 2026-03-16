@@ -239,12 +239,25 @@ function InstructorBooking() {
           pricingCabin?.cabinName ||
           `객실 ${index + 1}`;
 
-        const occupancy = Array.isArray(pricingCabin?.occupancy)
-          ? [...pricingCabin.occupancy]
+        const specialBasePrice =
+          Number(pricingCabin?.instructorGroupPrice) ||
+          Number(pricingCabin?.groupPrice) ||
+          Number(pricingCabin?.price) ||
+          instructorGroupPrice ||
+          0;
+
+        const occupancy = Array.isArray(pricingCabin?.occupancy) && pricingCabin.occupancy.length > 0
+          ? pricingCabin.occupancy.map((o) => ({
+            ...o,
+            price:
+              Number(o?.price) ||
+              Number(o?.instructorGroupPrice) ||
+              specialBasePrice,
+          }))
           : [
-            { id: 1, price: instructorGroupPrice },
-            { id: 2, price: instructorGroupPrice },
-            { id: 3, price: instructorGroupPrice },
+            { id: 1, price: specialBasePrice },
+            { id: 2, price: specialBasePrice },
+            { id: 3, price: specialBasePrice },
           ];
 
         const subCabins = inventory
