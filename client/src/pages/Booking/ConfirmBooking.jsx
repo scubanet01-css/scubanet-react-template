@@ -120,24 +120,29 @@ function ConfirmBooking() {
         alert('✅ 인보이스가 성공적으로 생성되고 이메일로 발송되었습니다!');
 
         // ✅ MyBooking.jsx로 이동
-        navigate('/booking/summary', {
-          state: {
-            trip,
-            cabins: selectedCabins,
-            selectedCabins,
-            selectedRatePlan,
-            currency,
-            guest: {
-              name: guestName,
-              email: guestEmail,
-              phone: guestPhone,
+        const savedBookingId = response.data.bookingId || null;
+
+        navigate(
+          savedBookingId ? `/booking/summary/${savedBookingId}` : '/booking/summary',
+          {
+            state: {
+              trip,
+              cabins: selectedCabins,
+              selectedCabins,
+              selectedRatePlan,
+              currency,
+              guest: {
+                name: guestName,
+                email: guestEmail,
+                phone: guestPhone,
+              },
+              totalPrice,
+              invoiceFileUrl: response.data.fileUrl || null,
+              bookingId: savedBookingId,
+              bookingType: 'general',
             },
-            totalPrice,
-            invoiceFileUrl: response.data.fileUrl || null,
-            bookingId: response.data.bookingId || null,
-            bookingType: 'general',
-          },
-        });
+          }
+        );
       } else {
         alert('❌ 인보이스 생성 실패!');
       }

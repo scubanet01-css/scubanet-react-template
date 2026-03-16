@@ -48,6 +48,7 @@ function App() {
           <Route path="/booking/:tripId" element={<Booking />} />
           <Route path="/booking/confirm" element={<ConfirmBooking />} />
           <Route path="/booking/summary" element={<MyBooking />} />
+          <Route path="/booking/summary/:bookingId" element={<MyBooking />} />
           <Route path="/booking/payment" element={<PaymentPage />} />
 
           {/* 인증 */}

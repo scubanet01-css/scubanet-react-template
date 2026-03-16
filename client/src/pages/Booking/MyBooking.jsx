@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatCurrency';
 
 function MyBooking() {
@@ -9,6 +9,7 @@ function MyBooking() {
 
   const [loading, setLoading] = useState(false);
   const [booking, setBooking] = useState(null);
+  const { bookingId: bookingIdFromParams } = useParams();
   const [error, setError] = useState('');
 
   // ✅ 예약 직후 state로 넘어온 값
@@ -17,7 +18,7 @@ function MyBooking() {
   const stateGuest = state?.guest || null;
   const stateCurrency = state?.currency || null;
   const stateTotalPrice = state?.totalPrice;
-  const bookingId = state?.bookingId || null;
+  const bookingId = bookingIdFromParams || state?.bookingId || null;
   const invoiceFileUrl = state?.invoiceFileUrl || null;
 
   // ✅ state 기반 총액 계산용
@@ -91,9 +92,8 @@ function MyBooking() {
     stateTotalPrice ??
     stateComputedTotal;
 
-  if (!trip || !guest) {
-    return <div>잘못된 접근입니다.</div>;
-  }
+  if (loading) return <div>예약 정보를 불러오는 중입니다...</div>;
+  if (!trip || !guest) return <div>잘못된 접근입니다.</div>;
 
   const tripName =
     trip?.product?.name ||
