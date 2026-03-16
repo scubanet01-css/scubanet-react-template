@@ -1,4 +1,3 @@
-// /pages/Booking/MyBooking.jsx
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatCurrency';
@@ -11,8 +10,24 @@ function MyBooking() {
 
   if (!trip || !guest) return <div>잘못된 접근입니다.</div>;
 
+  const getOccupancyCount = (cabin) => {
+    if (!cabin) return 1;
+
+    if (cabin.occupancyValue) {
+      const value = parseInt(cabin.occupancyValue, 10);
+
+      if (value === 3) return 1; // 독실 예약
+      if (value === 2) return 2;
+
+      return 1;
+    }
+
+    if (cabin.occupancyType?.includes('2인')) return 2;
+    return 1;
+  };
+
   const total = cabins.reduce((sum, cabin) => {
-    const count = cabin.occupancyValue ? parseInt(cabin.occupancyValue, 10) : 1;
+    const count = getOccupancyCount(cabin);
     return sum + cabin.price * count;
   }, 0);
 
@@ -24,11 +39,13 @@ function MyBooking() {
       <h2>예약 내역 확인</h2>
 
       <p><strong>예약자:</strong> {guest.name} / {guest.email}</p>
+
       <p>
         <strong>여행:</strong> {tripName} / {trip.startDate} 출발 / {boatName}
       </p>
 
       <h3>객실</h3>
+
       <ul>
         {cabins.map((cabin, i) => (
           <li key={i}>
