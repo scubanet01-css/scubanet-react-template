@@ -67,11 +67,10 @@ function ConfirmBooking() {
       totalPrice,
     };
 
-    console.log("📦 send-invoice 요청 보냄", payload);
-    const response = await axios.post("/api/send-invoice", payload);
+
 
     try {
-
+      console.log("📦 send-invoice 요청 보냄", payload);
       const response = await axios.post("/api/send-invoice", payload);
 
       if (response.data?.success) {
