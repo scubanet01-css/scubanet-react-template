@@ -140,6 +140,9 @@ function InstructorBooking() {
   const navigate = useNavigate();
   const trip = state?.trip;
 
+  console.log("trip.inventory[0] =", trip?.inventory?.[0]);
+  console.log("trip.inventory =", trip?.inventory);
+
   const currency = getCurrencyForTrip(trip);
 
   const [selectedBookings, setSelectedBookings] = useState([]);
