@@ -56,21 +56,23 @@ function ConfirmBooking() {
     }
 
     const payload = {
-      trip: trip,
-      cabins: selectedCabins,
-      selectedCabins: selectedCabins,
+      trip,
+      selectedBookings: selectedCabins,
       guest: {
         name: guestName,
         email: guestEmail,
         phone: guestPhone,
       },
+      totalPrice,
     };
 
     try {
-      const response = await axios.post("/api/create-invoice", payload);
-      if (response.status === 200) {
-        alert('✅ 인보이스 생성 성공!');
-        navigate('/booking/summary', {
+      const response = await axios.post("/api/send-invoice", payload);
+
+      if (response.data?.success) {
+        alert("✅ 인보이스 발송 성공!");
+
+        navigate("/booking/summary", {
           state: {
             trip,
             cabins: selectedCabins,
@@ -78,18 +80,17 @@ function ConfirmBooking() {
             guest: {
               name: guestName,
               email: guestEmail,
-              phone: guestPhone
-            }
-          }
+              phone: guestPhone,
+            },
+            invoiceFileUrl: response.data.fileUrl || null,
+          },
         });
-
       } else {
-        alert('❌ 인보이스 생성 실패!');
+        alert("❌ 인보이스 생성 실패!");
       }
-
     } catch (err) {
-      console.error('서버 요청 오류:', err);
-      alert('❌ 인보이스 생성 중 오류 발생');
+      console.error("서버 요청 오류:", err);
+      alert("❌ 인보이스 생성 중 오류 발생");
     }
   };
 
