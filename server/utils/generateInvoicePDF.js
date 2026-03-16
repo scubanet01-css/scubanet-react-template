@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const PDFDocument = require("pdfkit");
 
-const fontPath = null;
+const fontPath = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf";
 
 // -------------------------------
 // 공통 헬퍼
