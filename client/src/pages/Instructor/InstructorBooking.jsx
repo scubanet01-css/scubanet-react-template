@@ -250,14 +250,34 @@ function InstructorBooking() {
             const roomName = String(room?.roomName || room?.name || "");
             return roomName.includes(cabinName);
           })
-          .map((room, idx) => ({
-            id: room?.roomId || room?.id || `${cabinName}-${idx}`,
-            name: room?.roomName || room?.name || `${cabinName} ${idx + 1}`,
-            availableSpaces:
-              Number(room?.availableSpaces) ||
-              Number(room?.available) ||
-              0,
-          }));
+          .map((room, idx) => {
+            let availableSpaces = 0;
+
+            // 1) 직접 값이 있으면 우선 사용
+            if (room?.availableSpaces != null) {
+              availableSpaces = Number(room.availableSpaces) || 0;
+            } else if (room?.available != null && typeof room.available !== "number") {
+              // boolean available 같은 경우
+              availableSpaces = room.available ? 1 : 0;
+            } else if (room?.available != null) {
+              availableSpaces = Number(room.available) || 0;
+            } else if (room?.capacity != null && room?.occupied != null) {
+              // 2) special inventory 구조 대응
+              availableSpaces = Math.max(
+                0,
+                Number(room.capacity || 0) - Number(room.occupied || 0)
+              );
+            } else if (String(room?.status || "").toLowerCase() === "available") {
+              // 3) 마지막 fallback
+              availableSpaces = 1;
+            }
+
+            return {
+              id: room?.roomId || room?.id || `${cabinName}-${idx}`,
+              name: room?.roomName || room?.name || `${cabinName} ${idx + 1}`,
+              availableSpaces,
+            };
+          });
 
         return {
           id: pricingCabin?.id || pricingCabin?.cabinId || `special-${index}`,
