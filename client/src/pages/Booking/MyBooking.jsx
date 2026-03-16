@@ -6,10 +6,10 @@ import { formatCurrency } from '../../utils/formatCurrency';
 function MyBooking() {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const { bookingId: bookingIdFromParams } = useParams();
 
   const [loading, setLoading] = useState(false);
   const [booking, setBooking] = useState(null);
-  const { bookingId: bookingIdFromParams } = useParams();
   const [error, setError] = useState('');
 
   // ✅ 예약 직후 state로 넘어온 값
@@ -18,10 +18,12 @@ function MyBooking() {
   const stateGuest = state?.guest || null;
   const stateCurrency = state?.currency || null;
   const stateTotalPrice = state?.totalPrice;
-  const bookingId = bookingIdFromParams || state?.bookingId || null;
-  const invoiceFileUrl = state?.invoiceFileUrl || null;
+  const stateInvoiceFileUrl = state?.invoiceFileUrl || null;
+  const stateBookingId = state?.bookingId || null;
 
-  // ✅ state 기반 총액 계산용
+  // ✅ URL 파라미터 우선
+  const bookingId = bookingIdFromParams || stateBookingId || null;
+
   const getOccupancyCount = (cabin) => {
     if (!cabin) return 1;
 
@@ -57,7 +59,7 @@ function MyBooking() {
 
         const res = await axios.get(`/api/bookings/${bookingId}`);
 
-        if (res.data?.success) {
+        if (res.data?.success && res.data?.booking) {
           setBooking(res.data.booking);
         } else {
           setError('예약 정보를 불러오지 못했습니다.');
@@ -79,6 +81,7 @@ function MyBooking() {
       product: { name: booking.trip.title },
       title: booking.trip.title,
       startDate: booking.trip.startDate,
+      endDate: booking.trip.endDate,
       boat: { name: booking.trip.boatName },
       boatName: booking.trip.boatName,
     }
@@ -92,8 +95,14 @@ function MyBooking() {
     stateTotalPrice ??
     stateComputedTotal;
 
-  if (loading) return <div>예약 정보를 불러오는 중입니다...</div>;
-  if (!trip || !guest) return <div>잘못된 접근입니다.</div>;
+  const invoiceFileUrl =
+    booking?.invoiceFileUrl ||
+    stateInvoiceFileUrl ||
+    null;
+
+  const bookingStatus = booking?.bookingStatus || 'confirmed';
+  const paymentStatus = booking?.paymentStatus || 'pending';
+  const createdAt = booking?.createdAt || null;
 
   const tripName =
     trip?.product?.name ||
@@ -105,26 +114,84 @@ function MyBooking() {
     trip?.boatName ||
     '정보 없음';
 
+  const getStatusLabel = (status) => {
+    if (status === 'confirmed') return '예약 확정';
+    if (status === 'pending') return '확인 대기';
+    if (status === 'cancelled') return '예약 취소';
+    return status || '-';
+  };
+
+  const getPaymentLabel = (status) => {
+    if (status === 'paid') return '결제 완료';
+    if (status === 'pending') return '결제 대기';
+    if (status === 'failed') return '결제 실패';
+    return status || '-';
+  };
+
+  if (loading && !booking && !stateTrip) {
+    return <div style={{ padding: 20 }}>예약 정보를 불러오는 중입니다...</div>;
+  }
+
+  if (!trip || !guest) {
+    return <div style={{ padding: 20 }}>잘못된 접근입니다.</div>;
+  }
+
   return (
     <div style={{ padding: 20 }}>
       <h2>예약 내역 확인</h2>
 
-      {loading && <p>예약 정보를 불러오는 중입니다...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      {bookingId && (
-        <p>
-          <strong>예약번호:</strong> {bookingId}
-        </p>
+      {loading && (
+        <p style={{ color: '#666' }}>최신 예약 정보를 불러오는 중입니다...</p>
       )}
 
-      <p>
-        <strong>예약자:</strong> {guest.name} / {guest.email}
-      </p>
+      {error && (
+        <p style={{ color: 'red' }}>{error}</p>
+      )}
 
-      <p>
-        <strong>여행:</strong> {tripName} / {trip.startDate} 출발 / {boatName}
-      </p>
+      <div style={{ marginBottom: 16 }}>
+        {bookingId && (
+          <p>
+            <strong>예약번호:</strong> {bookingId}
+          </p>
+        )}
+
+        <p>
+          <strong>예약 상태:</strong> {getStatusLabel(bookingStatus)}
+        </p>
+
+        <p>
+          <strong>결제 상태:</strong> {getPaymentLabel(paymentStatus)}
+        </p>
+
+        {createdAt && (
+          <p>
+            <strong>예약일시:</strong>{' '}
+            {new Date(createdAt).toLocaleString('ko-KR')}
+          </p>
+        )}
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <p>
+          <strong>예약자:</strong> {guest.name} / {guest.email}
+        </p>
+
+        {guest.phone && (
+          <p>
+            <strong>전화번호:</strong> {guest.phone}
+          </p>
+        )}
+
+        <p>
+          <strong>여행:</strong> {tripName} / {trip.startDate} 출발 / {boatName}
+        </p>
+
+        {trip?.endDate && (
+          <p>
+            <strong>도착일:</strong> {trip.endDate}
+          </p>
+        )}
+      </div>
 
       <h3>객실</h3>
       <ul>
@@ -136,32 +203,49 @@ function MyBooking() {
         ))}
       </ul>
 
-      <p>
+      <p style={{ marginTop: 16 }}>
         <strong>총 금액:</strong> {formatCurrency(total, currency)}
       </p>
 
       {invoiceFileUrl && (
-        <p>
-          <strong>인보이스 파일:</strong> {invoiceFileUrl}
+        <p style={{ marginTop: 12 }}>
+          <strong>인보이스 파일:</strong>{' '}
+          <a
+            href={invoiceFileUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            인보이스 열기
+          </a>
         </p>
       )}
 
-      <button
-        onClick={() =>
-          navigate('/booking/payment', {
-            state: {
-              bookingId,
-              trip,
-              cabins,
-              guest,
-              currency,
-              totalPrice: total,
-            },
-          })
-        }
-      >
-        결제하기
-      </button>
+      <div style={{ marginTop: 24 }}>
+        <button
+          onClick={() =>
+            navigate('/booking/payment', {
+              state: {
+                bookingId,
+                trip,
+                cabins,
+                guest,
+                currency,
+                totalPrice: total,
+                invoiceFileUrl,
+                bookingStatus,
+                paymentStatus,
+              },
+            })
+          }
+          style={{ marginRight: 12 }}
+        >
+          결제하기
+        </button>
+
+        <button onClick={() => navigate(-1)}>
+          ← 이전으로
+        </button>
+      </div>
     </div>
   );
 }
