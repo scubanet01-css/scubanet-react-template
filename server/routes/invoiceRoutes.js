@@ -4,6 +4,7 @@ const router = express.Router();
 const path = require("path");
 const generateInvoicePDF = require("../utils/generateInvoicePDF");
 const sendInvoiceEmail = require("../utils/sendInvoiceEmail");
+const saveBooking = require("../utils/saveBooking");
 
 function getTripName(trip) {
   return (
@@ -105,13 +106,27 @@ router.post("/send-invoice", async (req, res) => {
     });
 
     console.log(`📬 이메일 발송 성공: ${guest.email}`);
+    const savedBooking = saveBooking({
+      trip,
+      selectedBookings: cabins,
+      guest,
+      totalPrice,
+      bookingType: resolvedBookingType,
+      invoiceFileUrl: `/data/${filename}`,
+      invoiceFilePath: filePath,
+      emailSent: true,
+      paymentStatus: "pending",
+      bookingStatus: "confirmed",
+    });
 
     res.json({
       success: true,
       email: guest.email,
       fileUrl: `/data/${filename}`,
       bookingType: resolvedBookingType,
+      bookingId: savedBooking.bookingId,
     });
+
   } catch (error) {
     console.error("❌ 인보이스 생성 또는 이메일 발송 실패:", error);
 
