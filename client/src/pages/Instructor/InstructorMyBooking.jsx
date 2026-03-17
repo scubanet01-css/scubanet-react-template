@@ -136,26 +136,24 @@ function InstructorMyBooking() {
 
       <div className="button-area">
         <button
-          onClick={() =>
-            navigate("/instructor/payment", {
-              state: {
-                bookingId,
-                trip,
-                selectedBookings: [...selectedBookings],
-                totalPrice: focAppliedTotal,
-                focDiscount: safeFoc,
-                focDetails,
-                commissionRate: rate,
-                commissionAmount,
-                finalAmount,
-                currency,
-                invoiceFileUrl,
-              },
-            })
-          }
+          disabled
+          style={{
+            backgroundColor: "#ccc",
+            cursor: "not-allowed",
+          }}
+          title="결제 기능 준비 중입니다."
         >
           결제하기 →
         </button>
+
+        <p style={{
+          marginTop: "10px",
+          fontSize: "13px",
+          color: "#666"
+        }}>
+          현재 결제 기능은 준비 중입니다.
+          예약 및 인보이스 확인까지 테스트 가능합니다.
+        </p>
       </div>
     </div>
   );
