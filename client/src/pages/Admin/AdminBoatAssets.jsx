@@ -1079,26 +1079,32 @@ function AdminBoatAssets() {
             };
 
             /* =========================
-               1. Hero Image
-            ========================= */
-            if (heroImage?.file) {
-                const resizedHero = await resizeImage(heroImage.file, 2000, 0.85);
+   1. Hero Image
+========================= */
+            if (heroImage?.file || heroImage?.existingUrl) {
+                let heroUrl = heroImage?.existingUrl || "";
 
-                const heroRes = await uploadImageToServer({
-                    vesselId,
-                    bucket: "hero",
-                    file: resizedHero,
-                });
+                if (heroImage?.file) {
+                    const resizedHero = await resizeImage(heroImage.file, 2000, 0.85);
 
-                payloadForSave.assets.hero = {
-                    id: heroImage.id,
-                    url:
+                    const heroRes = await uploadImageToServer({
+                        vesselId,
+                        bucket: "hero",
+                        file: resizedHero,
+                    });
+
+                    heroUrl =
                         heroRes.savedPath ||
                         buildUrl({
                             vesselId,
                             bucket: "hero",
                             filename: resizedHero.name,
-                        }),
+                        });
+                }
+
+                payloadForSave.assets.hero = {
+                    id: heroImage.id,
+                    url: heroUrl,
                     title: heroImage.title || boatName || "",
                     description: heroImage.description || "",
                     order: heroImage.order || 1,
@@ -1113,16 +1119,29 @@ function AdminBoatAssets() {
             ========================= */
             const deckPlansOut = [];
             for (const d of deckPlans) {
-                if (!d?.image?.file) continue;
+                if (!d?.image?.file && !d?.image?.existingUrl) continue;
 
-                const resized = await resizeImage(d.image.file, 2000, 0.85);
+                let imageUrl = d?.image?.existingUrl || "";
 
-                const res = await uploadImageToServer({
-                    vesselId,
-                    bucket: "deck-plans",
-                    sub: d.deckCode,
-                    file: resized,
-                });
+                if (d?.image?.file) {
+                    const resized = await resizeImage(d.image.file, 2000, 0.85);
+
+                    const res = await uploadImageToServer({
+                        vesselId,
+                        bucket: "deck-plans",
+                        sub: d.deckCode,
+                        file: resized,
+                    });
+
+                    imageUrl =
+                        res.savedPath ||
+                        buildUrl({
+                            vesselId,
+                            bucket: "deck-plans",
+                            sub: d.deckCode,
+                            filename: resized.name,
+                        });
+                }
 
                 deckPlansOut.push({
                     deckCode: d.deckCode,
@@ -1130,14 +1149,7 @@ function AdminBoatAssets() {
                     order: d.order || 1,
                     image: {
                         id: d.image.id,
-                        url:
-                            res.savedPath ||
-                            buildUrl({
-                                vesselId,
-                                bucket: "deck-plans",
-                                sub: d.deckCode,
-                                filename: resized.name,
-                            }),
+                        url: imageUrl,
                         title: d.image.title || `${d.deckName || d.deckCode} Plan`,
                         order: d.image.order || d.order || 1,
                     },
@@ -1155,33 +1167,38 @@ function AdminBoatAssets() {
                 const imagesOut = [];
 
                 for (const img of c.images || []) {
-                    if (!img.file) continue;
+                    if (!img.file && !img.existingUrl) continue;
 
-                    const resized = await resizeImage(img.file, 1600, 0.8);
+                    let imageUrl = img.existingUrl || "";
 
-                    const res = await uploadImageToServer({
-                        vesselId,
-                        bucket: "cabins",
-                        sub: c.cabinTypeCode,
-                        file: resized,
-                    });
+                    if (img.file) {
+                        const resized = await resizeImage(img.file, 1600, 0.8);
 
-                    imagesOut.push({
-                        id: img.id,
-                        url:
+                        const res = await uploadImageToServer({
+                            vesselId,
+                            bucket: "cabins",
+                            sub: c.cabinTypeCode,
+                            file: resized,
+                        });
+
+                        imageUrl =
                             res.savedPath ||
                             buildUrl({
                                 vesselId,
                                 bucket: "cabins",
                                 sub: c.cabinTypeCode,
                                 filename: resized.name,
-                            }),
+                            });
+                    }
+
+                    imagesOut.push({
+                        id: img.id,
+                        url: imageUrl,
                         title: img.title || "",
                         order: img.order || 1,
                     });
                 }
 
-                // cabinName 또는 images가 있는 경우만 저장
                 if (!imagesOut.length && !c.cabinName?.trim()) continue;
 
                 cabinsOut.push({
@@ -1204,27 +1221,33 @@ function AdminBoatAssets() {
                 const imagesOut = [];
 
                 for (const img of f.images || []) {
-                    if (!img.file) continue;
+                    if (!img.file && !img.existingUrl) continue;
 
-                    const resized = await resizeImage(img.file, 1600, 0.8);
+                    let imageUrl = img.existingUrl || "";
 
-                    const res = await uploadImageToServer({
-                        vesselId,
-                        bucket: "facilities",
-                        sub: f.facilityType,
-                        file: resized,
-                    });
+                    if (img.file) {
+                        const resized = await resizeImage(img.file, 1600, 0.8);
 
-                    imagesOut.push({
-                        id: img.id,
-                        url:
+                        const res = await uploadImageToServer({
+                            vesselId,
+                            bucket: "facilities",
+                            sub: f.facilityType,
+                            file: resized,
+                        });
+
+                        imageUrl =
                             res.savedPath ||
                             buildUrl({
                                 vesselId,
                                 bucket: "facilities",
                                 sub: f.facilityType,
                                 filename: resized.name,
-                            }),
+                            });
+                    }
+
+                    imagesOut.push({
+                        id: img.id,
+                        url: imageUrl,
                         title: img.title || "",
                         order: img.order || 1,
                     });
@@ -1250,25 +1273,31 @@ function AdminBoatAssets() {
                 const imagesOut = [];
 
                 for (const img of t.images || []) {
-                    if (!img.file) continue;
+                    if (!img.file && !img.existingUrl) continue;
 
-                    const resized = await resizeImage(img.file, 1600, 0.8);
+                    let imageUrl = img.existingUrl || "";
 
-                    const res = await uploadImageToServer({
-                        vesselId,
-                        bucket: "tenders",
-                        file: resized,
-                    });
+                    if (img.file) {
+                        const resized = await resizeImage(img.file, 1600, 0.8);
 
-                    imagesOut.push({
-                        id: img.id,
-                        url:
+                        const res = await uploadImageToServer({
+                            vesselId,
+                            bucket: "tenders",
+                            file: resized,
+                        });
+
+                        imageUrl =
                             res.savedPath ||
                             buildUrl({
                                 vesselId,
                                 bucket: "tenders",
                                 filename: resized.name,
-                            }),
+                            });
+                    }
+
+                    imagesOut.push({
+                        id: img.id,
+                        url: imageUrl,
                         title: img.title || "",
                         order: img.order || 1,
                     });
@@ -1294,27 +1323,33 @@ function AdminBoatAssets() {
                 const imagesOut = [];
 
                 for (const img of f.images || []) {
-                    if (!img.file) continue;
+                    if (!img.file && !img.existingUrl) continue;
 
-                    const resized = await resizeImage(img.file, 1600, 0.8);
+                    let imageUrl = img.existingUrl || "";
 
-                    const res = await uploadImageToServer({
-                        vesselId,
-                        bucket: "food",
-                        sub: f.foodType,
-                        file: resized,
-                    });
+                    if (img.file) {
+                        const resized = await resizeImage(img.file, 1600, 0.8);
 
-                    imagesOut.push({
-                        id: img.id,
-                        url:
+                        const res = await uploadImageToServer({
+                            vesselId,
+                            bucket: "food",
+                            sub: f.foodType,
+                            file: resized,
+                        });
+
+                        imageUrl =
                             res.savedPath ||
                             buildUrl({
                                 vesselId,
                                 bucket: "food",
                                 sub: f.foodType,
                                 filename: resized.name,
-                            }),
+                            });
+                    }
+
+                    imagesOut.push({
+                        id: img.id,
+                        url: imageUrl,
                         title: img.title || "",
                         order: img.order || 1,
                     });
