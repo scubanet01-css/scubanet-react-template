@@ -150,7 +150,7 @@ router.post("/", (req, res) => {
     }
 });
 
-router.get("/admin/api/boats-assets/:vesselId", (req, res) => {
+router.get("/:vesselId", (req, res) => {
     try {
         const { vesselId } = req.params;
 
