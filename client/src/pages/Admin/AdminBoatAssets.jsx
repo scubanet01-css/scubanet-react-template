@@ -1059,28 +1059,24 @@ function AdminBoatAssets() {
             return;
         }
 
-        setSaveStatus("이미지 업로드 및 메타데이터 준비 중...");
+        setSaveStatus("이미지 업로드 및 메타데이터 저장 준비 중...");
 
         try {
-            // ✅ 여기서부터 실제로 저장할 payload를 직접 만든다.
             const payloadForSave = {
                 vesselId,
                 boatName,
                 lastUpdated: new Date().toISOString().slice(0, 10),
-
-                // ✅ Trip 상세 정보
                 tripInfo: {
-                    itinerary: tripInfo.itinerary,
-                    included: tripInfo.included,
-                    excluded: tripInfo.excluded,
+                    itinerary: tripInfo.itinerary || "",
+                    included: tripInfo.included || "",
+                    excluded: tripInfo.excluded || "",
                 },
-
                 assets: {},
             };
 
             /* =========================
-   1. Hero Image
-========================= */
+               1. Hero Image
+            ========================= */
             if (heroImage?.file || heroImage?.existingUrl) {
                 let heroUrl = heroImage?.existingUrl || "";
 
@@ -1118,6 +1114,7 @@ function AdminBoatAssets() {
                2. Deck Plans
             ========================= */
             const deckPlansOut = [];
+
             for (const d of deckPlans) {
                 if (!d?.image?.file && !d?.image?.existingUrl) continue;
 
@@ -1155,6 +1152,7 @@ function AdminBoatAssets() {
                     },
                 });
             }
+
             if (deckPlansOut.length) {
                 payloadForSave.assets.deckPlans = deckPlansOut;
             }
@@ -1163,6 +1161,7 @@ function AdminBoatAssets() {
                3. Cabins
             ========================= */
             const cabinsOut = [];
+
             for (const c of cabins) {
                 const imagesOut = [];
 
@@ -1209,6 +1208,7 @@ function AdminBoatAssets() {
                     images: imagesOut,
                 });
             }
+
             if (cabinsOut.length) {
                 payloadForSave.assets.cabins = cabinsOut;
             }
@@ -1217,6 +1217,7 @@ function AdminBoatAssets() {
                4. Facilities
             ========================= */
             const facilitiesOut = [];
+
             for (const f of facilities) {
                 const imagesOut = [];
 
@@ -1261,6 +1262,7 @@ function AdminBoatAssets() {
                     images: imagesOut,
                 });
             }
+
             if (facilitiesOut.length) {
                 payloadForSave.assets.facilities = facilitiesOut;
             }
@@ -1269,6 +1271,7 @@ function AdminBoatAssets() {
                5. Tenders
             ========================= */
             const tendersOut = [];
+
             for (const t of tenders) {
                 const imagesOut = [];
 
@@ -1311,6 +1314,7 @@ function AdminBoatAssets() {
                     images: imagesOut,
                 });
             }
+
             if (tendersOut.length) {
                 payloadForSave.assets.tenders = tendersOut;
             }
@@ -1319,6 +1323,7 @@ function AdminBoatAssets() {
                6. Food
             ========================= */
             const foodOut = [];
+
             for (const f of food) {
                 const imagesOut = [];
 
@@ -1363,6 +1368,7 @@ function AdminBoatAssets() {
                     images: imagesOut,
                 });
             }
+
             if (foodOut.length) {
                 payloadForSave.assets.food = foodOut;
             }
@@ -1382,8 +1388,7 @@ function AdminBoatAssets() {
                 throw new Error(await res.text());
             }
 
-            setSaveStatus("✅ 이미지 + 메타데이터 저장 완료");
-
+            setSaveStatus("✅ 기존 데이터 유지 + 수정 저장 완료");
         } catch (err) {
             console.error("❌ 저장 중 오류:", err);
             setSaveStatus("❌ 저장 중 오류 발생 (콘솔 확인)");
