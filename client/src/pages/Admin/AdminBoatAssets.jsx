@@ -906,14 +906,15 @@ function AdminBoatAssets() {
         // deckPlans (이미지 있는 것만 저장)
         const deckPlansOut = deckPlans
             .map((d) => {
-                if (!d?.image?.file) return null;
+                if (!d?.image?.file && !d?.image?.existingUrl) return null;
+
                 return {
                     deckCode: d.deckCode,
                     deckName: d.deckName || d.deckCode,
                     order: d.order || 1,
                     image: {
                         id: d.image.id,
-                        url: img.file
+                        url: d.image.file
                             ? buildUrl({
                                 vesselId,
                                 bucket: "deck-plans",
@@ -947,7 +948,6 @@ function AdminBoatAssets() {
                         title: img.title || "",
                         order: img.order || 1,
                     }));
-
                 // cabinName 또는 images가 있는 경우만 저장
                 if (!imagesOut.length && !c.cabinName?.trim()) return null;
 
@@ -970,17 +970,17 @@ function AdminBoatAssets() {
                     .filter((img) => img?.file || img?.existingUrl)
                     .map((img) => ({
                         id: img.id,
-                        url: img.file ? buildUrl({
-                            vesselId,
-                            bucket: "facilities",
-                            sub: f.facilityType,
-                            filename: img.file.name,
-                        })
+                        url: img.file
+                            ? buildUrl({
+                                vesselId,
+                                bucket: "facilities",
+                                sub: f.facilityType,
+                                filename: img.file.name,
+                            })
                             : img.existingUrl,
                         title: img.title || "",
                         order: img.order || 1,
                     }));
-
                 if (!imagesOut.length && !f.name?.trim()) return null;
 
                 return {
