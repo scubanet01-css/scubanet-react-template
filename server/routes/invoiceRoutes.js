@@ -112,7 +112,7 @@ router.post("/send-invoice", async (req, res) => {
       guest,
       totalPrice,
       bookingType: resolvedBookingType,
-      invoiceFileUrl: `/data/${filename}`,
+      fileUrl: `http://210.114.22.82:3002/data/${filename}`,
       invoiceFilePath: filePath,
       emailSent: true,
       paymentStatus: "pending",
@@ -122,7 +122,7 @@ router.post("/send-invoice", async (req, res) => {
     res.json({
       success: true,
       email: guest.email,
-      fileUrl: `/data/${filename}`,
+      invoiceFileUrl: `http://210.114.22.82:3002/data/${filename}`,
       bookingType: resolvedBookingType,
       bookingId: savedBooking.bookingId,
     });
