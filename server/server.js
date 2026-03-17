@@ -34,15 +34,30 @@ const API_KEY = "fa031783567788e568d8010a488a6c0f9cb860d0";
 // --------------------------------------------------
 app.use("/data", express.static(path.join(__dirname, "../data")));
 
+const allowedOrigins = [
+  "http://210.114.22.82",
+  "http://210.114.22.82:4002",
+];
+
 app.use(cors({
-  origin: "http://210.114.22.82:4002",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error("CORS blocked for origin: " + origin));
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use((req, res, next) => {
   if (req.method === "OPTIONS") {
-    res.header("Access-Control-Allow-Origin", "http://210.114.22.82:4002");
+    const origin = req.headers.origin;
+
+    if (allowedOrigins.includes(origin)) {
+      res.header("Access-Control-Allow-Origin", origin);
+    }
+
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
     return res.sendStatus(204);
