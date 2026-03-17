@@ -22,6 +22,18 @@ function readBookings() {
     }
 }
 
+// ✅ 예약 목록 조회
+router.get("/bookings", (req, res) => {
+    const bookings = readBookings()
+        .slice()
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.json({
+        success: true,
+        bookings,
+    });
+});
+
 // ✅ bookingId로 단건 조회
 router.get("/bookings/:bookingId", (req, res) => {
     const { bookingId } = req.params;

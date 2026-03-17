@@ -21,6 +21,8 @@ import InstructorMyBooking from './pages/Instructor/InstructorMyBooking';
 
 import AdminBoatAssets from "./pages/Admin/AdminBoatAssets";
 import AdminSpecialTrips from './pages/Admin/AdminSpecialTrips';
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminBookings from "./pages/Admin/AdminBookings";
 import { AuthProvider } from './hooks/useAuth';
 
 function App() {
@@ -104,6 +106,9 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/bookings" element={<AdminBookings />} />
 
 
 
