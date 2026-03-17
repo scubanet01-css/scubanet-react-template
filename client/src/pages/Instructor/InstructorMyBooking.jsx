@@ -1,25 +1,35 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import "./InstructorConfirm.css";
+import "./InstructorMyBooking.css";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { getCurrencyForTrip } from "../../utils/currencyUtils";
 
-function InstructorConfirm() {
+function InstructorMyBooking() {
   const { state } = useLocation();
   const navigate = useNavigate();
+
+  if (!state) return <p>잘못된 접근입니다.</p>;
 
   const {
     trip,
     selectedBookings = [],
-    totalPrice = 0,      // ✅ FOC 적용 후 합계
-    focDiscount = 0,     // ✅ FOC 할인액
-    focDetails = [],     // ✅ FOC 상세 구조
-    currency: incomingCurrency,
-  } = state || {};
-
-  if (!trip) return <p>잘못된 접근입니다.</p>;
+    totalPrice = 0,
+    focDiscount = 0,
+    focDetails = [],
+    commissionRate = 0.1,
+    commissionAmount: incomingCommissionAmount,
+    finalAmount: incomingFinalAmount,
+    currency: incomingCurrency = "USD",
+    bookingId = null,
+    invoiceFileUrl = null,
+  } = state;
 
   const currency = incomingCurrency || getCurrencyForTrip(trip);
+
+  const boatName =
+    trip?.boat?.name ||
+    trip?.boatName ||
+    "정보 없음";
 
   const tripName =
     trip?.product?.name ||
@@ -27,208 +37,128 @@ function InstructorConfirm() {
     trip?.tripName ||
     "정보 없음";
 
-  const boatName =
-    trip?.boat?.name ||
-    trip?.boatName ||
-    "정보 없음";
+  const startDate = trip?.startDate || "";
+  const endDate = trip?.endDate || "";
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "-";
-    return new Date(dateStr).toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  };
+  const focAppliedTotal = Number(totalPrice || 0);
+  const safeFoc = Number(focDiscount || 0);
 
-  // ✅ 총 인원 계산
-  const totalGuests = useMemo(() => {
-    return selectedBookings.reduce((sum, b) => {
-      if (b?.occLabel === "2인 예약") return sum + 2;
-      if (b?.occLabel === "1인 예약") return sum + 1;
-      if (b?.occLabel === "독실 예약") return sum + 1;
-      return sum;
-    }, 0);
-  }, [selectedBookings]);
+  const rate =
+    Number(commissionRate) > 1
+      ? Number(commissionRate) / 100
+      : Number(commissionRate || 0.1);
 
-  // ✅ FOC 전 원래 합계
-  const baseTotal = useMemo(() => {
-    return Number(totalPrice || 0) + Number(focDiscount || 0);
-  }, [totalPrice, focDiscount]);
+  const commissionAmount =
+    incomingCommissionAmount != null
+      ? Number(incomingCommissionAmount)
+      : Math.round(focAppliedTotal * rate);
 
-  // ✅ 커미션율
-  // 현재 기존 기준 유지:
-  // - FOC 적용되었거나, 총 인원 3명 이상이면 15%
-  // - 아니면 10%
-  const commissionRate = useMemo(() => {
-    const hasFOC = Number(focDiscount || 0) > 0;
-    if (hasFOC || totalGuests >= 3) return 0.15;
-    return 0.1;
-  }, [focDiscount, totalGuests]);
-
-  // ✅ 커미션 금액
-  const commissionAmount = useMemo(() => {
-    return Math.round(Number(totalPrice || 0) * commissionRate);
-  }, [totalPrice, commissionRate]);
-
-  // ✅ 최종 결제 금액
-  const finalAmount = useMemo(() => {
-    return Math.round(Number(totalPrice || 0) - commissionAmount);
-  }, [totalPrice, commissionAmount]);
+  const finalAmount =
+    incomingFinalAmount != null
+      ? Number(incomingFinalAmount)
+      : Math.round(focAppliedTotal - commissionAmount);
 
   const focLabel =
     Array.isArray(focDetails) && focDetails.length > 0
       ? focDetails.map((f) => f.offerName || f.name || "").join(", ")
       : "Group Offer";
 
-  const handleConfirm = async () => {
-    try {
-      const invoiceData = {
-        trip,
-        selectedBookings,
-        totalPrice,         // ✅ FOC 적용 후 판매 금액
-        focDiscount,
-        focDetails,
-        commissionRate: Number((commissionRate * 100).toFixed(0)), // 서버는 % 숫자 형태로 받게 맞춤
-        commissionAmount,
-        finalAmount,
-        bookingType: "instructor",
-        currency,
-        guest: {
-          name: "Instructor",
-          email: "scubanet01@gmail.com",
-          phone: "01030192402",
-        },
-      };
-
-      console.log("📤 강사 인보이스 전송 데이터:", invoiceData);
-
-      const res = await fetch("/api/send-invoice", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(invoiceData),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "서버 오류");
-      }
-
-      alert("✅ 인보이스가 성공적으로 생성되고 이메일로 발송되었습니다!");
-
-      navigate("/instructor/my-booking", {
-        state: {
-          trip,
-          selectedBookings,
-          totalPrice,
-          focDiscount,
-          focDetails,
-          commissionRate,
-          commissionAmount,
-          finalAmount,
-          currency,
-          bookingType: "instructor",
-          bookingId: data.bookingId || null,
-          invoiceFileUrl: data.fileUrl || null,
-        },
-      });
-    } catch (err) {
-      console.error("❌ 강사 인보이스 생성 실패:", err);
-      alert("인보이스 생성 또는 이메일 발송 중 오류가 발생했습니다.");
-    }
-  };
-
   return (
-    <div className="instructor-confirm-container">
-      <h2>📘 강사 예약 확인</h2>
+    <div className="instructor-mybooking-container">
+      <h2>📘 내 예약 내역</h2>
 
-      {/* 여행 정보 */}
       <div className="trip-info">
-        <h3>{boatName}</h3>
+        {bookingId && (
+          <p>
+            <strong>예약번호:</strong> {bookingId}
+          </p>
+        )}
+
         <p>
-          {tripName}
-          <br />
-          <strong>
-            {formatDate(trip.startDate)} ~ {formatDate(trip.endDate)}
-          </strong>
+          <strong>선박:</strong> {boatName}
         </p>
+
+        <p>
+          <strong>일정:</strong> {tripName}
+        </p>
+
+        {(startDate || endDate) && (
+          <p>
+            <strong>출발/도착:</strong> {startDate || "-"}
+            {endDate ? ` ~ ${endDate}` : ""}
+          </p>
+        )}
       </div>
 
-      {/* 예약 내역 */}
-      <div className="booking-summary">
-        <h3>선택한 예약 내역</h3>
+      <h3>예약 내역</h3>
+      <ul className="booking-list">
+        {selectedBookings.map((b, i) => (
+          <li key={i}>
+            {(b.cabinName || b.cabin || "객실")} / {(b.roomName || b.room || "세부객실")} /{" "}
+            {(b.occupancyType || b.occLabel || "-")} —{" "}
+            <strong>{formatCurrency(b.price, currency)}</strong>
+          </li>
+        ))}
+      </ul>
 
-        <table className="booking-table">
-          <thead>
-            <tr>
-              <th>객실 타입</th>
-              <th>세부 객실</th>
-              <th>예약 유형</th>
-              <th>금액 ({currency})</th>
-            </tr>
-          </thead>
-          <tbody>
-            {selectedBookings.map((b, i) => (
-              <tr key={i}>
-                <td>{b.cabin}</td>
-                <td>{b.room}</td>
-                <td>{b.occLabel}</td>
-                <td style={{ textAlign: "right" }}>
-                  {formatCurrency(b.price, currency)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="summary-box">
+        {safeFoc > 0 && (
+          <>
+            <p style={{ color: "#007bff", fontWeight: "bold" }}>
+              FOC 적용 ({focLabel}): -{formatCurrency(safeFoc, currency)}
+            </p>
 
-        {/* 금액 요약 */}
-        <div style={{ marginTop: "1rem", textAlign: "right" }}>
-          <p style={{ marginBottom: 4 }}>
-            총 판매 금액: {formatCurrency(baseTotal, currency)}
+            <p>
+              <strong>FOC 적용 후 판매 금액:</strong>{" "}
+              {formatCurrency(focAppliedTotal, currency)}
+            </p>
+          </>
+        )}
+
+        <p>
+          <strong>강사 커미션 ({(rate * 100).toFixed(0)}%):</strong>{" "}
+          -{formatCurrency(commissionAmount, currency)}
+        </p>
+
+        <h3>
+          💰 최종 결제 금액: {formatCurrency(finalAmount, currency)}
+        </h3>
+
+        {invoiceFileUrl && (
+          <p style={{ marginTop: "12px" }}>
+            <strong>인보이스:</strong>{" "}
+            <a href={invoiceFileUrl} target="_blank" rel="noreferrer">
+              인보이스 열기
+            </a>
           </p>
-
-          {Number(focDiscount || 0) > 0 && (
-            <>
-              <p
-                style={{
-                  color: "#007bff",
-                  fontWeight: "bold",
-                  marginBottom: 4,
-                }}
-              >
-                FOC 적용 ({focLabel}): -{formatCurrency(focDiscount, currency)}
-              </p>
-
-              <p style={{ fontWeight: "bold", marginBottom: 8 }}>
-                FOC 적용 후 판매 금액: {formatCurrency(totalPrice, currency)}
-              </p>
-            </>
-          )}
-
-          <p style={{ marginBottom: 4 }}>
-            강사 커미션 ({(commissionRate * 100).toFixed(0)}%): -
-            {formatCurrency(commissionAmount, currency)}
-          </p>
-
-          <h3 style={{ color: "#007bff", marginTop: 10 }}>
-            💰 최종 결제 금액: {formatCurrency(finalAmount, currency)}
-          </h3>
-        </div>
+        )}
       </div>
 
-      {/* 버튼 */}
-      <div className="button-group">
-        <button onClick={() => navigate(-1)} className="back-btn">
-          ← 이전으로
-        </button>
-
-        <button className="confirm-btn" onClick={handleConfirm}>
-          예약 확정
+      <div className="button-area">
+        <button
+          onClick={() =>
+            navigate("/instructor/payment", {
+              state: {
+                bookingId,
+                trip,
+                selectedBookings: [...selectedBookings],
+                totalPrice: focAppliedTotal,
+                focDiscount: safeFoc,
+                focDetails,
+                commissionRate: rate,
+                commissionAmount,
+                finalAmount,
+                currency,
+                invoiceFileUrl,
+              },
+            })
+          }
+        >
+          결제하기 →
         </button>
       </div>
     </div>
   );
 }
 
-export default InstructorConfirm;
+export default InstructorMyBooking;
