@@ -39,6 +39,21 @@ function withTripInfoDefaults(boat) {
     };
 }
 
+function mapServerImageToState(img, fallbackId = "") {
+    if (!img) return null;
+
+    return {
+        id: img.id || fallbackId,
+        file: null,                // 기존 서버 파일은 새 File 객체가 아님
+        preview: img.url || "",    // 기존 서버 URL을 preview로 사용
+        title: img.title || "",
+        description: img.description || "",
+        order: img.order || 1,
+        isPrimary: !!img.isPrimary,
+        existingUrl: img.url || "", // 저장 시 유지용
+    };
+}
+
 /**
  * AdminBoatAssets (Refactored Full Schema)
  * - Full Schema(섹션/미리보기/JSON 프리뷰/서버저장) 유지
@@ -290,10 +305,108 @@ function AdminBoatAssets() {
         setSaveStatus("");
     }
 
-    function handleVesselSelect(e) {
+    async function loadExistingBoatAssets(selectedVesselId) {
+        try {
+            const res = await fetch(`/admin/api/boats-assets/${selectedVesselId}`);
+            if (!res.ok) {
+                return null;
+            }
+
+            const data = await res.json();
+            return withTripInfoDefaults(data);
+        } catch (err) {
+            console.error("기존 boats-assets 로드 실패:", err);
+            return null;
+        }
+    }
+
+    async function handleVesselSelect(e) {
         const selected = vesselOptions.find((v) => v.vesselId === e.target.value);
         if (!selected) return;
+
         resetAllStatesForNewVessel(selected.vesselId, selected.boatName);
+
+        const existing = await loadExistingBoatAssets(selected.vesselId);
+        if (!existing) {
+            setSaveStatus("기존 저장 데이터가 없습니다. 새로 입력할 수 있습니다.");
+            return;
+        }
+
+        setBoatName(existing.boatName || selected.boatName || "");
+
+        // Trip Info
+        setTripInfo({
+            itinerary: existing.tripInfo?.itinerary || "",
+            included: existing.tripInfo?.included || "",
+            excluded: existing.tripInfo?.excluded || "",
+        });
+
+        // Hero
+        setHeroImage(
+            existing.assets?.hero
+                ? mapServerImageToState(existing.assets.hero, `${selected.vesselId}_hero_existing`)
+                : null
+        );
+
+        // Deck Plans
+        setDeckPlans(
+            (existing.assets?.deckPlans || []).map((d, idx) => ({
+                deckCode: d.deckCode || "MAIN_DECK",
+                deckName: d.deckName || d.deckCode || `Deck ${idx + 1}`,
+                order: d.order || idx + 1,
+                image: d.image
+                    ? mapServerImageToState(d.image, `${selected.vesselId}_deck_${idx}`)
+                    : null,
+            }))
+        );
+
+        // Cabins
+        setCabins(
+            (existing.assets?.cabins || []).map((c, idx) => ({
+                cabinTypeCode: c.cabinTypeCode || "STANDARD",
+                deckCode: c.deckCode || "MAIN_DECK",
+                bedType: c.bedType || "TWIN",
+                cabinName: c.cabinName || "",
+                images: (c.images || []).map((img, iIdx) =>
+                    mapServerImageToState(img, `${selected.vesselId}_cabin_${idx}_${iIdx}`)
+                ),
+            }))
+        );
+
+        // Facilities
+        setFacilities(
+            (existing.assets?.facilities || []).map((f, idx) => ({
+                facilityType: f.facilityType || "OTHER",
+                name: f.name || "",
+                images: (f.images || []).map((img, iIdx) =>
+                    mapServerImageToState(img, `${selected.vesselId}_facility_${idx}_${iIdx}`)
+                ),
+            }))
+        );
+
+        // Tenders
+        setTenders(
+            (existing.assets?.tenders || []).map((t, idx) => ({
+                name: t.name || "",
+                capacity: t.capacity ?? "",
+                images: (t.images || []).map((img, iIdx) =>
+                    mapServerImageToState(img, `${selected.vesselId}_tender_${idx}_${iIdx}`)
+                ),
+            }))
+        );
+
+        // Food
+        setFood(
+            (existing.assets?.food || []).map((f, idx) => ({
+                foodType: f.foodType || "MEAL",
+                name: f.name || "",
+                images: (f.images || []).map((img, iIdx) =>
+                    mapServerImageToState(img, `${selected.vesselId}_food_${idx}_${iIdx}`)
+                ),
+            }))
+        );
+
+        setSaveStatus("기존 저장 데이터를 불러왔습니다. 수정 후 다시 저장할 수 있습니다.");
     }
 
     // -------------------------------
@@ -777,10 +890,12 @@ function AdminBoatAssets() {
 
         // hero
         payload.assets.hero =
-            heroImage?.file
+            heroImage?.file || heroImage?.existingUrl
                 ? {
                     id: heroImage.id,
-                    url: buildUrl({ vesselId, bucket: "hero", filename: heroImage.file.name }),
+                    url: heroImage.file
+                        ? buildUrl({ vesselId, bucket: "hero", filename: heroImage.file.name })
+                        : heroImage.existingUrl,
                     title: heroImage.title || boatName || "",
                     description: heroImage.description || "",
                     order: heroImage.order || 1,
@@ -798,12 +913,14 @@ function AdminBoatAssets() {
                     order: d.order || 1,
                     image: {
                         id: d.image.id,
-                        url: buildUrl({
-                            vesselId,
-                            bucket: "deck-plans",
-                            sub: d.deckCode,
-                            filename: d.image.file.name,
-                        }),
+                        url: img.file
+                            ? buildUrl({
+                                vesselId,
+                                bucket: "deck-plans",
+                                sub: d.deckCode,
+                                filename: d.image.file.name,
+                            })
+                            : d.image.existingUrl,
                         title: d.image.title || `${d.deckName || d.deckCode} Plan`,
                         order: d.image.order || d.order || 1,
                     },
@@ -816,15 +933,17 @@ function AdminBoatAssets() {
         const cabinsOut = cabins
             .map((c) => {
                 const imagesOut = (c.images || [])
-                    .filter((img) => img?.file)
+                    .filter((img) => img?.file || img?.existingUrl)
                     .map((img) => ({
                         id: img.id,
-                        url: buildUrl({
-                            vesselId,
-                            bucket: "cabins",
-                            sub: c.cabinTypeCode,
-                            filename: img.file.name,
-                        }),
+                        url: img.file
+                            ? buildUrl({
+                                vesselId,
+                                bucket: "cabins",
+                                sub: c.cabinTypeCode,
+                                filename: img.file.name,
+                            })
+                            : img.existingUrl,
                         title: img.title || "",
                         order: img.order || 1,
                     }));
@@ -848,15 +967,16 @@ function AdminBoatAssets() {
         const facilitiesOut = facilities
             .map((f) => {
                 const imagesOut = (f.images || [])
-                    .filter((img) => img?.file)
+                    .filter((img) => img?.file || img?.existingUrl)
                     .map((img) => ({
                         id: img.id,
-                        url: buildUrl({
+                        url: img.file ? buildUrl({
                             vesselId,
                             bucket: "facilities",
                             sub: f.facilityType,
                             filename: img.file.name,
-                        }),
+                        })
+                            : img.existingUrl,
                         title: img.title || "",
                         order: img.order || 1,
                     }));
@@ -876,10 +996,12 @@ function AdminBoatAssets() {
         const tendersOut = tenders
             .map((t) => {
                 const imagesOut = (t.images || [])
-                    .filter((img) => img?.file)
+                    .filter((img) => img?.file || img?.existingUrl)
                     .map((img) => ({
                         id: img.id,
-                        url: buildUrl({ vesselId, bucket: "tenders", filename: img.file.name }),
+                        url: img.file
+                            ? buildUrl({ vesselId, bucket: "tenders", filename: img.file.name })
+                            : img.existingUrl,
                         title: img.title || "",
                         order: img.order || 1,
                     }));
@@ -899,15 +1021,17 @@ function AdminBoatAssets() {
         const foodOut = food
             .map((f) => {
                 const imagesOut = (f.images || [])
-                    .filter((img) => img?.file)
+                    .filter((img) => img?.file || img?.existingUrl)
                     .map((img) => ({
                         id: img.id,
-                        url: buildUrl({
-                            vesselId,
-                            bucket: "food",
-                            sub: f.foodType,
-                            filename: img.file.name,
-                        }),
+                        url: img.file
+                            ? buildUrl({
+                                vesselId,
+                                bucket: "food",
+                                sub: f.foodType,
+                                filename: img.file.name,
+                            })
+                            : img.existingUrl,
                         title: img.title || "",
                         order: img.order || 1,
                     }));
