@@ -65,9 +65,20 @@ function TripDetail() {
     }
   };
 
-  const itineraryText = trip?.adminDetails?.itinerary || "";
-  const includedText = trip?.adminDetails?.included || "";
-  const excludedText = trip?.adminDetails?.excluded || "";
+  const itineraryText =
+    trip?.adminDetails?.itinerary ||
+    boatAssets?.tripInfo?.itinerary ||
+    "";
+
+  const includedText =
+    trip?.adminDetails?.included ||
+    boatAssets?.tripInfo?.included ||
+    "";
+
+  const excludedText =
+    trip?.adminDetails?.excluded ||
+    boatAssets?.tripInfo?.excluded ||
+    "";
 
   // ===============================
   // ✅ 0) 스페셜 트립 공통 플래그
