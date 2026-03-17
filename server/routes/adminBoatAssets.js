@@ -150,5 +150,29 @@ router.post("/", (req, res) => {
     }
 });
 
+router.get("/admin/api/boats-assets/:vesselId", (req, res) => {
+    try {
+        const { vesselId } = req.params;
+
+        if (!vesselId) {
+            return res.status(400).json({ message: "vesselId가 필요합니다." });
+        }
+
+        const filePath = path.join("/var/scubanet-data/boats-assets", `${vesselId}.json`);
+
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ message: "해당 선박 자산 파일이 없습니다." });
+        }
+
+        const raw = fs.readFileSync(filePath, "utf-8");
+        const json = JSON.parse(raw);
+
+        return res.json(json);
+    } catch (err) {
+        console.error("❌ boats-assets GET 오류:", err);
+        return res.status(500).json({ message: "선박 자산 조회 실패" });
+    }
+});
+
 
 module.exports = router;
