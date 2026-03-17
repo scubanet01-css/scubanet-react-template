@@ -106,13 +106,15 @@ router.post("/send-invoice", async (req, res) => {
     });
 
     console.log(`📬 이메일 발송 성공: ${guest.email}`);
+    const publicFileUrl = `http://210.114.22.82:3002/data/${filename}`;
+
     const savedBooking = saveBooking({
       trip,
       selectedBookings: cabins,
       guest,
       totalPrice,
       bookingType: resolvedBookingType,
-      fileUrl: `http://210.114.22.82:3002/data/${filename}`,
+      invoiceFileUrl: publicFileUrl,
       invoiceFilePath: filePath,
       emailSent: true,
       paymentStatus: "pending",
@@ -122,7 +124,7 @@ router.post("/send-invoice", async (req, res) => {
     res.json({
       success: true,
       email: guest.email,
-      invoiceFileUrl: `http://210.114.22.82:3002/data/${filename}`,
+      fileUrl: publicFileUrl,
       bookingType: resolvedBookingType,
       bookingId: savedBooking.bookingId,
     });
