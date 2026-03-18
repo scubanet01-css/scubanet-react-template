@@ -8,7 +8,6 @@ function AdminDashboard() {
         totalGeneralUsers: 0,
         totalInstructors: 0,
         pendingInstructors: 0,
-        activeInstructors: 0,
     });
     const [loading, setLoading] = useState(true);
 
@@ -17,7 +16,12 @@ function AdminDashboard() {
             try {
                 setLoading(true);
                 const res = await axios.get("/api/admin/dashboard/summary");
-                setSummary(res.data || {});
+                setSummary({
+                    totalUsers: res.data?.totalUsers || 0,
+                    totalGeneralUsers: res.data?.totalGeneralUsers || 0,
+                    totalInstructors: res.data?.totalInstructors || 0,
+                    pendingInstructors: res.data?.pendingInstructors || 0,
+                });
             } catch (err) {
                 console.error("대시보드 요약 조회 실패:", err);
             } finally {
@@ -32,43 +36,30 @@ function AdminDashboard() {
         <div style={{ padding: "24px" }}>
             <h2 style={{ marginBottom: "20px" }}>관리자 대시보드</h2>
 
-            {/* 요약 카드 */}
+            {/* 요약 카드 - 한 줄 배치 */}
             <div
                 style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                    gap: "16px",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                    gap: "12px",
                     marginBottom: "28px",
                 }}
             >
-                <SummaryCard
-                    title="전체 회원 수"
-                    value={loading ? "..." : summary.totalUsers}
-                    desc="등록된 전체 회원"
+                <CompactSummaryCard
+                    label="전체회원"
+                    value={loading ? "..." : `${summary.totalUsers}명`}
                 />
-
-                <SummaryCard
-                    title="일반회원 수"
-                    value={loading ? "..." : summary.totalGeneralUsers}
-                    desc="일반 사용자 계정"
+                <CompactSummaryCard
+                    label="일반회원"
+                    value={loading ? "..." : `${summary.totalGeneralUsers}명`}
                 />
-
-                <SummaryCard
-                    title="강사회원 수"
-                    value={loading ? "..." : summary.totalInstructors}
-                    desc="전체 강사 계정"
+                <CompactSummaryCard
+                    label="강사회원"
+                    value={loading ? "..." : `${summary.totalInstructors}명`}
                 />
-
-                <SummaryCard
-                    title="강사 승인 대기"
-                    value={loading ? "..." : summary.pendingInstructors}
-                    desc="승인 대기 중인 강사"
-                />
-
-                <SummaryCard
-                    title="승인 완료 강사"
-                    value={loading ? "..." : summary.activeInstructors}
-                    desc="활성화된 강사회원"
+                <CompactSummaryCard
+                    label="강사승인대기"
+                    value={loading ? "..." : `${summary.pendingInstructors}명`}
                 />
             </div>
 
@@ -108,24 +99,37 @@ function AdminDashboard() {
     );
 }
 
-function SummaryCard({ title, value, desc }) {
+function CompactSummaryCard({ label, value }) {
     return (
         <div
             style={{
-                padding: "20px",
-                border: "1px solid #ddd",
-                borderRadius: "12px",
-                background: "#fff",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                background: "#ffffff",
+                border: "1px solid #e5e7eb",
+                borderRadius: "10px",
+                padding: "14px 16px",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
             }}
         >
-            <div style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>
-                {title}
+            <div
+                style={{
+                    fontSize: "13px",
+                    color: "#6b7280",
+                    marginBottom: "6px",
+                    fontWeight: "500",
+                }}
+            >
+                {label}
             </div>
-            <div style={{ fontSize: "32px", fontWeight: "700", marginBottom: "8px" }}>
+            <div
+                style={{
+                    fontSize: "24px",
+                    fontWeight: "700",
+                    color: "#111827",
+                    lineHeight: 1.2,
+                }}
+            >
                 {value}
             </div>
-            <div style={{ fontSize: "13px", color: "#888" }}>{desc}</div>
         </div>
     );
 }
