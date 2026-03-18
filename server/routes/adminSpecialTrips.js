@@ -8,6 +8,8 @@ const {
     upsertSpecialTrip,
 } = require("../utils/specialTripsStore");
 
+const rebuildTripData = require("../utils/rebuildTripData");
+
 /**
  * GET /api/admin/special-trips
  *  → app.use("/api/admin/special-trips", router) 기준으로
@@ -47,7 +49,7 @@ router.get("/:id", (req, res) => {
  * POST /api/admin/special-trips
  *  - specialTripId 기준 upsert
  */
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
     try {
         const payload = req.body || {};
 
@@ -58,6 +60,9 @@ router.post("/", (req, res) => {
         }
 
         const saved = upsertSpecialTrip(payload);
+
+        await rebuildTripData();
+
         res.json(saved);
     } catch (err) {
         console.error("❌ [POST /api/admin/special-trips] 오류:", err);
