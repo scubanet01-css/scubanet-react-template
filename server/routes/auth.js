@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
 const bcrypt = require("bcryptjs");
-const { v4: uuidv4 } = require("uuid");
+const crypto = require("crypto");
 
 const router = express.Router();
 
@@ -30,7 +30,7 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const ext = path.extname(file.originalname);
-        const safeName = `instructor-card-${Date.now()}-${uuidv4()}${ext}`;
+        const safeName = `instructor-card-${Date.now()}-${crypto.randomUUID()}${ext}`;
         cb(null, safeName);
     },
 });
@@ -195,7 +195,7 @@ router.post(
 
             // 5. 사용자 저장
             const newUser = {
-                _id: uuidv4(),
+                _id: crypto.randomUUID(),
                 name: name.trim(),
                 email: email.trim().toLowerCase(),
                 passwordHash,
