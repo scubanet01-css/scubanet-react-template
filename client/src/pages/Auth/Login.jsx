@@ -1,84 +1,133 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import "./Login.css";
 
-function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export default function Login() {
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+
+  function validate() {
+    const nextErrors = {};
+
+    if (!form.email.trim()) {
+      nextErrors.email = "이메일을 입력해주세요.";
+    }
+
+    if (!form.password.trim()) {
+      nextErrors.password = "비밀번호를 입력해주세요.";
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault();
 
+    if (!validate()) return;
+
     try {
-      const users = JSON.parse(localStorage.getItem("users")) || [];
+      setLoading(true);
 
-      const foundUser = users.find(
-        (u) => u.email === email && u.password === password
-      );
+      const res = await axios.post("/api/auth/login", {
+        email: form.email,
+        password: form.password,
+      });
 
-      if (foundUser) {
-        // ✅ 로그인 성공 → localStorage 저장
-        localStorage.setItem("user", JSON.stringify(foundUser));
-        localStorage.setItem("role", foundUser.role);
-        alert(`${foundUser.name}님 환영합니다!`);
+      const user = res.data?.user;
 
-        // ✅ role에 따라 페이지 분기
-        if (foundUser.role === "instructor") {
-          navigate("/instructor");
-        } else {
-          navigate("/");
-        }
-      } else {
-        alert("이메일 또는 비밀번호가 올바르지 않습니다.");
+      if (!user) {
+        alert("로그인 응답이 올바르지 않습니다.");
+        return;
       }
+
+      localStorage.setItem("scubanetUser", JSON.stringify(user));
+
+      alert(res.data.message || "로그인되었습니다.");
+
+      if (user.role === "admin") {
+        navigate("/admin");
+        return;
+      }
+
+      if (user.role === "instructor") {
+        navigate("/instructor");
+        return;
+      }
+
+      navigate("/mypage");
     } catch (err) {
-      console.error("❌ 로그인 오류:", err);
-      alert("로그인 중 오류가 발생했습니다.");
+      console.error("로그인 실패:", err);
+      console.error("응답 데이터:", err.response?.data);
+
+      const message =
+        err.response?.data?.message || "로그인 중 오류가 발생했습니다.";
+
+      alert(message);
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
   return (
-    <div style={{ padding: 40, maxWidth: 400, margin: "0 auto" }}>
-      <h2>로그인</h2>
-      <form onSubmit={handleLogin}>
-        <div style={{ marginBottom: 10 }}>
-          <label>이메일</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="이메일 입력"
-            style={{ width: "100%", padding: "8px" }}
-          />
+    <div className="login-page">
+      <div className="login-card">
+        <div className="login-header">
+          <h1>로그인</h1>
+          <p>스쿠버넷 트래블 계정으로 로그인하세요.</p>
         </div>
-        <div style={{ marginBottom: 10 }}>
-          <label>비밀번호</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="비밀번호 입력"
-            style={{ width: "100%", padding: "8px" }}
-          />
-        </div>
-        <button
-          type="submit"
-          style={{
-            width: "100%",
-            padding: "10px",
-            backgroundColor: "#00b386",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            fontSize: "1rem",
-          }}
-        >
-          로그인
-        </button>
-      </form>
+
+        <form className="login-form" onSubmit={handleSubmit}>
+          <div className="form-field">
+            <label>이메일</label>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="example@email.com"
+            />
+            {errors.email && <p className="field-error">{errors.email}</p>}
+          </div>
+
+          <div className="form-field">
+            <label>비밀번호</label>
+            <input
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="비밀번호를 입력하세요"
+            />
+            {errors.password && <p className="field-error">{errors.password}</p>}
+          </div>
+
+          <button type="submit" className="login-btn" disabled={loading}>
+            {loading ? "로그인 중..." : "로그인"}
+          </button>
+
+          <div className="login-footer">
+            계정이 없으신가요? <Link to="/auth/register">회원가입</Link>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
-
-export default Login;

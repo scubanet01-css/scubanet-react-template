@@ -54,7 +54,7 @@ function App() {
           <Route path="/booking/payment" element={<PaymentPage />} />
 
           {/* 인증 */}
-          <Route path="/login" element={<Login />} />
+          <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
 
           {/* Instructor List (강사 홈) */}
