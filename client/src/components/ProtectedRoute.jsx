@@ -1,18 +1,19 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React from "react";
+import { Navigate } from "react-router-dom";
 
 function ProtectedRoute({ children, allowedRole }) {
-  const user = JSON.parse(localStorage.getItem('user'));
+  const rawUser = localStorage.getItem("scubanetUser");
+  const user = rawUser ? JSON.parse(rawUser) : null;
 
-  // 1️⃣ 로그인 안 된 경우 → 로그인 페이지로 이동
+  // 1️⃣ 로그인 안 된 경우
   if (!user) {
-    alert('로그인이 필요합니다.');
-    return <Navigate to="/login" replace />;
+    alert("로그인이 필요합니다.");
+    return <Navigate to="/auth/login" replace />;
   }
 
-  // 2️⃣ 특정 역할(예: instructor)만 접근 가능
+  // 2️⃣ 권한 체크
   if (allowedRole && user.role !== allowedRole) {
-    alert('이 페이지는 강사 전용입니다.');
+    alert("접근 권한이 없습니다.");
     return <Navigate to="/" replace />;
   }
 

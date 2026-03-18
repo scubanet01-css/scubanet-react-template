@@ -68,7 +68,7 @@ export default function Login() {
       }
 
       if (user.role === "instructor") {
-        navigate("/instructor/trips"); // 🔥 변경
+        navigate("/instructor");
         return;
       }
 

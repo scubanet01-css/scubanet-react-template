@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+
 import Home from './pages/Home';
 import TripList from './pages/TripList';
 import TripDetail from './pages/TripDetail';
@@ -9,10 +10,10 @@ import Booking from './pages/Booking/Booking';
 import ConfirmBooking from './pages/Booking/ConfirmBooking';
 import MyBooking from './pages/Booking/MyBooking';
 import PaymentPage from './pages/Booking/PaymentPage';
+
 import ProtectedRoute from './components/ProtectedRoute';
 import LogoutButton from "./components/LogoutButton";
 import SpecialTripsPage from "./pages/SpecialTripsPage";
-
 
 import InstructorList from './pages/Instructor/InstructorList';
 import InstructorBooking from './pages/Instructor/InstructorBooking';
@@ -23,6 +24,7 @@ import AdminBoatAssets from "./pages/Admin/AdminBoatAssets";
 import AdminSpecialTrips from './pages/Admin/AdminSpecialTrips';
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminBookings from "./pages/Admin/AdminBookings";
+
 import { AuthProvider } from './hooks/useAuth';
 
 function App() {
@@ -38,13 +40,11 @@ function App() {
         </header>
 
         <Routes>
-
           {/* 일반 사용자 */}
           <Route path="/" element={<Home />} />
           <Route path="/triplist" element={<TripList />} />
           <Route path="/trip/:id" element={<TripDetail />} />
           <Route path="/specialtrips" element={<SpecialTripsPage />} />
-
 
           {/* 예약 절차 */}
           <Route path="/booking/:tripId" element={<Booking />} />
@@ -57,7 +57,7 @@ function App() {
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
 
-          {/* Instructor List (강사 홈) */}
+          {/* 강사 홈 */}
           <Route
             path="/instructor"
             element={
@@ -67,7 +67,7 @@ function App() {
             }
           />
 
-/* 강사 예약(요금/객실 선택) */
+          {/* 강사 예약(요금/객실 선택) */}
           <Route
             path="/instructor/:id"
             element={
@@ -77,7 +77,7 @@ function App() {
             }
           />
 
-/* 강사 예약 확정 */
+          {/* 강사 예약 확정 */}
           <Route
             path="/instructor/:id/confirm"
             element={
@@ -87,7 +87,7 @@ function App() {
             }
           />
 
-/* 강사 예약 내역 */
+          {/* 강사 예약 내역 */}
           <Route
             path="/instructor/my-booking"
             element={
@@ -97,7 +97,7 @@ function App() {
             }
           />
 
-/* 강사 결제 */
+          {/* 강사 결제 */}
           <Route
             path="/instructor/payment"
             element={
@@ -107,18 +107,45 @@ function App() {
             }
           />
 
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/bookings" element={<AdminBookings />} />
+          {/* 관리자 대시보드 */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-
+          {/* 관리자 예약관리 */}
+          <Route
+            path="/admin/bookings"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <AdminBookings />
+              </ProtectedRoute>
+            }
+          />
 
           {/* 관리자 - 보트 자산 관리 */}
           <Route
             path="/admin/boats/assets"
-            element={<AdminBoatAssets />}
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <AdminBoatAssets />
+              </ProtectedRoute>
+            }
           />
-          {/* ✅ 스페셜 트립 관리 페이지 */}
-          <Route path="/admin/special-trips" element={<AdminSpecialTrips />} />
+
+          {/* 관리자 - 스페셜 트립 관리 */}
+          <Route
+            path="/admin/special-trips"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <AdminSpecialTrips />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Router>
     </AuthProvider>
