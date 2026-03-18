@@ -1,0 +1,244 @@
+.register-page {
+    min-height: 100vh;
+    background: #f6f8fb;
+    padding: 40px 20px;
+}
+
+.register-card {
+    max-width: 920px;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid #e6ebf1;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+}
+
+.register-header {
+    padding: 32px 32px 20px;
+    border-bottom: 1px solid #edf1f5;
+    background: linear-gradient(180deg, #ffffff 0%, #fafcff 100%);
+}
+
+.register-header h1 {
+    margin: 0 0 8px;
+    font-size: 30px;
+    font-weight: 700;
+    color: #14213d;
+}
+
+.register-header p {
+    margin: 0;
+    font-size: 15px;
+    color: #5b6472;
+    line-height: 1.6;
+}
+
+.register-form {
+    padding: 28px 32px 36px;
+}
+
+.register-section {
+    margin-bottom: 28px;
+}
+
+.register-section h2 {
+    margin: 0 0 14px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.role-selector {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.role-option {
+    flex: 1;
+    min-width: 220px;
+    border: 1px solid #dbe3ec;
+    border-radius: 14px;
+    padding: 16px 18px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.role-option input {
+    display: none;
+}
+
+.role-option span {
+    font-size: 16px;
+    font-weight: 600;
+    color: #24324a;
+}
+
+.role-option.active {
+    border-color: #1d4ed8;
+    background: #eff6ff;
+    box-shadow: inset 0 0 0 1px #1d4ed8;
+}
+
+.role-help {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 20px;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-field label {
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-field input,
+.form-field textarea {
+    width: 100%;
+    border: 1px solid #d5dce5;
+    border-radius: 12px;
+    padding: 13px 14px;
+    font-size: 15px;
+    color: #111827;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.form-field input:focus,
+.form-field textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-field textarea {
+    resize: vertical;
+    min-height: 110px;
+}
+
+.field-error {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: #d93025;
+}
+
+.terms-box {
+    border: 1px solid #e5eaf0;
+    border-radius: 14px;
+    background: #fbfcfe;
+    padding: 18px;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.checkbox-row input {
+    margin-top: 3px;
+}
+
+.terms-content {
+    margin: 0 0 16px 28px;
+    padding: 12px 14px;
+    background: #ffffff;
+    border: 1px solid #ebeff4;
+    border-radius: 10px;
+    color: #556070;
+    line-height: 1.7;
+    font-size: 14px;
+}
+
+.register-actions {
+    margin-top: 30px;
+}
+
+.submit-btn {
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    background: #1d4ed8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: #1e40af;
+}
+
+.submit-btn:disabled {
+    background: #b9c3d1;
+    cursor: not-allowed;
+}
+
+.register-footer {
+    margin-top: 16px;
+    text-align: center;
+    color: #667085;
+    font-size: 14px;
+}
+
+.register-footer a {
+    color: #1d4ed8;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.register-footer a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .register-page {
+        padding: 20px 12px;
+    }
+
+    .register-header {
+        padding: 24px 20px 18px;
+    }
+
+    .register-form {
+        padding: 22px 20px 28px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .role-option {
+        min-width: 100%;
+    }
+
+    .terms-content {
+        margin-left: 0;
+    }
+}

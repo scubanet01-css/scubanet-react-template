@@ -55,7 +55,7 @@ function App() {
 
           {/* 인증 */}
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/auth/register" element={<Register />} />
 
           {/* Instructor List (강사 홈) */}
           <Route
