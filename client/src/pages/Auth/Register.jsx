@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Register.css";
+import axios from "axios";
 
 function formatPhone(value) {
   const numbers = value.replace(/[^0-9]/g, "").slice(0, 11);
@@ -180,20 +181,51 @@ export default function Register() {
     return Object.keys(nextErrors).length === 0;
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     if (!validate()) return;
 
-    console.log("회원가입 UI 제출 데이터:", form);
+    try {
+      const formData = new FormData();
 
-    alert(
-      isInstructor
-        ? "강사회원 가입 신청 UI가 정상 동작했습니다. 다음 단계에서 파일 업로드와 관리자 승인 흐름을 서버와 연결합니다."
-        : "일반회원 가입 UI가 정상 동작했습니다. 다음 단계에서 회원가입 API를 연결합니다."
-    );
+      formData.append("role", form.role);
+      formData.append("name", form.name);
+      formData.append("email", form.email);
+      formData.append("password", form.password);
+      formData.append("confirmPassword", form.confirmPassword);
+      formData.append("phone", form.phone);
+      formData.append("nationality", form.nationality);
 
-    navigate("/auth/login");
+      formData.append("organization", form.organization || "");
+      formData.append("certificationLevel", form.certificationLevel || "");
+      formData.append("experienceYears", form.experienceYears || "");
+      formData.append("intro", form.intro || "");
+
+      formData.append("agreeTerms", String(form.agreeTerms));
+      formData.append("agreePrivacy", String(form.agreePrivacy));
+      formData.append("agreeMarketing", String(form.agreeMarketing));
+
+      if (form.instructorCardFile) {
+        formData.append("instructorCardFile", form.instructorCardFile);
+      }
+
+      const res = await axios.post("/api/auth/register", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      alert(res.data.message || "회원가입이 완료되었습니다.");
+      navigate("/auth/login");
+    } catch (err) {
+      console.error("회원가입 실패:", err);
+
+      const message =
+        err.response?.data?.message || "회원가입 중 오류가 발생했습니다.";
+
+      alert(message);
+    }
   }
 
   return (

@@ -7,6 +7,7 @@ const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 const bodyParser = require("body-parser");
+const authRouter = require("./routes/auth");
 
 const generateInvoicePDF = require("./utils/generateInvoicePDF");
 const sendInvoiceEmail = require("./utils/sendInvoiceEmail");
@@ -73,6 +74,12 @@ app.use((req, res, next) => {
   console.log("➡ REQ:", req.method, req.url);
   next();
 });
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use("/uploads", express.static("/var/scubanet-data/uploads"));
+app.use(authRouter);
 
 // --------------------------------------------------
 // ✅ Special Trips Admin API (여기가 핵심)
