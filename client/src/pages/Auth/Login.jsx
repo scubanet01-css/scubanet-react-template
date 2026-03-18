@@ -68,11 +68,12 @@ export default function Login() {
       }
 
       if (user.role === "instructor") {
-        navigate("/instructor");
+        navigate("/instructor/trips"); // 🔥 변경
         return;
       }
 
-      navigate("/mypage");
+      // 일반회원
+      navigate("/trips"); // 🔥 변경
     } catch (err) {
       console.error("로그인 실패:", err);
       console.error("응답 데이터:", err.response?.data);
