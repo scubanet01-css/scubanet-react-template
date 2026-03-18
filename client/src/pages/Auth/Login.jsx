@@ -73,7 +73,7 @@ export default function Login() {
       }
 
       // 일반회원
-      navigate("/trips"); // 🔥 변경
+      navigate("/triplist"); // 🔥 변경
     } catch (err) {
       console.error("로그인 실패:", err);
       console.error("응답 데이터:", err.response?.data);
