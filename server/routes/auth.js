@@ -401,4 +401,34 @@ router.patch("/api/admin/users/:id/status", async (req, res) => {
     }
 });
 
+// 관리자 - 대시보드 요약
+router.get("/api/admin/dashboard/summary", async (req, res) => {
+    try {
+        const users = readUsers();
+
+        const totalUsers = users.length;
+        const totalGeneralUsers = users.filter((user) => user.role === "general").length;
+        const totalInstructors = users.filter((user) => user.role === "instructor").length;
+        const pendingInstructors = users.filter(
+            (user) => user.role === "instructor" && user.status === "pending"
+        ).length;
+        const activeInstructors = users.filter(
+            (user) => user.role === "instructor" && user.status === "active"
+        ).length;
+
+        return res.status(200).json({
+            totalUsers,
+            totalGeneralUsers,
+            totalInstructors,
+            pendingInstructors,
+            activeInstructors,
+        });
+    } catch (error) {
+        console.error("관리자 대시보드 요약 조회 오류:", error);
+        return res.status(500).json({
+            message: "대시보드 요약 정보를 불러오는 중 서버 오류가 발생했습니다.",
+        });
+    }
+});
+
 module.exports = router;
