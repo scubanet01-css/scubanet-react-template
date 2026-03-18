@@ -251,4 +251,75 @@ router.post(
     }
 );
 
+router.post("/api/auth/login", async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !email.trim()) {
+            return res.status(400).json({ message: "이메일을 입력해주세요." });
+        }
+
+        if (!password || !password.trim()) {
+            return res.status(400).json({ message: "비밀번호를 입력해주세요." });
+        }
+
+        const users = readUsers();
+
+        const user = users.find(
+            (item) => String(item.email).toLowerCase() === String(email).toLowerCase()
+        );
+
+        if (!user) {
+            return res.status(401).json({ message: "이메일 또는 비밀번호가 올바르지 않습니다." });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.passwordHash);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: "이메일 또는 비밀번호가 올바르지 않습니다." });
+        }
+
+        if (user.status === "pending" && user.role === "instructor") {
+            return res.status(403).json({
+                message: "강사회원 승인 대기 중입니다. 관리자 승인 후 이용 가능합니다.",
+            });
+        }
+
+        if (user.status === "rejected") {
+            return res.status(403).json({
+                message: "가입 승인이 거절된 계정입니다. 관리자에게 문의해주세요.",
+            });
+        }
+
+        if (user.status === "suspended") {
+            return res.status(403).json({
+                message: "이용이 제한된 계정입니다. 관리자에게 문의해주세요.",
+            });
+        }
+
+        user.lastLoginAt = new Date().toISOString();
+        user.updatedAt = new Date().toISOString();
+        writeUsers(users);
+
+        return res.status(200).json({
+            message: "로그인되었습니다.",
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                nationality: user.nationality,
+                role: user.role,
+                status: user.status,
+                createdAt: user.createdAt,
+                lastLoginAt: user.lastLoginAt,
+                instructorProfile: user.instructorProfile || null,
+            },
+        });
+    } catch (error) {
+        console.error("로그인 오류:", error);
+        return res.status(500).json({ message: "로그인 처리 중 서버 오류가 발생했습니다." });
+    }
+});
+
 module.exports = router;
