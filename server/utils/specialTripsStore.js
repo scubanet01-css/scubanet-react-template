@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const rebuildTripData = require("./rebuildTripData");
 
 const DATA_DIR = "/var/scubanet-data";
 const SPECIAL_PATH = path.join(DATA_DIR, "special-trips.json");
@@ -16,8 +17,10 @@ function loadSpecialTrips() {
         if (!fs.existsSync(SPECIAL_PATH)) {
             return [];
         }
+
         const raw = fs.readFileSync(SPECIAL_PATH, "utf8");
         const json = JSON.parse(raw);
+
         if (Array.isArray(json)) return json;
 
         console.warn("⚠ special-trips.json: 배열이 아님, 빈 배열로 처리합니다.");
@@ -36,7 +39,9 @@ function saveSpecialTrips(list) {
     try {
         const safeList = Array.isArray(list) ? list : [];
         const json = JSON.stringify(safeList, null, 2);
+
         fs.writeFileSync(SPECIAL_PATH, json, "utf8");
+
         console.log(
             `💾 special-trips.json 저장 완료 (${safeList.length}건), 경로: ${SPECIAL_PATH}`
         );
@@ -50,25 +55,39 @@ function saveSpecialTrips(list) {
  * ✅ ID 기준 upsert (추가/수정 공통)
  * - 같은 specialTripId가 있으면 덮어쓰기
  * - 없으면 새로 추가
+ * - 저장 후 UTS/merged 데이터 자동 재생성
  */
-function upsertSpecialTrip(trip) {
-    if (!trip || !trip.specialTripId) {
+async function upsertSpecialTrip(payload) {
+    if (!payload || !payload.specialTripId) {
         throw new Error("specialTripId가 없는 트립은 저장할 수 없습니다.");
     }
 
     const list = loadSpecialTrips();
+
     const idx = list.findIndex(
-        (t) => t.specialTripId === trip.specialTripId
+        (t) => t.specialTripId === payload.specialTripId
     );
 
+    let savedTrip;
+
     if (idx >= 0) {
-        list[idx] = { ...list[idx], ...trip };
+        savedTrip = {
+            ...list[idx],
+            ...payload,
+        };
+        list[idx] = savedTrip;
     } else {
-        list.push(trip);
+        savedTrip = payload;
+        list.push(savedTrip);
     }
 
     saveSpecialTrips(list);
-    return trip;
+
+    console.log("🔄 special-trips 저장 후 UTS 재생성 시작");
+    await rebuildTripData();
+    console.log("✅ special-trips 저장 후 UTS 재생성 완료");
+
+    return savedTrip;
 }
 
 function deleteSpecialTrip(id) {
