@@ -2,6 +2,20 @@ import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Register.css";
 
+function formatPhone(value) {
+  const numbers = value.replace(/[^0-9]/g, "").slice(0, 11);
+
+  if (numbers.length <= 3) return numbers;
+  if (numbers.length <= 7) {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+  }
+  return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 export default function Register() {
   const navigate = useNavigate();
 
@@ -18,6 +32,7 @@ export default function Register() {
     certificationLevel: "",
     experienceYears: "",
     intro: "",
+    instructorCardFile: null,
 
     agreeTerms: false,
     agreePrivacy: false,
@@ -27,7 +42,23 @@ export default function Register() {
   const [errors, setErrors] = useState({});
 
   function handleChange(e) {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked, files } = e.target;
+
+    if (type === "file") {
+      setForm((prev) => ({
+        ...prev,
+        [name]: files && files[0] ? files[0] : null,
+      }));
+      return;
+    }
+
+    if (name === "phone") {
+      setForm((prev) => ({
+        ...prev,
+        phone: formatPhone(value),
+      }));
+      return;
+    }
 
     setForm((prev) => ({
       ...prev,
@@ -41,6 +72,7 @@ export default function Register() {
     const basicValid =
       form.name.trim() &&
       form.email.trim() &&
+      isValidEmail(form.email.trim()) &&
       form.password.trim() &&
       form.confirmPassword.trim() &&
       form.phone.trim() &&
@@ -54,7 +86,8 @@ export default function Register() {
     const instructorValid = isInstructor
       ? form.organization.trim() &&
       form.certificationLevel.trim() &&
-      form.experienceYears.trim()
+      form.experienceYears !== "" &&
+      form.instructorCardFile
       : true;
 
     return basicValid && passwordValid && instructorValid;
@@ -63,10 +96,19 @@ export default function Register() {
   function validate() {
     const nextErrors = {};
 
-    if (!form.name.trim()) nextErrors.name = "이름을 입력해주세요.";
-    if (!form.email.trim()) nextErrors.email = "이메일을 입력해주세요.";
-    if (!form.password.trim()) nextErrors.password = "비밀번호를 입력해주세요.";
-    if (form.password && form.password.length < 8) {
+    if (!form.name.trim()) {
+      nextErrors.name = "이름을 입력해주세요.";
+    }
+
+    if (!form.email.trim()) {
+      nextErrors.email = "이메일을 입력해주세요.";
+    } else if (!isValidEmail(form.email.trim())) {
+      nextErrors.email = "올바른 이메일 형식을 입력해주세요.";
+    }
+
+    if (!form.password.trim()) {
+      nextErrors.password = "비밀번호를 입력해주세요.";
+    } else if (form.password.length < 8) {
       nextErrors.password = "비밀번호는 8자 이상이어야 합니다.";
     }
 
@@ -76,24 +118,60 @@ export default function Register() {
       nextErrors.confirmPassword = "비밀번호가 일치하지 않습니다.";
     }
 
-    if (!form.phone.trim()) nextErrors.phone = "연락처를 입력해주세요.";
-    if (!form.nationality.trim()) nextErrors.nationality = "국적을 입력해주세요.";
+    if (!form.phone.trim()) {
+      nextErrors.phone = "연락처를 입력해주세요.";
+    } else {
+      const onlyNumbers = form.phone.replace(/[^0-9]/g, "");
+      if (onlyNumbers.length < 10) {
+        nextErrors.phone = "올바른 연락처를 입력해주세요.";
+      }
+    }
+
+    if (!form.nationality.trim()) {
+      nextErrors.nationality = "국적을 입력해주세요.";
+    }
 
     if (isInstructor) {
       if (!form.organization.trim()) {
         nextErrors.organization = "소속을 입력해주세요.";
       }
+
       if (!form.certificationLevel.trim()) {
         nextErrors.certificationLevel = "자격 등급 또는 강사 레벨을 입력해주세요.";
       }
-      if (!form.experienceYears.trim()) {
+
+      if (form.experienceYears === "") {
         nextErrors.experienceYears = "경력을 입력해주세요.";
+      } else if (Number(form.experienceYears) < 0) {
+        nextErrors.experienceYears = "경력은 0 이상이어야 합니다.";
+      }
+
+      if (!form.instructorCardFile) {
+        nextErrors.instructorCardFile = "강사 C카드 사본을 업로드해주세요.";
+      } else {
+        const allowedTypes = [
+          "image/jpeg",
+          "image/png",
+          "application/pdf",
+        ];
+
+        if (!allowedTypes.includes(form.instructorCardFile.type)) {
+          nextErrors.instructorCardFile =
+            "JPG, PNG 또는 PDF 파일만 업로드할 수 있습니다.";
+        }
+
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (form.instructorCardFile.size > maxSize) {
+          nextErrors.instructorCardFile =
+            "파일 크기는 10MB 이하로 업로드해주세요.";
+        }
       }
     }
 
     if (!form.agreeTerms) {
       nextErrors.agreeTerms = "이용약관에 동의해주세요.";
     }
+
     if (!form.agreePrivacy) {
       nextErrors.agreePrivacy = "개인정보 수집 및 이용에 동의해주세요.";
     }
@@ -107,13 +185,12 @@ export default function Register() {
 
     if (!validate()) return;
 
-    // ✅ 아직은 UI 단계이므로 실제 API 전송 대신 다음 단계 연결용 콘솔만 남김
     console.log("회원가입 UI 제출 데이터:", form);
 
     alert(
       isInstructor
-        ? "강사회원 가입 신청 UI가 정상 동작했습니다. 다음 단계에서 API와 관리자 승인 흐름을 연결합니다."
-        : "일반회원 가입 UI가 정상 동작했습니다. 다음 단계에서 API를 연결합니다."
+        ? "강사회원 가입 신청 UI가 정상 동작했습니다. 다음 단계에서 파일 업로드와 관리자 승인 흐름을 서버와 연결합니다."
+        : "일반회원 가입 UI가 정상 동작했습니다. 다음 단계에서 회원가입 API를 연결합니다."
     );
 
     navigate("/auth/login");
@@ -130,8 +207,11 @@ export default function Register() {
         <form className="register-form" onSubmit={handleSubmit}>
           <section className="register-section">
             <h2>회원 유형</h2>
+
             <div className="role-selector">
-              <label className={`role-option ${form.role === "general" ? "active" : ""}`}>
+              <label
+                className={`role-option ${form.role === "general" ? "active" : ""}`}
+              >
                 <input
                   type="radio"
                   name="role"
@@ -142,7 +222,9 @@ export default function Register() {
                 <span>일반회원</span>
               </label>
 
-              <label className={`role-option ${form.role === "instructor" ? "active" : ""}`}>
+              <label
+                className={`role-option ${form.role === "instructor" ? "active" : ""}`}
+              >
                 <input
                   type="radio"
                   name="role"
@@ -154,9 +236,9 @@ export default function Register() {
               </label>
             </div>
 
-            {form.role === "instructor" && (
+            {isInstructor && (
               <p className="role-help">
-                강사회원은 가입 후 관리자 승인 절차를 거쳐 활성화됩니다.
+                강사회원은 가입 신청 후 관리자 승인 절차를 거쳐 활성화됩니다.
               </p>
             )}
           </section>
@@ -236,7 +318,9 @@ export default function Register() {
                   onChange={handleChange}
                   placeholder="예: Korea"
                 />
-                {errors.nationality && <p className="field-error">{errors.nationality}</p>}
+                {errors.nationality && (
+                  <p className="field-error">{errors.nationality}</p>
+                )}
               </div>
             </div>
           </section>
@@ -299,6 +383,32 @@ export default function Register() {
                     placeholder="강사 활동 소개, 주 활동 지역, 운영 중인 투어 등이 있으면 적어주세요."
                   />
                 </div>
+
+                <div className="form-field full-width">
+                  <label>강사 C카드 사본 업로드 *</label>
+                  <div className="file-upload-box">
+                    <input
+                      type="file"
+                      name="instructorCardFile"
+                      accept=".jpg,.jpeg,.png,.pdf"
+                      onChange={handleChange}
+                    />
+                    <p className="file-help">
+                      강사회원 승인 심사를 위해 강사 자격을 확인할 수 있는 C카드
+                      사본을 업로드해주세요. (JPG, PNG, PDF / 최대 10MB)
+                    </p>
+
+                    {form.instructorCardFile && (
+                      <div className="file-name">
+                        선택된 파일: {form.instructorCardFile.name}
+                      </div>
+                    )}
+                  </div>
+
+                  {errors.instructorCardFile && (
+                    <p className="field-error">{errors.instructorCardFile}</p>
+                  )}
+                </div>
               </div>
             </section>
           )}
@@ -334,7 +444,9 @@ export default function Register() {
                 />
                 <span>[필수] 개인정보 수집 및 이용에 동의합니다.</span>
               </label>
-              {errors.agreePrivacy && <p className="field-error">{errors.agreePrivacy}</p>}
+              {errors.agreePrivacy && (
+                <p className="field-error">{errors.agreePrivacy}</p>
+              )}
 
               <div className="terms-content">
                 회원가입을 위해 이름, 이메일, 비밀번호, 연락처, 국적을 수집하며,
@@ -353,8 +465,8 @@ export default function Register() {
               </label>
 
               <div className="terms-content">
-                이벤트, 할인 프로모션, 신규 여행 상품 안내를 이메일 또는 문자로 받을 수
-                있습니다. 이 동의는 언제든지 철회할 수 있습니다.
+                이벤트, 할인 프로모션, 신규 여행 상품 안내를 이메일 또는 문자로
+                받을 수 있습니다. 이 동의는 언제든지 철회할 수 있습니다.
               </div>
             </div>
           </section>

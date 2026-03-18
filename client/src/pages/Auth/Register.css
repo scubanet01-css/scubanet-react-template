@@ -141,6 +141,31 @@
     color: #d93025;
 }
 
+.file-upload-box {
+    border: 1px solid #d5dce5;
+    border-radius: 12px;
+    padding: 14px;
+    background: #fbfcfe;
+}
+
+.file-help {
+    margin: 10px 0 0;
+    font-size: 13px;
+    color: #667085;
+    line-height: 1.6;
+}
+
+.file-name {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: #eef4ff;
+    border: 1px solid #d7e4ff;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #1d4ed8;
+    font-weight: 600;
+}
+
 .terms-box {
     border: 1px solid #e5eaf0;
     border-radius: 14px;
