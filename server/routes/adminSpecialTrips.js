@@ -51,6 +51,8 @@ router.get("/:id", (req, res) => {
  */
 router.post("/", async (req, res) => {
     try {
+        console.log("🟡 [special-trips] POST 진입");
+
         const payload = req.body || {};
 
         if (!payload.specialTripId) {
@@ -60,9 +62,13 @@ router.post("/", async (req, res) => {
         }
 
         const saved = upsertSpecialTrip(payload);
+        console.log("🟡 [special-trips] upsert 완료");
 
+        console.log("🟡 [special-trips] rebuildTripData 시작 직전");
         await rebuildTripData();
+        console.log("🟡 [special-trips] upsert 완료");
 
+        console.log("🟡 [special-trips] rebuildTripData 시작 직전");
         res.json(saved);
     } catch (err) {
         console.error("❌ [POST /api/admin/special-trips] 오류:", err);
