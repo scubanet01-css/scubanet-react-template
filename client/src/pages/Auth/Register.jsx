@@ -46,10 +46,38 @@ export default function Register() {
     const { name, value, type, checked, files } = e.target;
 
     if (type === "file") {
+      const file = files && files[0];
+
+      if (!file) {
+        setForm((prev) => ({
+          ...prev,
+          [name]: null,
+        }));
+        return;
+      }
+
+      const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+      const maxSize = 10 * 1024 * 1024; // 10MB
+
+      // 파일 타입 체크
+      if (!allowedTypes.includes(file.type)) {
+        alert("JPG, PNG, PDF 파일만 업로드 가능합니다.");
+        e.target.value = ""; // 파일 선택 초기화
+        return;
+      }
+
+      // 파일 크기 체크
+      if (file.size > maxSize) {
+        alert("파일 크기는 10MB 이하만 가능합니다.");
+        e.target.value = "";
+        return;
+      }
+
       setForm((prev) => ({
         ...prev,
-        [name]: files && files[0] ? files[0] : null,
+        [name]: file,
       }));
+
       return;
     }
 
