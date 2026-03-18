@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
+import Header from "./components/Header";
 import Home from './pages/Home';
 import TripList from './pages/TripList';
 import TripDetail from './pages/TripDetail';
@@ -12,7 +13,6 @@ import MyBooking from './pages/Booking/MyBooking';
 import PaymentPage from './pages/Booking/PaymentPage';
 
 import ProtectedRoute from './components/ProtectedRoute';
-import LogoutButton from "./components/LogoutButton";
 import SpecialTripsPage from "./pages/SpecialTripsPage";
 
 import InstructorList from './pages/Instructor/InstructorList';
@@ -32,14 +32,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <header>
-          <h1>ScubaNet Travel</h1>
-          <nav style={{ display: "flex", gap: "12px" }}>
-            <Link to="/">홈</Link>
-            <LogoutButton />
-          </nav>
-        </header>
-
+        <Header />
         <Routes>
           {/* 일반 사용자 */}
           <Route path="/" element={<Home />} />
