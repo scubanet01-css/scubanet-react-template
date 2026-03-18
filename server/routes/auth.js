@@ -322,4 +322,83 @@ router.post("/api/auth/login", async (req, res) => {
     }
 });
 
+// 관리자 - 전체 회원 목록 조회
+router.get("/api/admin/users", async (req, res) => {
+    try {
+        const users = readUsers();
+
+        const sanitizedUsers = users.map((user) => ({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            nationality: user.nationality,
+            role: user.role,
+            status: user.status,
+            terms: user.terms || null,
+            instructorProfile: user.instructorProfile || null,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            lastLoginAt: user.lastLoginAt,
+        }));
+
+        return res.status(200).json(sanitizedUsers);
+    } catch (error) {
+        console.error("관리자 회원 목록 조회 오류:", error);
+        return res.status(500).json({
+            message: "회원 목록을 불러오는 중 서버 오류가 발생했습니다.",
+        });
+    }
+});
+
+// 관리자 - 회원 상태 변경
+router.patch("/api/admin/users/:id/status", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        const allowedStatuses = ["pending", "active", "rejected", "suspended", "withdrawn"];
+
+        if (!allowedStatuses.includes(status)) {
+            return res.status(400).json({
+                message: "허용되지 않은 상태값입니다.",
+            });
+        }
+
+        const users = readUsers();
+        const userIndex = users.findIndex((user) => String(user._id) === String(id));
+
+        if (userIndex === -1) {
+            return res.status(404).json({
+                message: "회원을 찾을 수 없습니다.",
+            });
+        }
+
+        users[userIndex].status = status;
+        users[userIndex].updatedAt = new Date().toISOString();
+
+        if (users[userIndex].role === "instructor" && users[userIndex].instructorProfile) {
+            users[userIndex].instructorProfile.approvalStatus = status;
+        }
+
+        writeUsers(users);
+
+        return res.status(200).json({
+            message: "회원 상태가 변경되었습니다.",
+            user: {
+                _id: users[userIndex]._id,
+                name: users[userIndex].name,
+                email: users[userIndex].email,
+                role: users[userIndex].role,
+                status: users[userIndex].status,
+            },
+        });
+    } catch (error) {
+        console.error("회원 상태 변경 오류:", error);
+        return res.status(500).json({
+            message: "회원 상태 변경 중 서버 오류가 발생했습니다.",
+        });
+    }
+});
+
 module.exports = router;

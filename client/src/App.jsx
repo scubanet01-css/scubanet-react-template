@@ -24,6 +24,7 @@ import AdminBoatAssets from "./pages/Admin/AdminBoatAssets";
 import AdminSpecialTrips from './pages/Admin/AdminSpecialTrips';
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminBookings from "./pages/Admin/AdminBookings";
+import AdminUsers from "./pages/Admin/AdminUsers";
 
 import { AuthProvider } from './hooks/useAuth';
 
@@ -113,6 +114,15 @@ function App() {
             element={
               <ProtectedRoute allowedRole="admin">
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <AdminUsers />
               </ProtectedRoute>
             }
           />
