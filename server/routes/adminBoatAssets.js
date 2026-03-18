@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
+const rebuildTripData = require("../utils/rebuildTripData");
 
 const router = express.Router();
 
@@ -90,7 +91,7 @@ router.post(
  * POST /admin/api/boats-assets
  * JSON 메타데이터 저장
  */
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
     try {
         const payload = req.body;
 
@@ -132,9 +133,11 @@ router.post("/", (req, res) => {
             fs.mkdirSync(saveDir, { recursive: true });
         }
 
-        const filePath = path.join(saveDir, `${payload.vesselId}.json`);
 
+        const filePath = path.join(saveDir, `${payload.vesselId}.json`);
         fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), "utf8");
+
+        await rebuildTripData();
 
         res.json({
             success: true,
@@ -149,6 +152,8 @@ router.post("/", (req, res) => {
         });
     }
 });
+
+
 
 router.get("/:vesselId", (req, res) => {
     try {
