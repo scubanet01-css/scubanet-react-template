@@ -1410,6 +1410,12 @@ function AdminBoatAssets() {
 
     if (loading) return <div style={{ padding: 24 }}>UTS 데이터 로딩 중...</div>;
 
+    const sortedVesselOptions = [...(vesselOptions || [])].sort((a, b) =>
+        (a.boatName || "").localeCompare(b.boatName || "", "en", {
+            sensitivity: "base",
+        })
+    );
+
     return (
         <div style={{ padding: 24, maxWidth: 1100 }}>
             <h2>Boat Assets Admin (Refactored Full Schema)</h2>
@@ -1419,7 +1425,7 @@ function AdminBoatAssets() {
                 <h3 style={{ marginTop: 0 }}>UTS 선박 선택</h3>
                 <select value={vesselId} onChange={handleVesselSelect} style={{ minWidth: 420 }}>
                     <option value="">선박 선택</option>
-                    {vesselOptions.map((v) => (
+                    {sortedVesselOptions.map((v) => (
                         <option key={v.vesselId} value={v.vesselId}>
                             {v.boatName} ({v.vesselId})
                         </option>
