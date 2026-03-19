@@ -1,7 +1,7 @@
 // src/pages/TripList.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import "./TripList.css";
-import { isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { isWithinInterval, startOfDay, endOfDay, parseISO, isValid } from "date-fns";
 import FilterBar from "../components/Common/FilterBar";
 import TripCard from "../components/TripCard/TripCard.jsx";
 import { useDestinationFilter } from "../hooks/useDestinationFilter";
@@ -66,8 +66,13 @@ function TripList() {
     // 🔍 필터링 로직
     // 🔍 필터링 로직
     const filteredTrips = useMemo(() => {
-        let list = [...trips];
+        const today = startOfDay(new Date());
 
+        let list = [...trips].filter(t => {
+            if (!t.startDate) return false;
+            const d = parseISO(t.startDate);
+            return isValid(d) && d >= today;
+        });
         // Country
         if (selectedCountry !== "전체") {
             list = list.filter(t => t.country === selectedCountry);
