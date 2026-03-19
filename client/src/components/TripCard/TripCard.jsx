@@ -207,8 +207,7 @@ export default function TripCard({ trip, mode = "public" }) {
                 </button>
 
                 {/* 예약하기는 mode로 분기 */}
-                <button
-                    className="btn-reserve"
+                <button className={`btn-reserve ${mode === "instructor" ? "instructor" : ""}`}
                     onClick={() =>
                         navigate(
                             mode === "instructor"
@@ -224,7 +223,7 @@ export default function TripCard({ trip, mode = "public" }) {
                         )
                     }
                 >
-                    {mode === "instructor" ? "강사 예약" : "예약하기"}
+                    {mode === "instructor" ? "강사예약" : "예약하기"}
                 </button>
 
             </div>

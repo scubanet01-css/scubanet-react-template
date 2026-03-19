@@ -169,3 +169,12 @@
 .btn-reserve:active {
     transform: translateY(1px);
 }
+
+.btn-reserve.instructor {
+    white-space: nowrap;
+    min-width: 96px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
