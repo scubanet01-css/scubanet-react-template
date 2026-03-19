@@ -464,3 +464,241 @@
 .trip-block-body strong {
     font-weight: 700;
 }
+
+/* =========================
+   공통 섹션 간격
+========================= */
+.trip-section {
+    margin: 48px 0;
+}
+
+.trip-section h2 {
+    margin-bottom: 18px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #1677ff;
+}
+
+/* =========================
+   히어로 / 보트사진
+========================= */
+.overview-media {
+    max-width: 980px;
+}
+
+.hero-image-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #f3f4f6;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.hero-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.overview-thumbs {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.overview-thumb {
+    width: 140px;
+    height: 88px;
+    object-fit: cover;
+    border-radius: 10px;
+    flex: 0 0 auto;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+}
+
+/* =========================
+   덱플랜
+========================= */
+.deckplan-list {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.deckplan-card {
+    margin: 0;
+}
+
+.deckplan-image-wrap {
+    width: 100%;
+    max-width: 1100px;
+    max-height: 480px;
+    min-height: 180px;
+    background: #111827;
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.deckplan-image {
+    width: 100%;
+    height: 100%;
+    max-height: 450px;
+    object-fit: contain;
+    display: block;
+}
+
+.deckplan-card figcaption {
+    margin-top: 10px;
+    font-size: 15px;
+    color: #374151;
+    font-weight: 600;
+}
+
+/* =========================
+   객실
+========================= */
+.trip-cabins .cabin-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+}
+
+.trip-cabins .cabin-card h3 {
+    margin-bottom: 14px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.cabin-image-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    aspect-ratio: 4 / 3;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #f3f4f6;
+}
+
+.cabin-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* 기존 화살표 버튼 위치 보정 */
+.arrow-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+}
+
+.arrow-btn.left {
+    left: 12px;
+}
+
+.arrow-btn.right {
+    right: 12px;
+}
+
+.index-badge {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 2;
+}
+
+/* =========================
+   공용시설
+========================= */
+.facility-group {
+    margin-bottom: 40px;
+}
+
+.facility-group h3 {
+    margin-bottom: 14px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.facility-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.facility-card {
+    margin: 0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+}
+
+.facility-image-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #f3f4f6;
+}
+
+.facility-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.facility-card figcaption {
+    padding: 12px 14px 14px;
+    font-size: 14px;
+    color: #4b5563;
+    font-weight: 500;
+}
+
+/* =========================
+   모바일
+========================= */
+@media (max-width: 768px) {
+    .trip-section {
+        margin: 32px 0;
+    }
+
+    .trip-section h2 {
+        font-size: 24px;
+    }
+
+    .trip-cabins .cabin-card {
+        padding: 16px;
+    }
+
+    .trip-cabins .cabin-card h3,
+    .facility-group h3 {
+        font-size: 20px;
+    }
+
+    .overview-thumb {
+        width: 110px;
+        height: 74px;
+    }
+
+    .deckplan-image-wrap {
+        min-height: 140px;
+        padding: 10px;
+    }
+}

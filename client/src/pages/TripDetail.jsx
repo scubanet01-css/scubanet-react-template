@@ -368,40 +368,24 @@ function TripDetail() {
         <h2>히어로 / 보트사진</h2>
 
         {overviewImages.length > 0 ? (
-          <div style={{ maxWidth: "980px" }}>
-            {/* 메인 히어로 이미지 */}
-            <img
-              src={overviewImages[0].src}
-              alt={overviewImages[0].label || "Hero image"}
-              style={{
-                width: "100%",
-                borderRadius: "12px",
-                objectFit: "cover",
-              }}
-            />
+          <div className="overview-media">
+            <div className="hero-image-wrap">
+              <img
+                src={overviewImages[0].src}
+                alt={overviewImages[0].label || "Hero image"}
+                className="hero-image"
+              />
+            </div>
 
             {/* 서브 썸네일들 (있으면) */}
             {overviewImages.length > 1 && (
-              <div
-                style={{
-                  display: "flex",
-                  gap: "8px",
-                  marginTop: "8px",
-                  overflowX: "auto",
-                }}
-              >
+              <div className="overview-thumbs">
                 {overviewImages.slice(1).map((img, idx) => (
                   <img
                     key={idx}
                     src={img.src}
                     alt={img.label || `Gallery ${idx + 2}`}
-                    style={{
-                      width: "120px",
-                      height: "80px",
-                      objectFit: "cover",
-                      borderRadius: "6px",
-                      flex: "0 0 auto",
-                    }}
+                    className="overview-thumb"
                   />
                 ))}
               </div>
@@ -417,10 +401,17 @@ function TripDetail() {
         <h2>Deck Plans (덱 플랜)</h2>
 
         {deckPlans.length > 0 ? (
-          <div className="facility-grid">
+          <div className="deckplan-list">
             {deckPlans.map((d) => (
-              <figure key={d.deckCode} className="facility-card">
-                <img src={encodeURI(d.url)} alt={d.title} loading="lazy" />
+              <figure key={d.deckCode} className="deckplan-card">
+                <div className="deckplan-image-wrap">
+                  <img
+                    src={encodeURI(d.url)}
+                    alt={d.title}
+                    loading="lazy"
+                    className="deckplan-image"
+                  />
+                </div>
                 <figcaption>{d.title}</figcaption>
               </figure>
             ))}
@@ -458,22 +449,11 @@ function TripDetail() {
               <h3>{cab.title}</h3>
 
               {images.length > 0 ? (
-                <div
-                  style={{
-                    position: "relative",
-                    maxWidth: "600px",
-                    display: "inline-block",
-                  }}
-                >
+                <div className="cabin-image-wrap">
                   <img
                     src={encodeURI(currentImage?.src || "")}
                     alt={`${cab.title} ${currentIndex + 1}`}
-                    style={{
-                      width: "100%",
-                      borderRadius: "10px",
-                      height: "340px",
-                      objectFit: "cover",
-                    }}
+                    className="cabin-image"
                     loading="lazy"
                   />
 
@@ -524,11 +504,14 @@ function TripDetail() {
               <div className="facility-grid">
                 {facility.images.map((img, idx) => (
                   <figure key={idx} className="facility-card">
-                    <img
-                      src={img.url}
-                      alt={img.title || facility.title}
-                      loading="lazy"
-                    />
+                    <div className="facility-image-wrap">
+                      <img
+                        src={img.url}
+                        alt={img.title || facility.title}
+                        loading="lazy"
+                        className="facility-image"
+                      />
+                    </div>
                     {img.title && <figcaption>{img.title}</figcaption>}
                   </figure>
                 ))}
