@@ -585,17 +585,25 @@
     position: relative;
     width: 100%;
     max-width: 720px;
-    height: 420px;
     border-radius: 14px;
     overflow: hidden;
-    background: #f3f4f6;
+    background: transparent;
 }
 
 .cabin-image {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
     display: block;
+    border-radius: 14px;
+}
+
+.trip-cabins .cabin-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+    max-width: 820px;
 }
 
 /* 기존 화살표 버튼 위치 보정 */
