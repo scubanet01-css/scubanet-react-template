@@ -26,22 +26,6 @@ function FilterBar({
 
     mode = "home"
 }) {
-    // ✅ destinationList 정규화: 배열(flatten) + 중복 제거 + 정렬
-    const normalizedDestinationList = (() => {
-        const set = new Set();
-
-        (destinationList || []).forEach((d) => {
-            if (Array.isArray(d)) {
-                d.forEach((x) => {
-                    if (x && x !== "전체") set.add(x);
-                });
-            } else if (d && d !== "전체") {
-                set.add(d);
-            }
-        });
-
-        return ["전체", ...Array.from(set).sort()];
-    })();
 
     return (
         <div className="filter-bar-container">
@@ -72,9 +56,21 @@ function FilterBar({
                     value={selectedDestination}
                     onChange={(e) => onChangeDestination(e.target.value)}
                 >
-                    {normalizedDestinationList.map((d) => (
-                        <option key={d}>{d}</option>
-                    ))}
+                    {(destinationList || []).map((d) => {
+                        if (typeof d === "string") {
+                            return (
+                                <option key={d} value={d}>
+                                    {d}
+                                </option>
+                            );
+                        }
+
+                        return (
+                            <option key={d.value} value={d.value}>
+                                {d.label}
+                            </option>
+                        );
+                    })}
                 </select>
             </div>
 

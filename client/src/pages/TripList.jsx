@@ -120,8 +120,8 @@ function TripList() {
         if (selectedDestination !== "전체") {
             list = list.filter(
                 (t) =>
-                    Array.isArray(t.normalizedDestinations) &&
-                    t.normalizedDestinations.includes(selectedDestination)
+                    Array.isArray(t.destinationFilterKeys) &&
+                    t.destinationFilterKeys.includes(selectedDestination)
             );
         }
 

@@ -280,15 +280,24 @@ export function detectPrimaryDestination(trip, normalizedDestinations = []) {
     return normalizedDestinations[0] || "Other";
 }
 
+function makeDestinationFilterKeys(country, destinations = []) {
+    return destinations.map((d) => `${country}::${d}`);
+}
+
 export function normalizeUTSTrip(trip) {
     const normalizedCountry = detectNormalizedCountry(trip);
     const normalizedDestinations = detectNormalizedDestinations(trip, normalizedCountry);
     const primaryDestination = detectPrimaryDestination(trip, normalizedDestinations);
+    const destinationFilterKeys = makeDestinationFilterKeys(
+        normalizedCountry,
+        normalizedDestinations
+    );
 
     return {
         ...trip,
         normalizedCountry,
         normalizedDestinations,
+        destinationFilterKeys,
         primaryDestination,
     };
 }
@@ -307,19 +316,44 @@ export function getCountryOptions(trips = []) {
 }
 
 export function getDestinationOptions(trips = [], selectedCountry = "전체") {
-    const filtered =
-        selectedCountry === "전체"
-            ? trips
-            : trips.filter((t) => t.normalizedCountry === selectedCountry);
-
-    return [
-        "전체",
-        ...Array.from(
+    if (selectedCountry === "전체") {
+        const options = Array.from(
             new Set(
-                filtered.flatMap((t) => Array.isArray(t.normalizedDestinations) ? t.normalizedDestinations : [])
+                trips.flatMap((t) =>
+                    (Array.isArray(t.normalizedDestinations) ? t.normalizedDestinations : []).map(
+                        (dest) => `${t.normalizedCountry}::${dest}`
+                    )
+                )
             )
-        ).filter(Boolean).sort(),
-    ];
+        )
+            .filter(Boolean)
+            .sort()
+            .map((key) => {
+                const [country, destination] = key.split("::");
+                return {
+                    value: key,
+                    label: `${destination} (${country})`,
+                };
+            });
+
+        return [{ value: "전체", label: "전체" }, ...options];
+    }
+
+    const options = Array.from(
+        new Set(
+            trips
+                .filter((t) => t.normalizedCountry === selectedCountry)
+                .flatMap((t) => (Array.isArray(t.normalizedDestinations) ? t.normalizedDestinations : []))
+        )
+    )
+        .filter(Boolean)
+        .sort()
+        .map((destination) => ({
+            value: `${selectedCountry}::${destination}`,
+            label: destination,
+        }));
+
+    return [{ value: "전체", label: "전체" }, ...options];
 }
 
 export function getBoatOptions(
@@ -335,7 +369,7 @@ export function getBoatOptions(
                     .filter((t) => selectedCountry === "전체" || t.normalizedCountry === selectedCountry)
                     .filter((t) =>
                         selectedDestination === "전체" ||
-                        (Array.isArray(t.normalizedDestinations) && t.normalizedDestinations.includes(selectedDestination))
+                        (Array.isArray(t.destinationFilterKeys) && t.destinationFilterKeys.includes(selectedDestination))
                     )
                     .map((t) => t.boatName)
                     .filter(Boolean)
