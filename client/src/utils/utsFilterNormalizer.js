@@ -1,0 +1,345 @@
+const VALID_COUNTRIES = new Set([
+    "Indonesia",
+    "Maldives",
+    "Philippines",
+    "Egypt",
+    "Ecuador",
+    "Mexico",
+    "Palau",
+    "Papua New Guinea",
+    "Solomon Islands",
+    "Thailand",
+    "Myanmar",
+    "Saudi Arabia",
+    "Costa Rica",
+    "Oman",
+    "Seychelles",
+    "Marshall Islands",
+    "Micronesia",
+    "Fiji",
+    "Australia",
+    "Cuba",
+    "Others",
+]);
+
+const COUNTRY_RULES = [
+    {
+        country: "Indonesia",
+        keywords: [
+            "indonesia", "raja ampat", "misool", "komodo", "alor",
+            "ambon", "banda", "banda sea", "cenderawasih", "triton",
+            "lembeh", "manado", "sulawesi", "halmahera", "flores", "bali"
+        ],
+    },
+    {
+        country: "Maldives",
+        keywords: [
+            "maldives", "male", "central atolls", "northern atolls",
+            "southern atolls", "far north", "deep south", "hanifaru", "ari", "baa"
+        ],
+    },
+    {
+        country: "Philippines",
+        keywords: [
+            "philippines", "tubbataha", "visayas", "coron", "apo reef", "anilao", "cebu"
+        ],
+    },
+    {
+        country: "Egypt",
+        keywords: ["egypt", "red sea", "hurghada", "port ghalib", "marsa alam"],
+    },
+    {
+        country: "Ecuador",
+        keywords: ["ecuador", "galapagos", "baltra", "san cristobal"],
+    },
+    {
+        country: "Mexico",
+        keywords: ["mexico", "socorro", "revillagigedo", "sea of cortez", "la paz", "magdalena"],
+    },
+    {
+        country: "Palau",
+        keywords: ["palau", "koror", "malakal"],
+    },
+    {
+        country: "Papua New Guinea",
+        keywords: ["papua new guinea", "png", "kimbe", "alotau", "kavieng", "rabaul", "wewak"],
+    },
+    {
+        country: "Solomon Islands",
+        keywords: ["solomon", "honiara", "ghizo", "gizo", "munda"],
+    },
+    {
+        country: "Thailand",
+        keywords: ["thailand", "similan", "surin", "chalong", "thap lamu", "khao lak"],
+    },
+    {
+        country: "Myanmar",
+        keywords: ["myanmar", "burma", "mergui", "merqui", "ranong"],
+    },
+    {
+        country: "Saudi Arabia",
+        keywords: ["saudi", "jeddah", "yanbu"],
+    },
+    {
+        country: "Costa Rica",
+        keywords: ["costa rica", "cocos island", "cocos islands", "puntarenas"],
+    },
+    {
+        country: "Oman",
+        keywords: ["oman", "dibba"],
+    },
+    {
+        country: "Seychelles",
+        keywords: ["seychelles", "eden", "victoria"],
+    },
+    {
+        country: "Marshall Islands",
+        keywords: ["marshall islands", "bikini", "kwajalein"],
+    },
+    {
+        country: "Micronesia",
+        keywords: ["micronesia", "truk", "chuuk", "weno", "truk lagoon"],
+    },
+    {
+        country: "Fiji",
+        keywords: ["fiji"],
+    },
+    {
+        country: "Australia",
+        keywords: ["australia", "coral sea", "great barrier reef", "cod hole"],
+    },
+    {
+        country: "Cuba",
+        keywords: ["cuba"],
+    },
+];
+
+const DESTINATION_RULES = {
+    Indonesia: [
+        { name: "Raja Ampat", keywords: ["raja ampat", "waisai"] },
+        { name: "Misool", keywords: ["misool"] },
+        { name: "Komodo", keywords: ["komodo", "labuan bajo"] },
+        { name: "Alor", keywords: ["alor"] },
+        { name: "Ambon", keywords: ["ambon"] },
+        { name: "Banda Sea", keywords: ["banda sea", "banda", "neira"] },
+        { name: "Cenderawasih Bay", keywords: ["cenderawasih", "nabire", "manokwari"] },
+        { name: "Triton Bay", keywords: ["triton", "kaimana"] },
+        { name: "Halmahera", keywords: ["halmahera", "ternate"] },
+        { name: "Lembeh", keywords: ["lembeh", "bitung"] },
+        { name: "Manado", keywords: ["manado", "bunaken", "bangka"] },
+        { name: "Flores", keywords: ["flores", "maumere"] },
+        { name: "Bali", keywords: ["bali"] },
+        { name: "Sulawesi", keywords: ["sulawesi"] },
+        { name: "Sangihe", keywords: ["sangihe"] },
+    ],
+    Maldives: [
+        { name: "Central Atolls", keywords: ["central atolls", "central", "ari", "north male", "south male", "vaavu"] },
+        { name: "Northern Atolls", keywords: ["northern atolls", "far north", "hanimaadhoo"] },
+        { name: "Southern Atolls", keywords: ["southern atolls", "deep south", "addu", "fuvahmulah", "huvadhoo", "gan"] },
+        { name: "Hanifaru Bay", keywords: ["hanifaru", "baa"] },
+    ],
+    Philippines: [
+        { name: "Tubbataha", keywords: ["tubbataha"] },
+        { name: "Visayas", keywords: ["visayas"] },
+        { name: "Apo Reef", keywords: ["apo reef"] },
+        { name: "Coron", keywords: ["coron"] },
+        { name: "Anilao", keywords: ["anilao"] },
+    ],
+    Egypt: [
+        { name: "Red Sea", keywords: ["red sea", "hurghada", "port ghalib", "marsa alam"] },
+    ],
+    Ecuador: [
+        { name: "Galapagos", keywords: ["galapagos", "wolf", "darwin", "baltra", "san cristobal"] },
+    ],
+    Mexico: [
+        { name: "Socorro", keywords: ["socorro", "revillagigedo"] },
+        { name: "Sea of Cortez", keywords: ["sea of cortez", "cortez", "la paz"] },
+        { name: "Magdalena Bay", keywords: ["magdalena", "mag bay"] },
+        { name: "Cabo Pulmo", keywords: ["cabo pulmo"] },
+    ],
+    Palau: [
+        { name: "Palau", keywords: ["palau", "koror", "malakal"] },
+    ],
+    "Papua New Guinea": [
+        { name: "Kimbe Bay", keywords: ["kimbe"] },
+        { name: "Milne Bay", keywords: ["milne", "alotau"] },
+        { name: "Kavieng", keywords: ["kavieng"] },
+        { name: "Rabaul", keywords: ["rabaul"] },
+        { name: "Wewak", keywords: ["wewak"] },
+    ],
+    "Solomon Islands": [
+        { name: "Honiara", keywords: ["honiara"] },
+        { name: "Munda", keywords: ["munda"] },
+        { name: "Ghizo", keywords: ["ghizo", "gizo"] },
+    ],
+    Thailand: [
+        { name: "Similan", keywords: ["similan"] },
+        { name: "Surin", keywords: ["surin"] },
+    ],
+    Myanmar: [
+        { name: "Mergui Archipelago", keywords: ["mergui", "merqui", "burma", "ranong"] },
+    ],
+    "Costa Rica": [
+        { name: "Cocos Island", keywords: ["cocos"] },
+    ],
+    Oman: [
+        { name: "Oman", keywords: ["oman", "dibba"] },
+    ],
+    Seychelles: [
+        { name: "Seychelles", keywords: ["seychelles", "eden", "victoria"] },
+    ],
+    "Marshall Islands": [
+        { name: "Bikini Atoll", keywords: ["bikini", "kwajalein"] },
+    ],
+    Micronesia: [
+        { name: "Truk Lagoon", keywords: ["truk", "chuuk", "weno"] },
+    ],
+};
+
+function normalizeText(value) {
+    return String(value || "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function getTripSearchText(trip) {
+    return normalizeText([
+        trip.normalizedCountry,
+        trip.country,
+        typeof trip.destination === "string" ? trip.destination : "",
+        Array.isArray(trip.destination) ? trip.destination.join(" | ") : "",
+        Array.isArray(trip.destinations) ? trip.destinations.join(" | ") : "",
+        trip.route,
+        trip.routeName,
+        trip.tripName,
+        trip.title,
+        trip.product?.name,
+        trip.departurePort?.name,
+        trip.embarkPort,
+        trip.region,
+        trip.area,
+        trip.boatName,
+    ].filter(Boolean).join(" | "));
+}
+
+export function detectNormalizedCountry(trip) {
+    if (trip.normalizedCountry) return trip.normalizedCountry;
+
+    const text = getTripSearchText(trip);
+
+    for (const rule of COUNTRY_RULES) {
+        if (rule.keywords.some((kw) => text.includes(normalizeText(kw)))) {
+            return rule.country;
+        }
+    }
+
+    if (typeof trip.country === "string" && VALID_COUNTRIES.has(trip.country.trim())) {
+        return trip.country.trim();
+    }
+
+    return "Others";
+}
+
+function splitFallbackDestinations(value) {
+    return String(value || "")
+        .split(/,|\/|&/)
+        .map((x) => x.trim())
+        .filter(Boolean);
+}
+
+export function detectNormalizedDestinations(trip, country) {
+    const text = getTripSearchText(trip);
+    const rules = DESTINATION_RULES[country] || [];
+    const matched = [];
+
+    for (const rule of rules) {
+        const isMatched = rule.keywords.some((kw) => text.includes(normalizeText(kw)));
+        if (isMatched) {
+            matched.push(rule.name);
+        }
+    }
+
+    if (matched.length > 0) {
+        return Array.from(new Set(matched));
+    }
+
+    if (Array.isArray(trip.normalizedDestinations) && trip.normalizedDestinations.length > 0) {
+        return Array.from(new Set(trip.normalizedDestinations.filter(Boolean)));
+    }
+
+    if (typeof trip.destination === "string" && trip.destination.trim()) {
+        const splitValues = splitFallbackDestinations(trip.destination);
+        if (splitValues.length > 0) {
+            return Array.from(new Set(splitValues));
+        }
+    }
+
+    return ["Other"];
+}
+
+export function detectPrimaryDestination(trip, normalizedDestinations = []) {
+    if (trip.primaryDestination) return trip.primaryDestination;
+    return normalizedDestinations[0] || "Other";
+}
+
+export function normalizeUTSTrip(trip) {
+    const normalizedCountry = detectNormalizedCountry(trip);
+    const normalizedDestinations = detectNormalizedDestinations(trip, normalizedCountry);
+    const primaryDestination = detectPrimaryDestination(trip, normalizedDestinations);
+
+    return {
+        ...trip,
+        normalizedCountry,
+        normalizedDestinations,
+        primaryDestination,
+    };
+}
+
+export function normalizeUTSTrips(trips = []) {
+    return trips.map(normalizeUTSTrip);
+}
+
+export function getCountryOptions(trips = []) {
+    return [
+        "전체",
+        ...Array.from(
+            new Set(trips.map((t) => t.normalizedCountry).filter(Boolean))
+        ).sort(),
+    ];
+}
+
+export function getDestinationOptions(trips = [], selectedCountry = "전체") {
+    const filtered =
+        selectedCountry === "전체"
+            ? trips
+            : trips.filter((t) => t.normalizedCountry === selectedCountry);
+
+    return [
+        "전체",
+        ...Array.from(
+            new Set(
+                filtered.flatMap((t) => Array.isArray(t.normalizedDestinations) ? t.normalizedDestinations : [])
+            )
+        ).filter(Boolean).sort(),
+    ];
+}
+
+export function getBoatOptions(
+    trips = [],
+    selectedCountry = "전체",
+    selectedDestination = "전체"
+) {
+    return [
+        "전체",
+        ...Array.from(
+            new Set(
+                trips
+                    .filter((t) => selectedCountry === "전체" || t.normalizedCountry === selectedCountry)
+                    .filter((t) =>
+                        selectedDestination === "전체" ||
+                        (Array.isArray(t.normalizedDestinations) && t.normalizedDestinations.includes(selectedDestination))
+                    )
+                    .map((t) => t.boatName)
+                    .filter(Boolean)
+            )
+        ).sort(),
+    ];
+}
