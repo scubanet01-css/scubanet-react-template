@@ -38,66 +38,67 @@
     gap: 6px;
 }
 
-/* 공통 배지 톤 */
+/* =========================
+   배지 공통
+========================= */
 .offer-badge,
 .offer-foc-badge,
 .offer-discount-badge,
-.discount-badge {
+.discount-badge,
+.trip-special-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 24px;
-    padding: 4px 9px;
+    min-width: 74px;
+    height: 26px;
+    padding: 0 10px;
     border-radius: 999px;
-    font-size: 0.72rem;
+    font-size: 12px;
     font-weight: 700;
     line-height: 1;
-    letter-spacing: 0.01em;
+    letter-spacing: 0;
     white-space: nowrap;
+    word-break: keep-all;
+    box-sizing: border-box;
+    box-shadow: none;
 }
 
-/* 다이버 할인 */
+/* 강사 할인 */
 .offer-badge {
     background-color: #0f9d75;
     color: #fff;
+    border: 1px solid #0f9d75;
 }
 
 /* instructor FOC */
 .offer-foc-badge {
     background-color: #2f80ed;
     color: #fff;
+    border: 1px solid #2f80ed;
 }
 
+/* 일반 할인 */
 .offer-discount-badge {
     background-color: #18b66a;
     color: #fff;
+    border: 1px solid #18b66a;
 }
 
-/* 일반 다이버 할인 배지 */
+/* 다이버 할인 배지 */
 .discount-badge {
     background-color: #fff2ed;
     color: #e25b2c;
     border: 1px solid #ffd3c4;
-    margin-right: 0;
 }
 
-/* 스쿠버넷 스페셜 트립 배지 */
+/* 스페셜트립 배지 */
 .trip-special-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 24px;
     background-color: #fff6f6;
     color: #f05b61;
     border: 1px solid #f3b8bc;
-    padding: 3px 9px;
-    border-radius: 999px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    line-height: 1;
-    white-space: nowrap;
 }
 
+/* 가격 */
 .price-box {
     flex: 1.15;
     text-align: right;
@@ -118,6 +119,7 @@
     font-size: 0.88rem;
 }
 
+/* 좌석 상태 */
 .status-box {
     flex: 0.95;
     display: flex;
@@ -126,12 +128,14 @@
     min-width: 90px;
 }
 
+/* 버튼 영역 */
 .trip-actions {
     flex: 1.15;
     display: flex;
     justify-content: flex-end;
     align-items: center;
     gap: 8px;
+    flex-wrap: nowrap;
 }
 
 /* =========================
@@ -155,20 +159,29 @@
     cursor: pointer;
     box-sizing: border-box;
     flex-shrink: 0;
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12), 0 3px 10px rgba(0, 0, 0, 0.10);
-    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    box-shadow:
+        0 2px 0 rgba(0, 0, 0, 0.12),
+        0 4px 12px rgba(0, 0, 0, 0.10);
+    transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease,
+        filter 0.12s ease;
 }
 
 .btn-detail:hover,
 .btn-reserve:hover {
     transform: translateY(-1px);
-    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.14), 0 5px 14px rgba(0, 0, 0, 0.12);
+    box-shadow:
+        0 3px 0 rgba(0, 0, 0, 0.14),
+        0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .btn-detail:active,
 .btn-reserve:active {
     transform: translateY(1px);
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.10);
+    box-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.10),
+        0 2px 6px rgba(0, 0, 0, 0.10);
 }
 
 /* 상세보기 */
@@ -177,13 +190,12 @@
     color: #fff;
 }
 
-/* 예약/강사예약 */
+/* 예약 / 강사예약 */
 .btn-reserve {
     background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
     color: #fff;
 }
 
-/* 강사예약도 동일 규격 유지 */
 .btn-reserve.instructor {
     min-width: 96px;
 }
