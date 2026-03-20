@@ -140,7 +140,7 @@ export default function TripCard({ trip, mode = "public" }) {
     return (
         <div className="trip-card">
 
-            {/* ✔ 보트명 + 상품명 */}
+            {/* 왼쪽 정보 */}
             <div className="trip-info">
                 <strong>{trip.boatName}</strong>
                 <br />
@@ -152,80 +152,81 @@ export default function TripCard({ trip, mode = "public" }) {
                 </small>
             </div>
 
-            {/* ✔ 할인 + FOC 배지 */}
-            <div className="trip-badge instructor-offer-wrapper">
+            {/* 오른쪽 메타 정보 묶음 */}
+            <div className="trip-meta">
 
-                {/* ✅ 스쿠버넷 스페셜 트립 배지(할인/FOC 보다 위) */}
-                {isSpecial && (
-                    <div className="trip-special-badge">
-                        스페셜트립
+                {/* 배지 */}
+                <div className="trip-badge">
+                    <div className="instructor-offer-wrapper">
+                        {isSpecial && (
+                            <div className="trip-special-badge">
+                                스페셜트립
+                            </div>
+                        )}
+
+                        {hasDiscount && (
+                            <span className="offer-badge">{discountPercent}% OFF</span>
+                        )}
+
+                        {focLabel && (
+                            <span className="offer-foc-badge">{focLabel}</span>
+                        )}
                     </div>
-                )}
+                </div>
 
-                {hasDiscount && (
-                    <span className="offer-badge">{discountPercent}% OFF</span>
-                )}
+                {/* 금액 */}
+                <div className="price-box">
+                    {displayPrice ? (
+                        <strong className="price-main">
+                            {formatCurrency(displayPrice, "USD")}
+                        </strong>
+                    ) : (
+                        <strong>-</strong>
+                    )}
 
-                {focLabel && (
-                    <span className="offer-foc-badge">{focLabel}</span>
-                )}
-            </div>
+                    {hasDiscount && strikePrice && (
+                        <div className="price-original">
+                            {formatCurrency(strikePrice, "USD")}
+                        </div>
+                    )}
+                </div>
 
-            {/* ✔ 금액 */}
-            <div className="price-box">
-                {displayPrice ? (
-                    <strong className="price-main">
-                        {formatCurrency(displayPrice, "USD")}
-                    </strong>
-                ) : (
-                    <strong>-</strong>
-                )}
+                {/* 좌석 */}
+                <div className="status-box">
+                    <SeatBadges seats={seats} />
+                </div>
 
-                {hasDiscount && strikePrice && (
-                    <div className="price-original">
-                        {formatCurrency(strikePrice, "USD")}
-                    </div>
-                )}
-            </div>
+                {/* 버튼 */}
+                <div className="trip-actions">
+                    <button
+                        className="btn-detail"
+                        onClick={() =>
+                            navigate(`/trip/${trip.id}`, { state: { trip } })
+                        }
+                    >
+                        상세보기
+                    </button>
 
-            {/* ✔ 좌석 */}
-            <div className="status-box">
-                <SeatBadges seats={seats} />
-            </div>
-
-            {/* ✔ 버튼 */}
-            <div className="trip-actions">
-
-                {/* 상세보기는 항상 동일 */}
-                <button
-                    className="btn-detail"
-                    onClick={() =>
-                        navigate(`/trip/${trip.id}`, { state: { trip } })
-                    }
-                >
-                    상세보기
-                </button>
-
-                {/* 예약하기는 mode로 분기 */}
-                <button className={`btn-reserve ${mode === "instructor" ? "instructor" : ""}`}
-                    onClick={() =>
-                        navigate(
-                            mode === "instructor"
-                                ? `/instructor/${trip.id}`
-                                : `/booking/${trip.id}`,
-                            {
-                                state: {
-                                    trip,
-                                    bookingType:
-                                        mode === "instructor" ? "instructor" : "general",
-                                },
-                            }
-                        )
-                    }
-                >
-                    {mode === "instructor" ? "강사예약" : "예약하기"}
-                </button>
-
+                    <button
+                        className={`btn-reserve ${mode === "instructor" ? "instructor" : ""}`}
+                        onClick={() =>
+                            navigate(
+                                mode === "instructor"
+                                    ? `/instructor/${trip.id}`
+                                    : `/booking/${trip.id}`,
+                                {
+                                    state: {
+                                        trip,
+                                        bookingType:
+                                            mode === "instructor" ? "instructor" : "general",
+                                    },
+                                }
+                            )
+                        }
+                    >
+                        {mode === "instructor" ? "강사예약" : "예약하기"}
+                    </button>
+                </div>
             </div>
         </div>
     );
