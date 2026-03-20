@@ -27,6 +27,16 @@
     justify-content: center;
 }
 
+.trip-info strong {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.trip-info small {
+    display: block;
+    margin-top: 4px;
+}
+
 .trip-meta {
     flex: 1 1 auto;
     min-width: 0;
@@ -217,4 +227,117 @@
 
 .btn-reserve.instructor {
     min-width: 96px;
+}
+
+/* =========================
+   Tablet
+========================= */
+@media (max-width: 1100px) {
+    .trip-card {
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .trip-info {
+        flex: 0 1 320px;
+        min-width: 220px;
+    }
+
+    .trip-meta {
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 14px 18px;
+    }
+
+    .trip-badge {
+        flex: 0 0 110px;
+        min-width: 110px;
+    }
+
+    .price-box {
+        flex: 0 0 110px;
+        min-width: 110px;
+    }
+
+    .status-box {
+        flex: 0 0 90px;
+        min-width: 90px;
+    }
+
+    .trip-actions {
+        flex: 0 0 auto;
+        min-width: 0;
+        justify-content: flex-start;
+        gap: 10px;
+    }
+}
+
+/* =========================
+   Mobile
+========================= */
+@media (max-width: 768px) {
+    .trip-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        padding: 14px;
+    }
+
+    .trip-info {
+        flex: none;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .trip-meta {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        align-items: stretch;
+        justify-content: stretch;
+    }
+
+    .trip-badge,
+    .price-box,
+    .status-box,
+    .trip-actions {
+        width: 100%;
+        min-width: 0;
+        flex: none;
+    }
+
+    .trip-badge {
+        justify-content: flex-start;
+    }
+
+    .instructor-offer-wrapper {
+        align-items: flex-start;
+        min-height: auto;
+    }
+
+    .price-box {
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .status-box {
+        justify-content: flex-start;
+    }
+
+    .trip-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .btn-detail,
+    .btn-reserve {
+        min-width: 92px;
+        height: 36px;
+        font-size: 13px;
+    }
 }
