@@ -35,7 +35,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    /* 🔥 추가 */
+    height: 100%;
     align-items: flex-end;
     gap: 6px;
 }
@@ -102,9 +102,13 @@
 
 /* 가격 */
 .price-box {
-    flex: 1.15;
-    text-align: right;
-    min-width: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* 🔥 핵심 */
+    align-items: flex-end;
+    height: 100%;
+    /* 🔥 추가 */
 }
 
 .price-main {
@@ -127,6 +131,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 100%;
     min-width: 90px;
 }
 
@@ -136,6 +141,7 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    height: 100%;
     gap: 8px;
     flex-wrap: nowrap;
 }
