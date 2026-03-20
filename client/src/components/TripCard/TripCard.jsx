@@ -158,7 +158,7 @@ export default function TripCard({ trip, mode = "public" }) {
                 {/* ✅ 스쿠버넷 스페셜 트립 배지(할인/FOC 보다 위) */}
                 {isSpecial && (
                     <div className="trip-special-badge">
-                        스쿠버넷 스페셜트립
+                        스페셜트립
                     </div>
                 )}
 

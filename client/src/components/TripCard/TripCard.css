@@ -134,47 +134,56 @@
     gap: 8px;
 }
 
+/* =========================
+   액션 버튼 공통
+========================= */
 .btn-detail,
 .btn-reserve {
-    border: none;
-    height: 36px;
+    min-width: 96px;
+    height: 38px;
     padding: 0 14px;
-    border-radius: 8px;
+    border: none;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    word-break: keep-all;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
     cursor: pointer;
-    min-width: 82px;
-    font-size: 0.86rem;
-    font-weight: 600;
-    transition: background-color 0.2s ease, transform 0.15s ease;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12), 0 3px 10px rgba(0, 0, 0, 0.10);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
 }
 
-.btn-detail {
-    background: #1677ff;
-    color: #fff;
-}
-
-.btn-reserve {
-    background: #11a36a;
-    color: #fff;
-}
-
-.btn-detail:hover {
-    background: #0f67db;
-}
-
+.btn-detail:hover,
 .btn-reserve:hover {
-    background: #0c8d5b;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.14), 0 5px 14px rgba(0, 0, 0, 0.12);
 }
 
 .btn-detail:active,
 .btn-reserve:active {
     transform: translateY(1px);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.10);
 }
 
+/* 상세보기 */
+.btn-detail {
+    background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+    color: #fff;
+}
+
+/* 예약/강사예약 */
+.btn-reserve {
+    background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+    color: #fff;
+}
+
+/* 강사예약도 동일 규격 유지 */
 .btn-reserve.instructor {
-    white-space: nowrap;
     min-width: 96px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
 }
