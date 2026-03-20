@@ -34,8 +34,8 @@ const COUNTRY_RULES = [
     {
         country: "Maldives",
         keywords: [
-            "maldives", "male", "central atolls", "northern atolls",
-            "southern atolls", "far north", "deep south", "hanifaru", "ari", "baa"
+            "maldives", "male", "north male", "south male", "central atolls", "northern atolls",
+            "southern atolls", "hanifaru", "ari atoll", "baa atoll", "vaavu", "fuvahmulah", "addu", "huvadhoo"
         ],
     },
     {
@@ -197,7 +197,25 @@ const DESTINATION_RULES = {
 };
 
 function normalizeText(value) {
-    return String(value || "").toLowerCase().replace(/\s+/g, " ").trim();
+    return String(value || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function keywordMatches(text, keyword) {
+    const normalizedText = normalizeText(text);
+    const normalizedKeyword = normalizeText(keyword);
+
+    if (!normalizedKeyword) return false;
+
+    const pattern = new RegExp(`(^|\\s)${escapeRegExp(normalizedKeyword)}(?=\\s|$)`);
+    return pattern.test(normalizedText);
 }
 
 function getTripSearchText(trip) {
@@ -221,11 +239,20 @@ function getTripSearchText(trip) {
 }
 
 export function detectNormalizedCountry(trip) {
+    // 1) UTS에 이미 정상 country가 있으면 최우선 사용
+    if (
+        typeof trip.country === "string" &&
+        VALID_COUNTRIES.has(trip.country.trim())
+    ) {
+        return trip.country.trim();
+    }
+
+    // 2) 그다음 키워드 탐지
     const text = getTripSearchText(trip);
 
     for (const rule of COUNTRY_RULES) {
         const matchedKeyword = rule.keywords.find((kw) =>
-            text.includes(normalizeText(kw))
+            keywordMatches(text, kw)
         );
 
         if (matchedKeyword) {
@@ -244,23 +271,6 @@ export function detectNormalizedCountry(trip) {
 
             return rule.country;
         }
-    }
-
-    if (
-        typeof trip.country === "string" &&
-        trip.country.trim()
-    ) {
-        if (
-            ["The Smiling Seahorse", "Bavaria", "Sachika"].includes(trip.boatName)
-        ) {
-            console.log("🔎 detectNormalizedCountry fallback country", {
-                boatName: trip.boatName,
-                title: trip.tripName || trip.title || trip.routeName || "",
-                rawCountry: trip.country,
-            });
-        }
-
-        return trip.country.trim();
     }
 
     if (
@@ -290,7 +300,7 @@ export function detectNormalizedDestinations(trip, country) {
     const matched = [];
 
     for (const rule of rules) {
-        const isMatched = rule.keywords.some((kw) => text.includes(normalizeText(kw)));
+        const isMatched = rule.keywords.some((kw) => keywordMatches(text, kw));
         if (isMatched) {
             matched.push(rule.name);
         }
