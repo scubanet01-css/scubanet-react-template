@@ -37,12 +37,6 @@
     justify-content: center;
     /* 🔥 추가 */
     align-items: flex-end;
-    padding: 4px 8px;
-    /* 추가 */
-    border-radius: 8px;
-    /* 추가 */
-    background: rgba(0, 0, 0, 0.02);
-    /* 아주 연하게 */
     gap: 6px;
 }
 
