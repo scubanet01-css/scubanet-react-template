@@ -140,10 +140,9 @@ const DESTINATION_RULES = {
         { name: "Sangihe", keywords: ["sangihe"] },
     ],
     Maldives: [
-        { name: "Central Atolls", keywords: ["central atolls", "central", "ari", "north male", "south male", "vaavu"] },
-        { name: "Northern Atolls", keywords: ["northern atolls", "far north", "hanimaadhoo"] },
+        { name: "Central Atolls", keywords: ["central atolls", "central", "ari atoll", "north male", "south male", "vaavu", "best of maldives", "classic maldives"] },
+        { name: "Northern Atolls", keywords: ["northern atolls", "far north", "hanimaadhoo", "hanifaru", "baa atoll", "north fiesta", "northern secrets"] },
         { name: "Southern Atolls", keywords: ["southern atolls", "deep south", "addu", "fuvahmulah", "huvadhoo", "gan"] },
-        { name: "Hanifaru Bay", keywords: ["hanifaru", "baa"] },
     ],
     Philippines: [
         { name: "Tubbataha", keywords: ["tubbataha"] },
@@ -305,6 +304,35 @@ function splitFallbackDestinations(value) {
         .filter(Boolean);
 }
 
+function mapMaldivesFallbackDestination(value) {
+    const text = normalizeText(value);
+
+    if (
+        keywordMatches(text, "deep south") ||
+        keywordMatches(text, "southern atolls") ||
+        keywordMatches(text, "addu") ||
+        keywordMatches(text, "fuvahmulah") ||
+        keywordMatches(text, "huvadhoo") ||
+        keywordMatches(text, "gan")
+    ) {
+        return "Southern Atolls";
+    }
+
+    if (
+        keywordMatches(text, "far north") ||
+        keywordMatches(text, "northern atolls") ||
+        keywordMatches(text, "hanimaadhoo") ||
+        keywordMatches(text, "hanifaru") ||
+        keywordMatches(text, "baa atoll") ||
+        keywordMatches(text, "north fiesta") ||
+        keywordMatches(text, "northern secrets")
+    ) {
+        return "Northern Atolls";
+    }
+
+    return "Central Atolls";
+}
+
 export function detectNormalizedDestinations(trip, country) {
     const text = getTripSearchText(trip);
     const rules = DESTINATION_RULES[country] || [];
@@ -327,6 +355,13 @@ export function detectNormalizedDestinations(trip, country) {
 
     if (typeof trip.destination === "string" && trip.destination.trim()) {
         const splitValues = splitFallbackDestinations(trip.destination);
+
+        // ✅ 몰디브는 raw destination을 그대로 쓰지 않고 3개 카테고리로만 묶음
+        if (country === "Maldives") {
+            const mapped = splitValues.map((value) => mapMaldivesFallbackDestination(value));
+            return Array.from(new Set(mapped));
+        }
+
         if (splitValues.length > 0) {
             return Array.from(new Set(splitValues));
         }
