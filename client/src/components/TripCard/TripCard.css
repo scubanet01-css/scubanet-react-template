@@ -1,7 +1,7 @@
 .trip-card {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 20px;
     padding: 16px 20px;
     border: 1px solid #e9ecef;
@@ -19,25 +19,29 @@
 }
 
 .trip-info {
-    flex: 3.2;
+    flex: 0 0 380px;
     min-width: 0;
     line-height: 1.45;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .trip-badge {
-    flex: 1.1;
+    flex: 0 0 110px;
+    min-width: 110px;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
 }
 
 .instructor-offer-wrapper {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    height: 100%;
-    align-items: flex-end;
+    align-items: center;
     gap: 6px;
+    width: 100%;
 }
 
 /* =========================
@@ -102,13 +106,13 @@
 
 /* 가격 */
 .price-box {
+    flex: 0 0 110px;
+    min-width: 110px;
+    text-align: right;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    /* 🔥 핵심 */
     align-items: flex-end;
-    height: 100%;
-    /* 🔥 추가 */
 }
 
 .price-main {
@@ -137,11 +141,11 @@
 
 /* 버튼 영역 */
 .trip-actions {
-    flex: 1.15;
+    flex: 0 0 220px;
+    min-width: 220px;
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    height: 100%;
     gap: 8px;
     flex-wrap: nowrap;
 }
