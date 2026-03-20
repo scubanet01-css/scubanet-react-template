@@ -96,6 +96,23 @@ function TripList() {
     }, [normalizedTrips, selectedCountry, selectedDestination]);
 
     useEffect(() => {
+        const suspicious = normalizedTrips.filter((t) =>
+            ["The Smiling Seahorse", "Bavaria", "Sachika"].includes(t.boatName)
+        );
+
+        console.log(
+            "🔎 normalizedTrips suspicious",
+            suspicious.map((t) => ({
+                boatName: t.boatName,
+                title: t.tripName || t.title || t.routeName || "",
+                rawCountry: t.country,
+                normalizedCountry: t.normalizedCountry,
+                normalizedDestinations: t.normalizedDestinations,
+            }))
+        );
+    }, [normalizedTrips]);
+
+    useEffect(() => {
         setSelectedDestination("전체");
         setSelectedBoat("전체");
     }, [selectedCountry]);

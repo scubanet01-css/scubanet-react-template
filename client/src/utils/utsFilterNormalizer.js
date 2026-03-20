@@ -221,18 +221,57 @@ function getTripSearchText(trip) {
 }
 
 export function detectNormalizedCountry(trip) {
-    if (trip.normalizedCountry) return trip.normalizedCountry;
-
     const text = getTripSearchText(trip);
 
     for (const rule of COUNTRY_RULES) {
-        if (rule.keywords.some((kw) => text.includes(normalizeText(kw)))) {
+        const matchedKeyword = rule.keywords.find((kw) =>
+            text.includes(normalizeText(kw))
+        );
+
+        if (matchedKeyword) {
+            if (
+                ["The Smiling Seahorse", "Bavaria", "Sachika"].includes(trip.boatName)
+            ) {
+                console.log("🔎 detectNormalizedCountry match", {
+                    boatName: trip.boatName,
+                    title: trip.tripName || trip.title || trip.routeName || "",
+                    rawCountry: trip.country,
+                    matchedCountry: rule.country,
+                    matchedKeyword,
+                    searchText: text,
+                });
+            }
+
             return rule.country;
         }
     }
 
-    if (typeof trip.country === "string" && VALID_COUNTRIES.has(trip.country.trim())) {
+    if (
+        typeof trip.country === "string" &&
+        trip.country.trim()
+    ) {
+        if (
+            ["The Smiling Seahorse", "Bavaria", "Sachika"].includes(trip.boatName)
+        ) {
+            console.log("🔎 detectNormalizedCountry fallback country", {
+                boatName: trip.boatName,
+                title: trip.tripName || trip.title || trip.routeName || "",
+                rawCountry: trip.country,
+            });
+        }
+
         return trip.country.trim();
+    }
+
+    if (
+        ["The Smiling Seahorse", "Bavaria", "Sachika"].includes(trip.boatName)
+    ) {
+        console.log("🔎 detectNormalizedCountry fallback Others", {
+            boatName: trip.boatName,
+            title: trip.tripName || trip.title || trip.routeName || "",
+            rawCountry: trip.country,
+            searchText: text,
+        });
     }
 
     return "Others";
