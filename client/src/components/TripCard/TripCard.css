@@ -34,7 +34,15 @@
 .instructor-offer-wrapper {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    /* 🔥 추가 */
     align-items: flex-end;
+    padding: 4px 8px;
+    /* 추가 */
+    border-radius: 8px;
+    /* 추가 */
+    background: rgba(0, 0, 0, 0.02);
+    /* 아주 연하게 */
     gap: 6px;
 }
 
@@ -160,8 +168,8 @@
     box-sizing: border-box;
     flex-shrink: 0;
     box-shadow:
-        0 2px 0 rgba(0, 0, 0, 0.12),
-        0 4px 12px rgba(0, 0, 0, 0.10);
+        0 2px 0 rgba(0, 0, 0, 0.15),
+        0 6px 14px rgba(0, 0, 0, 0.12);
     transition:
         transform 0.12s ease,
         box-shadow 0.12s ease,
@@ -172,16 +180,16 @@
 .btn-reserve:hover {
     transform: translateY(-1px);
     box-shadow:
-        0 3px 0 rgba(0, 0, 0, 0.14),
-        0 6px 16px rgba(0, 0, 0, 0.12);
+        0 3px 0 rgba(0, 0, 0, 0.18),
+        0 8px 18px rgba(0, 0, 0, 0.14);
 }
 
 .btn-detail:active,
 .btn-reserve:active {
     transform: translateY(1px);
     box-shadow:
-        0 1px 0 rgba(0, 0, 0, 0.10),
-        0 2px 6px rgba(0, 0, 0, 0.10);
+        0 1px 0 rgba(0, 0, 0, 0.12),
+        0 3px 8px rgba(0, 0, 0, 0.12);
 }
 
 /* 상세보기 */
