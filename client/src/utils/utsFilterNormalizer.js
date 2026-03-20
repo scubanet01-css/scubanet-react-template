@@ -19,6 +19,7 @@ const VALID_COUNTRIES = new Set([
     "Fiji",
     "Australia",
     "Cuba",
+    "French Polynesia",
     "Others",
 ]);
 
@@ -54,7 +55,7 @@ const COUNTRY_RULES = [
     },
     {
         country: "Mexico",
-        keywords: ["mexico", "socorro", "revillagigedo", "sea of cortez", "la paz", "magdalena"],
+        keywords: ["mexico", "socorro", "revillagigedo", "sea of cortez", "la paz", "magdalena", "baja"],
     },
     {
         country: "Palau",
@@ -112,6 +113,12 @@ const COUNTRY_RULES = [
         country: "Cuba",
         keywords: ["cuba"],
     },
+
+    {
+        country: "French Polynesia",
+        keywords: ["french polynesia", "tuamotu", "rangiroa", "fakarava"],
+    },
+
 ];
 
 const DESTINATION_RULES = {
@@ -154,6 +161,7 @@ const DESTINATION_RULES = {
     Mexico: [
         { name: "Socorro", keywords: ["socorro", "revillagigedo"] },
         { name: "Sea of Cortez", keywords: ["sea of cortez", "cortez", "la paz"] },
+        { name: "Baja California", keywords: ["baja", "baja california"] },
         { name: "Magdalena Bay", keywords: ["magdalena", "mag bay"] },
         { name: "Cabo Pulmo", keywords: ["cabo pulmo"] },
     ],
@@ -193,6 +201,9 @@ const DESTINATION_RULES = {
     ],
     Micronesia: [
         { name: "Truk Lagoon", keywords: ["truk", "chuuk", "weno"] },
+    ],
+    "French Polynesia": [
+        { name: "Tuamotu", keywords: ["tuamotu", "northern tuamotu", "rangiroa", "fakarava"] },
     ],
 };
 
