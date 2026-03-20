@@ -356,10 +356,22 @@ export function normalizeUTSTrips(trips = []) {
 }
 
 export function getCountryOptions(trips = []) {
+    const countries = trips
+        .map((t) => t.normalizedCountry)
+        .filter(Boolean);
+
+    const weirdCountries = Array.from(
+        new Set(countries.filter((c) => !VALID_COUNTRIES.has(c)))
+    );
+
+    if (weirdCountries.length > 0) {
+        console.log("🔎 weird countries in getCountryOptions:", weirdCountries);
+    }
+
     return [
         "전체",
         ...Array.from(
-            new Set(trips.map((t) => t.normalizedCountry).filter(Boolean))
+            new Set(countries.filter((c) => VALID_COUNTRIES.has(c)))
         ).sort(),
     ];
 }
