@@ -123,7 +123,7 @@ const COUNTRY_RULES = [
 
 const DESTINATION_RULES = {
     Indonesia: [
-        { name: "Raja Ampat", keywords: ["raja ampat", "waisai"] },
+        { name: "Raja Ampat", keywords: ["raja ampat", "rajaampat", "waisai"] },
         { name: "Misool", keywords: ["misool"] },
         { name: "Komodo", keywords: ["komodo", "labuan bajo"] },
         { name: "Alor", keywords: ["alor"] },
@@ -304,6 +304,16 @@ function splitFallbackDestinations(value) {
         .filter(Boolean);
 }
 
+function normalizeDestinationName(name) {
+    const text = normalizeText(name);
+
+    if (text === "rajaampat" || text === "raja ampat") {
+        return "Raja Ampat";
+    }
+
+    return name;
+}
+
 function mapMaldivesFallbackDestination(value) {
     const text = normalizeText(value);
 
@@ -363,7 +373,8 @@ export function detectNormalizedDestinations(trip, country) {
         }
 
         if (splitValues.length > 0) {
-            return Array.from(new Set(splitValues));
+            const normalized = splitValues.map((v) => normalizeDestinationName(v));
+            return Array.from(new Set(normalized));
         }
     }
 
