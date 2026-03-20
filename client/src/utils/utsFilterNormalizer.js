@@ -152,8 +152,11 @@ const DESTINATION_RULES = {
         { name: "Anilao", keywords: ["anilao"] },
     ],
     Egypt: [
-        { name: "Red Sea", keywords: ["red sea", "hurghada", "port ghalib", "marsa alam"] },
+        { name: "Northern Wrecks", keywords: ["northern wrecks", "thistlegorm", "abu nuhas", "ras mohammed", "strait of tiran", "wrecks"] },
+        { name: "BDE Reefs", keywords: ["bde", "brothers", "daedalus", "elphinstone"] },
+        { name: "Red Sea Deep South", keywords: ["st john", "st. john", "st johns", "st. johns", "zabargad", "rocky island", "fury shoals"] },
     ],
+
     Ecuador: [
         { name: "Galapagos", keywords: ["galapagos", "wolf", "darwin", "baltra", "san cristobal"] },
     ],
@@ -343,6 +346,46 @@ function mapMaldivesFallbackDestination(value) {
     return "Central Atolls";
 }
 
+function mapEgyptFallbackDestination(value) {
+    const text = normalizeText(value);
+
+    if (
+        keywordMatches(text, "brothers") ||
+        keywordMatches(text, "daedalus") ||
+        keywordMatches(text, "elphinstone") ||
+        keywordMatches(text, "bde")
+    ) {
+        return "BDE Reefs";
+    }
+
+    if (
+        keywordMatches(text, "thistlegorm") ||
+        keywordMatches(text, "abu nuhas") ||
+        keywordMatches(text, "ras mohammed") ||
+        keywordMatches(text, "strait of tiran") ||
+        keywordMatches(text, "northern wrecks") ||
+        keywordMatches(text, "wrecks")
+    ) {
+        return "Northern Wrecks";
+    }
+
+    if (
+        keywordMatches(text, "st john") ||
+        keywordMatches(text, "st. john") ||
+        keywordMatches(text, "st johns") ||
+        keywordMatches(text, "st. johns") ||
+        keywordMatches(text, "zabargad") ||
+        keywordMatches(text, "rocky island") ||
+        keywordMatches(text, "fury shoals")
+    ) {
+        return "Red Sea Deep South";
+    }
+
+    // Egypt인데 구체 규칙이 안 걸리면 기본값은 BDE보다는 Northern Wrecks 또는 Deep South보다
+    // 넓은 북부권으로 두는 편이 안전함
+    return "Northern Wrecks";
+}
+
 export function detectNormalizedDestinations(trip, country) {
     const text = getTripSearchText(trip);
     const rules = DESTINATION_RULES[country] || [];
@@ -365,6 +408,11 @@ export function detectNormalizedDestinations(trip, country) {
 
     if (typeof trip.destination === "string" && trip.destination.trim()) {
         const splitValues = splitFallbackDestinations(trip.destination);
+
+        if (country === "Egypt") {
+            const mapped = splitValues.map((value) => mapEgyptFallbackDestination(value));
+            return Array.from(new Set(mapped));
+        }
 
         // ✅ 몰디브는 raw destination을 그대로 쓰지 않고 3개 카테고리로만 묶음
         if (country === "Maldives") {
