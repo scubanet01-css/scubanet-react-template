@@ -1,10 +1,22 @@
 // src/pages/Instructor/InstructorList.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import { isWithinInterval, startOfDay, endOfDay, parseISO, isValid } from "date-fns";
+import {
+  isWithinInterval,
+  startOfDay,
+  endOfDay,
+  parseISO,
+  isValid,
+} from "date-fns";
 
 import FilterBar from "../../components/Common/FilterBar";
 import TripCard from "../../components/TripCard/TripCard";
+import {
+  normalizeUTSTrips,
+  getCountryOptions,
+  getDestinationOptions,
+  getBoatOptions,
+} from "../../utils/destinationUtils";
 
 import "./InstructorList.css";
 
@@ -19,16 +31,12 @@ function InstructorList() {
   const [specialType, setSpecialType] = useState("전체");
   const [dateRange, setDateRange] = useState([null, null]);
 
-  const [countryList, setCountryList] = useState(["전체"]);
-  const [destinationList, setDestinationList] = useState(["전체"]);
-  const [boats, setBoats] = useState(["전체"]);
-
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
   const [startDate, endDate] = dateRange;
 
   // -----------------------------
-  // 1) UTS JSON 로드 (TripList와 동일한 소스)
+  // 1) UTS JSON 로드
   // -----------------------------
   useEffect(() => {
     const fetchData = async () => {
@@ -42,33 +50,15 @@ function InstructorList() {
           raw.length,
           "개 / special:",
           specialCount,
-          "개",
+          "개"
         );
 
-        // 좌석 있는 상품만 노출 (강사용 리스트 정책)
+        // 강사용 리스트 정책: 좌석 있는 상품만
         const withSeats = raw.filter(
-          (t) => Number(t?.spaces?.available || 0) > 0,
+          (t) => Number(t?.spaces?.available || 0) > 0
         );
 
         setTrips(withSeats);
-
-        // Country 목록
-        const countrySet = new Set(
-          withSeats.map((t) => t.country).filter(Boolean),
-        );
-        const sortedCountries = Array.from(countrySet).sort((a, b) =>
-          a.localeCompare(b),
-        );
-        setCountryList(["전체", ...sortedCountries]);
-
-        // Boat 목록
-        const boatSet = new Set(
-          withSeats.map((t) => t.boatName).filter(Boolean),
-        );
-        const sortedBoats = Array.from(boatSet).sort((a, b) =>
-          a.localeCompare(b),
-        );
-        setBoats(["전체", ...sortedBoats]);
       } catch (err) {
         console.error("❌ InstructorList 데이터 오류:", err);
       } finally {
@@ -80,51 +70,65 @@ function InstructorList() {
   }, []);
 
   // -----------------------------
-  // 2) Country 선택에 따른 Destination 리스트 갱신
+  // 2) TripList와 동일한 정규화 적용
   // -----------------------------
-  useEffect(() => {
-    if (!trips.length) {
-      setDestinationList(["전체"]);
-      return;
-    }
+  const normalizedTrips = useMemo(() => {
+    return normalizeUTSTrips(trips);
+  }, [trips]);
 
-    let destSet;
+  const countryList = useMemo(() => {
+    return getCountryOptions(normalizedTrips);
+  }, [normalizedTrips]);
 
-    if (selectedCountry === "전체") {
-      destSet = new Set(trips.map((t) => t.destination).filter(Boolean));
-    } else {
-      destSet = new Set(
-        trips
-          .filter((t) => t.country === selectedCountry)
-          .map((t) => t.destination)
-          .filter(Boolean),
-      );
-    }
+  const destinationOptions = useMemo(() => {
+    return getDestinationOptions(normalizedTrips, selectedCountry);
+  }, [normalizedTrips, selectedCountry]);
 
-    const sorted = Array.from(destSet).sort((a, b) => a.localeCompare(b));
-    setDestinationList(["전체", ...sorted]);
-  }, [selectedCountry, trips]);
+  const destinationList = useMemo(() => {
+    return destinationOptions.map((opt) => opt.label);
+  }, [destinationOptions]);
+
+  const selectedDestinationKey = useMemo(() => {
+    if (selectedDestination === "전체") return "전체";
+
+    const found = destinationOptions.find((opt) => opt.label === selectedDestination);
+    return found ? found.value : "전체";
+  }, [destinationOptions, selectedDestination]);
+
+  const boats = useMemo(() => {
+    return getBoatOptions(
+      normalizedTrips,
+      selectedCountry,
+      selectedDestinationKey
+    );
+  }, [normalizedTrips, selectedCountry, selectedDestinationKey]);
 
   // -----------------------------
   // 3) Instructor 전용 필터 로직
-  //    - specialType = group / discount / charter
+  //    - Country / Destination 은 TripList와 동일한 normalized 기준
+  //    - specialType(group / discount / charter)는 강사용 유지
   // -----------------------------
   const filteredTrips = useMemo(() => {
     const today = startOfDay(new Date());
 
-    let list = [...trips].filter(t => {
+    let list = [...normalizedTrips].filter((t) => {
       if (!t.startDate) return false;
       const d = parseISO(t.startDate);
       return isValid(d) && d >= today;
     });
+
     // Country 필터
     if (selectedCountry !== "전체") {
-      list = list.filter((t) => t.country === selectedCountry);
+      list = list.filter((t) => t.normalizedCountry === selectedCountry);
     }
 
     // Destination 필터
-    if (selectedDestination !== "전체") {
-      list = list.filter((t) => t.destination === selectedDestination);
+    if (selectedDestinationKey !== "전체") {
+      list = list.filter(
+        (t) =>
+          Array.isArray(t.destinationFilterKeys) &&
+          t.destinationFilterKeys.includes(selectedDestinationKey)
+      );
     }
 
     // Boat 필터
@@ -132,13 +136,15 @@ function InstructorList() {
       list = list.filter((t) => t.boatName === selectedBoat);
     }
 
-    // 👉 여기까지는 기존 instructor 전용 specialType(group/discount/charter) 필터 그대로 유지
+    // Instructor 전용 specialType
     if (specialType !== "전체") {
       list = list.filter((trip) => {
-        const cabins = trip.cabins || [];
-        const allRates = cabins.flatMap((c) => c.ratePlans || []);
+        const cabins = Array.isArray(trip.cabins) ? trip.cabins : [];
+        const allRates = cabins.flatMap((c) =>
+          Array.isArray(c.ratePlans) ? c.ratePlans : []
+        );
         const names = allRates.map((rp) =>
-          (rp.ratePlanName || rp.name || "").toLowerCase()
+          String(rp.ratePlanName || rp.name || "").toLowerCase()
         );
 
         if (specialType === "group") {
@@ -154,8 +160,9 @@ function InstructorList() {
         }
 
         if (specialType === "discount") {
-          return allRates.some(
-            (rp) => Number(rp.discountPercent || 0) > 0
+          return (
+            allRates.some((rp) => Number(rp.discountPercent || 0) > 0) ||
+            names.some((n) => n.includes("foc"))
           );
         }
 
@@ -185,7 +192,7 @@ function InstructorList() {
       });
     }
 
-    // ✅ TripList와 동일한 정렬: 스페셜 트립 먼저, 그 다음 출발일 빠른 순
+    // TripList와 동일한 정렬: 스페셜 먼저, 그 다음 출발일 빠른 순
     list.sort((a, b) => {
       const aSpecial =
         a.source === "special" ||
@@ -197,7 +204,7 @@ function InstructorList() {
         (b.id || "").startsWith("SPC_");
 
       if (aSpecial !== bSpecial) {
-        return aSpecial ? -1 : 1;    // 스페셜 먼저
+        return aSpecial ? -1 : 1;
       }
 
       if (a.startDate && b.startDate) {
@@ -208,9 +215,9 @@ function InstructorList() {
 
     return list;
   }, [
-    trips,
+    normalizedTrips,
     selectedCountry,
-    selectedDestination,
+    selectedDestinationKey,
     selectedBoat,
     specialType,
     startDate,
@@ -220,11 +227,22 @@ function InstructorList() {
   // -----------------------------
   // 4) 페이지네이션
   // -----------------------------
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    selectedCountry,
+    selectedDestination,
+    selectedBoat,
+    specialType,
+    startDate,
+    endDate,
+  ]);
+
   const totalPages = Math.ceil(filteredTrips.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentTrips = filteredTrips.slice(
     startIndex,
-    startIndex + itemsPerPage,
+    startIndex + itemsPerPage
   );
 
   if (loading) return <p>데이터 불러오는 중...</p>;
@@ -240,10 +258,17 @@ function InstructorList() {
         onChangeDate={setDateRange}
         countryList={countryList}
         selectedCountry={selectedCountry}
-        onChangeCountry={setSelectedCountry}
+        onChangeCountry={(value) => {
+          setSelectedCountry(value);
+          setSelectedDestination("전체");
+          setSelectedBoat("전체");
+        }}
         destinationList={destinationList}
         selectedDestination={selectedDestination}
-        onChangeDestination={setSelectedDestination}
+        onChangeDestination={(value) => {
+          setSelectedDestination(value);
+          setSelectedBoat("전체");
+        }}
         boats={boats}
         selectedBoat={selectedBoat}
         onChangeBoat={setSelectedBoat}
