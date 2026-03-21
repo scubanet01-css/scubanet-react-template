@@ -69,6 +69,10 @@ function TripList() {
         setCurrentPage(1);
     }, [homeCountry, homeMonth]);
 
+    console.log("TRIPLIST location.state:", location.state);
+    console.log("TRIPLIST homeCountry:", homeCountry);
+    console.log("TRIPLIST homeMonth:", homeMonth);
+
     useEffect(() => {
         setLoading(true);
 
@@ -247,7 +251,8 @@ function TripList() {
         startDate,
         endDate,
     ]);
-
+    console.log("TRIPLIST selectedCountry:", selectedCountry);
+    console.log("TRIPLIST filteredTrips length:", filteredTrips.length);
     useEffect(() => {
         setCurrentPage(1);
     }, [

@@ -17,11 +17,15 @@ function Home() {
 
   // 검색 버튼 → TripList 초기 필터 전달
   const handleSearch = () => {
+    const payload = {
+      country: country || null,
+      month: month ? format(month, "yyyy-MM") : null,
+    };
+
+    console.log("HOME SEARCH payload:", payload);
+
     navigate("/triplist", {
-      state: {
-        country: country || null,
-        month: month ? format(month, "yyyy-MM") : null,
-      },
+      state: payload,
     });
   };
 
