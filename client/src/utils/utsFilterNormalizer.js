@@ -250,6 +250,18 @@ function getTripSearchText(trip) {
     ].filter(Boolean).join(" | "));
 }
 
+function getTripDestinationSearchText(trip) {
+    return normalizeText([
+        typeof trip.destination === "string" ? trip.destination : "",
+        Array.isArray(trip.destination) ? trip.destination.join(" | ") : "",
+        Array.isArray(trip.destinations) ? trip.destinations.join(" | ") : "",
+        trip.route,
+        trip.routeName,
+        trip.tripName,
+        trip.title,
+    ].filter(Boolean).join(" | "));
+}
+
 export function detectNormalizedCountry(trip) {
     // 1) UTS에 이미 정상 country가 있으면 최우선 사용
     if (
@@ -426,7 +438,7 @@ function mapPhilippinesFallbackDestination(value) {
 }
 
 export function detectNormalizedDestinations(trip, country) {
-    const text = getTripSearchText(trip);
+    const text = getTripDestinationSearchText(trip);
     const rules = DESTINATION_RULES[country] || [];
     const matched = [];
 
@@ -589,22 +601,4 @@ export function getBoatOptions(
             )
         ).sort(),
     ];
-}
-
-if (country === "Philippines") {
-    console.log("PH DEST DEBUG", {
-        boatName: trip.boatName,
-        destination: trip.destination,
-        route: trip.route,
-        routeName: trip.routeName,
-        tripName: trip.tripName,
-        title: trip.title,
-        productName: trip.product?.name,
-        departurePort: trip.departurePort?.name,
-        embarkPort: trip.embarkPort,
-        region: trip.region,
-        area: trip.area,
-        searchText: getTripSearchText(trip),
-        matched,
-    });
 }
