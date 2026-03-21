@@ -228,7 +228,15 @@ function TripList() {
 
             return 0;
         });
-
+        console.log(
+            "filteredTrips:",
+            list.length,
+            list.slice(0, 5).map(t => ({
+                boat: t.boatName,
+                normalizedCountry: t.normalizedCountry,
+                startDate: t.startDate,
+            }))
+        );
         return list;
     }, [
         normalizedTrips,
@@ -257,6 +265,11 @@ function TripList() {
         startIndex,
         startIndex + itemsPerPage
     );
+
+    console.log("homeCountry:", homeCountry);
+    console.log("homeMonth:", homeMonth);
+    console.log("selectedCountry:", selectedCountry);
+    console.log("dateRange:", dateRange);
 
     if (loading) return <p>데이터 불러오는 중...</p>;
 
