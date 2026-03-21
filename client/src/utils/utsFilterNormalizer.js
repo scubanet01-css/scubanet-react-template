@@ -145,11 +145,11 @@ const DESTINATION_RULES = {
         { name: "Southern Atolls", keywords: ["southern atolls", "deep south", "addu", "fuvahmulah", "huvadhoo", "gan"] },
     ],
 
-    Philippines: [],
-    //{ name: "Tubbataha", keywords: ["tubbataha"] },
-    //{ name: "Visayas", keywords: ["visayas", "bohol", "cebu", "negros", "leyte", "malapascua", "moalboal"] },
-    //{ name: "Apo-Coron", keywords: ["apo reef", "coron"] },
-    //분명히 변경을 했는데 왜 안돼지
+    Philippines: [
+        { name: "Tubbataha", keywords: ["tubbataha"] },
+        { name: "Visayas", keywords: ["visayas", "bohol", "cebu", "negros", "leyte", "malapascua", "moalboal"] },
+        { name: "Apo-Coron", keywords: ["apo reef", "coron"] },
+    ],
 
     Egypt: [
         { name: "Northern Wrecks", keywords: ["northern wrecks", "thistlegorm", "abu nuhas", "ras mohammed", "strait of tiran", "wrecks"] },
@@ -428,6 +428,29 @@ function mapPhilippinesFallbackDestination(value) {
 export function detectNormalizedDestinations(trip, country) {
     console.log("DEST FN CALLED", country, trip?.boatName, trip?.destination);
     const text = getTripSearchText(trip);
+    // 🔥🔥🔥 필리핀 우선순위 규칙 (여기 추가)
+    if (country === "Philippines") {
+        const t = text.toLowerCase();
+
+        // 1. Tubbataha 최우선
+        if (t.includes("tubbataha")) {
+            return ["Tubbataha"];
+        }
+
+        // 2. Apo / Coron
+        if (t.includes("apo") || t.includes("coron")) {
+            return ["Apo-Coron"];
+        }
+
+        // 3. Anilao 제거
+        if (t.includes("anilao")) {
+            return [];
+        }
+
+        // 4. 나머지는 Visayas
+        return ["Visayas"];
+    }
+
     const rules = DESTINATION_RULES[country] || [];
     const matched = [];
 
