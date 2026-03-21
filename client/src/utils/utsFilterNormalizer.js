@@ -424,6 +424,7 @@ function mapPhilippinesFallbackDestination(value) {
 }
 
 export function detectNormalizedDestinations(trip, country) {
+    console.log("DEST FN CALLED", country, trip?.boatName, trip?.destination);
     const text = getTripSearchText(trip);
     const rules = DESTINATION_RULES[country] || [];
     const matched = [];
