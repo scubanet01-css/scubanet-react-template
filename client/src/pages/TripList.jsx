@@ -1,5 +1,6 @@
 // src/pages/TripList.jsx
 import React, { useState, useEffect, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import "./TripList.css";
 import {
     isWithinInterval,
@@ -22,18 +23,51 @@ import {
 console.log("🚀 TripList.jsx Loaded at", new Date().toISOString());
 
 function TripList() {
+    const location = useLocation();
+
+    const homeCountry = location.state?.country || "전체";
+    const homeMonth = location.state?.month || null;
+
+    const initialDateRange = useMemo(() => {
+        if (!homeMonth) return [null, null];
+
+        const firstDay = new Date(`${homeMonth}-01T00:00:00`);
+        if (isNaN(firstDay.getTime())) return [null, null];
+
+        return [firstDay, firstDay];
+    }, [homeMonth]);
+
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const [selectedCountry, setSelectedCountry] = useState("전체");
+    const [selectedCountry, setSelectedCountry] = useState(homeCountry);
     const [selectedDestination, setSelectedDestination] = useState("전체");
     const [selectedBoat, setSelectedBoat] = useState("전체");
     const [specialType, setSpecialType] = useState("전체");
-    const [dateRange, setDateRange] = useState([null, null]);
+    const [dateRange, setDateRange] = useState(initialDateRange);
     const [currentPage, setCurrentPage] = useState(1);
 
     const itemsPerPage = 20;
     const [startDate, endDate] = dateRange;
+
+    useEffect(() => {
+        setSelectedCountry(homeCountry);
+
+        if (homeMonth) {
+            const firstDay = new Date(`${homeMonth}-01T00:00:00`);
+            if (!isNaN(firstDay.getTime())) {
+                setDateRange([firstDay, firstDay]);
+            } else {
+                setDateRange([null, null]);
+            }
+        } else {
+            setDateRange([null, null]);
+        }
+
+        setSelectedDestination("전체");
+        setSelectedBoat("전체");
+        setCurrentPage(1);
+    }, [homeCountry, homeMonth]);
 
     useEffect(() => {
         setLoading(true);
