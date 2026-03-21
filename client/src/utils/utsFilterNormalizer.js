@@ -428,30 +428,28 @@ export function detectNormalizedDestinations(trip, country) {
     const rules = DESTINATION_RULES[country] || [];
     const matched = [];
 
+    if (country === "Philippines") {
+        console.log("PH DEST ENTRY", {
+            boatName: trip.boatName,
+            destination: trip.destination,
+            route: trip.route,
+            routeName: trip.routeName,
+            tripName: trip.tripName,
+            title: trip.title,
+            productName: trip.product?.name,
+            departurePort: trip.departurePort?.name,
+            embarkPort: trip.embarkPort,
+            region: trip.region,
+            area: trip.area,
+            rulesCount: rules.length,
+            searchText: text,
+        });
+    }
+
     for (const rule of rules) {
-        const hitKeywords = rule.keywords.filter((kw) => keywordMatches(text, kw));
-
-        if (hitKeywords.length > 0) {
+        const isMatched = rule.keywords.some((kw) => keywordMatches(text, kw));
+        if (isMatched) {
             matched.push(rule.name);
-
-            if (country === "Philippines") {
-                console.log("PH DEST DEBUG", {
-                    boatName: trip.boatName,
-                    destination: trip.destination,
-                    route: trip.route,
-                    routeName: trip.routeName,
-                    tripName: trip.tripName,
-                    title: trip.title,
-                    productName: trip.product?.name,
-                    departurePort: trip.departurePort?.name,
-                    embarkPort: trip.embarkPort,
-                    region: trip.region,
-                    area: trip.area,
-                    matchedRule: rule.name,
-                    hitKeywords,
-                    searchText: text,
-                });
-            }
         }
     }
 
