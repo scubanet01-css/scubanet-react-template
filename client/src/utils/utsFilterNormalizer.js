@@ -144,7 +144,9 @@ const DESTINATION_RULES = {
         { name: "Northern Atolls", keywords: ["northern atolls", "far north", "hanimaadhoo", "hanifaru", "baa atoll", "north fiesta", "northern secrets"] },
         { name: "Southern Atolls", keywords: ["southern atolls", "deep south", "addu", "fuvahmulah", "huvadhoo", "gan"] },
     ],
+
     Philippines: [],
+
     Egypt: [
         { name: "Northern Wrecks", keywords: ["northern wrecks", "thistlegorm", "abu nuhas", "ras mohammed", "strait of tiran", "wrecks"] },
         { name: "BDE Reefs", keywords: ["bde", "brothers", "daedalus", "elphinstone"] },
