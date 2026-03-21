@@ -221,24 +221,17 @@ function MyBooking() {
       )}
 
       <div style={{ marginTop: 24 }}>
-        <button
-          disabled
+        <p
           style={{
-            backgroundColor: "#ccc",
-            cursor: "not-allowed",
+            marginTop: "10px",
+            fontSize: "13px",
+            color: "#666",
+            lineHeight: "1.6",
           }}
-          title="결제 기능 준비 중입니다."
         >
-          결제하기 →
-        </button>
-
-        <p style={{
-          marginTop: "10px",
-          fontSize: "13px",
-          color: "#666"
-        }}>
-          현재 결제 기능은 준비 중입니다.
-          예약 및 인보이스 확인까지 테스트 가능합니다.
+          현재 온라인 결제는 비활성화되어 있습니다.
+          인보이스를 확인하신 후 안내된 계좌로 송금해 주세요.
+          관리자가 입금을 확인하면 예약 상태가 입금완료로 변경됩니다.
         </p>
 
         <button onClick={() => navigate(-1)}>
