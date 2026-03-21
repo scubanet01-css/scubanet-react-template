@@ -434,11 +434,8 @@ export function detectNormalizedDestinations(trip, country) {
         if (hitKeywords.length > 0) {
             matched.push(rule.name);
 
-            if (
-                country === "Philippines" &&
-                ["Philippines Aggressor", "Philippines Aggressor II", "Resolute"].includes(trip.boatName)
-            ) {
-                console.log("🔎 PH DEST DEBUG", {
+            if (country === "Philippines") {
+                console.log("PH DEST DEBUG", {
                     boatName: trip.boatName,
                     destination: trip.destination,
                     route: trip.route,
@@ -450,9 +447,9 @@ export function detectNormalizedDestinations(trip, country) {
                     embarkPort: trip.embarkPort,
                     region: trip.region,
                     area: trip.area,
-                    searchText: text,
                     matchedRule: rule.name,
                     hitKeywords,
+                    searchText: text,
                 });
             }
         }
