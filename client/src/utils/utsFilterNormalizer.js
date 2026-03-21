@@ -146,7 +146,7 @@ const DESTINATION_RULES = {
     ],
     Philippines: [
         { name: "Tubbataha", keywords: ["tubbataha"] },
-        { name: "Visayas", keywords: ["visayas"] },
+        { name: "Visayas", keywords: ["visayas", "bohol", "cebu", "negros", "leyte", "malapascua", "moalboal"] },
         { name: "Apo-Coron", keywords: ["apo reef", "coron"] },
 
     ],
@@ -385,6 +385,46 @@ function mapEgyptFallbackDestination(value) {
     return "Northern Wrecks";
 }
 
+function mapPhilippinesFallbackDestination(value) {
+    const text = normalizeText(value);
+
+    // 1. Tubbataha
+    if (keywordMatches(text, "tubbataha")) {
+        return "Tubbataha";
+    }
+
+    // 2. Apo + Coron 통합
+    if (
+        keywordMatches(text, "apo") ||
+        keywordMatches(text, "coron")
+    ) {
+        return "Apo / Coron";
+    }
+
+    // 3. Anilao → 필터에서 제거
+    if (keywordMatches(text, "anilao")) {
+        return null; // 🔥 중요
+    }
+
+    // 4. Visayas (세부 지역 포함)
+    if (
+        keywordMatches(text, "visayas") ||
+        keywordMatches(text, "cebu") ||
+        keywordMatches(text, "bohol") ||
+        keywordMatches(text, "negros") ||
+        keywordMatches(text, "leyte") ||
+        keywordMatches(text, "southern leyte") ||
+        keywordMatches(text, "malapascua") ||
+        keywordMatches(text, "moalboal") ||
+        keywordMatches(text, "dumaguete")
+    ) {
+        return "Visayas";
+    }
+
+    // 5. fallback (필리핀이면 대부분 비사야로 처리)
+    return "Visayas";
+}
+
 export function detectNormalizedDestinations(trip, country) {
     const text = getTripSearchText(trip);
     const rules = DESTINATION_RULES[country] || [];
@@ -410,6 +450,11 @@ export function detectNormalizedDestinations(trip, country) {
 
         if (country === "Egypt") {
             const mapped = splitValues.map((value) => mapEgyptFallbackDestination(value));
+            return Array.from(new Set(mapped));
+        }
+
+        if (country === "Philippines") {
+            const mapped = splitValues.map((value) => mapPhilippinesFallbackDestination(value));
             return Array.from(new Set(mapped));
         }
 
