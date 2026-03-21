@@ -45,12 +45,11 @@ function Home() {
               <option value="Indonesia">Indonesia</option>
               <option value="Maldives">Maldives</option>
               <option value="Mexico">Mexico</option>
-              <option value="Galapagos">Galapagos</option>
+              <option value="Ecuador">Galapagos</option>
               <option value="Palau">Palau</option>
               <option value="Philippines">Philippines</option>
               <option value="Thailand">Thailand</option>
-              <option value="Red Sea">Red Sea</option>
-              <option value="Others">Others</option>
+              <option value="Egypt">Red Sea</option>
             </select>
 
             {/* 출발월 선택 */}
