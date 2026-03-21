@@ -126,8 +126,10 @@ function InstructorList() {
     // -----------------------------
     if (specialType !== "전체") {
       list = list.filter((trip) => {
-        const cabins = trip.cabins || [];
-        const allRates = cabins.flatMap((c) => c.ratePlans || []);
+        const cabins = Array.isArray(trip.cabins) ? trip.cabins : [];
+        const allRates = cabins.flatMap((c) =>
+          Array.isArray(c.ratePlans) ? c.ratePlans : []
+        );
 
         const names = allRates.map((rp) =>
           String(rp.ratePlanName || rp.name || "").toLowerCase()
@@ -146,8 +148,9 @@ function InstructorList() {
           );
         }
 
-        // 할인 + FOC
-        if (specialType === "discount") {
+        // 할인 상품만
+        // FilterBar가 deal을 넘길 수도 있으므로 deal / discount 둘 다 허용
+        if (specialType === "deal" || specialType === "discount") {
           return (
             allRates.some((rp) => Number(rp.discountPercent || 0) > 0) ||
             names.some((n) => n.includes("foc"))
@@ -164,6 +167,15 @@ function InstructorList() {
             Number(s.holding || 0);
 
           return total > 0 && available === total;
+        }
+
+        // 스페셜트립
+        if (specialType === "special") {
+          return (
+            trip.source === "special" ||
+            trip.isSpecialTrip === true ||
+            (trip.id || "").startsWith("SPC_")
+          );
         }
 
         return true;
