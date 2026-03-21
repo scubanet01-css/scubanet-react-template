@@ -4,25 +4,50 @@ import axios from "axios";
 function AdminBookings() {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [updatingId, setUpdatingId] = useState(null);
+
+    const fetchBookings = async () => {
+        try {
+            const res = await axios.get("/api/bookings");
+            setBookings(res.data?.bookings || []);
+        } catch (err) {
+            console.error("❌ 관리자 예약 목록 조회 실패:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchBookings = async () => {
-            try {
-                const res = await axios.get("/api/bookings");
-                setBookings(res.data?.bookings || []);
-            } catch (err) {
-                console.error("❌ 관리자 예약 목록 조회 실패:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchBookings();
     }, []);
+
+    const handleMarkAsPaid = async (bookingId) => {
+        try {
+            setUpdatingId(bookingId);
+
+            await axios.patch(`/api/bookings/${bookingId}/payment`, {
+                paymentStatus: "paid",
+            });
+
+            alert("입금확인 처리 완료");
+            await fetchBookings();
+        } catch (err) {
+            console.error("❌ 입금확인 처리 실패:", err);
+            alert("입금확인 처리에 실패했습니다.");
+        } finally {
+            setUpdatingId(null);
+        }
+    };
 
     const formatDateTime = (value) => {
         if (!value) return "-";
         return new Date(value).toLocaleString("ko-KR");
+    };
+
+    const getPaymentStatusLabel = (status) => {
+        if (status === "paid") return "입금완료";
+        if (status === "pending") return "입금대기";
+        return status || "-";
     };
 
     if (loading) {
@@ -56,6 +81,7 @@ function AdminBookings() {
                                 <th style={thStyle}>결제상태</th>
                                 <th style={thStyle}>생성일시</th>
                                 <th style={thStyle}>인보이스</th>
+                                <th style={thStyle}>관리</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -76,7 +102,19 @@ function AdminBookings() {
                                     <td style={tdStyle}>
                                         {booking.currency} {Number(booking.totalPrice || 0).toLocaleString()}
                                     </td>
-                                    <td style={tdStyle}>{booking.paymentStatus || "-"}</td>
+                                    <td style={tdStyle}>
+                                        <span
+                                            style={{
+                                                fontWeight: 700,
+                                                color:
+                                                    booking.paymentStatus === "paid"
+                                                        ? "#16a34a"
+                                                        : "#f59e0b",
+                                            }}
+                                        >
+                                            {getPaymentStatusLabel(booking.paymentStatus)}
+                                        </span>
+                                    </td>
                                     <td style={tdStyle}>{formatDateTime(booking.createdAt)}</td>
                                     <td style={tdStyle}>
                                         {booking.invoiceFileUrl ? (
@@ -89,6 +127,39 @@ function AdminBookings() {
                                             </a>
                                         ) : (
                                             "-"
+                                        )}
+                                    </td>
+                                    <td style={tdStyle}>
+                                        {booking.paymentStatus === "paid" ? (
+                                            <span style={{ color: "#16a34a", fontWeight: 700 }}>
+                                                확인완료
+                                            </span>
+                                        ) : (
+                                            <button
+                                                onClick={() =>
+                                                    handleMarkAsPaid(booking.bookingId)
+                                                }
+                                                disabled={updatingId === booking.bookingId}
+                                                style={{
+                                                    padding: "8px 12px",
+                                                    backgroundColor: "#16a34a",
+                                                    color: "#fff",
+                                                    border: "none",
+                                                    borderRadius: "6px",
+                                                    cursor:
+                                                        updatingId === booking.bookingId
+                                                            ? "not-allowed"
+                                                            : "pointer",
+                                                    opacity:
+                                                        updatingId === booking.bookingId
+                                                            ? 0.6
+                                                            : 1,
+                                                }}
+                                            >
+                                                {updatingId === booking.bookingId
+                                                    ? "처리중..."
+                                                    : "입금확인"}
+                                            </button>
                                         )}
                                     </td>
                                 </tr>

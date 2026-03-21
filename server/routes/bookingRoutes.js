@@ -54,4 +54,48 @@ router.get("/bookings/:bookingId", (req, res) => {
     });
 });
 
+router.patch("/bookings/:bookingId/payment", (req, res) => {
+    const { bookingId } = req.params;
+    const { paymentStatus } = req.body;
+
+    try {
+        if (!paymentStatus) {
+            return res.status(400).json({
+                success: false,
+                message: "paymentStatus 값이 필요합니다.",
+            });
+        }
+
+        const bookings = readBookings();
+        const index = bookings.findIndex((item) => item.bookingId === bookingId);
+
+        if (index === -1) {
+            return res.status(404).json({
+                success: false,
+                message: "예약을 찾을 수 없습니다.",
+            });
+        }
+
+        bookings[index] = {
+            ...bookings[index],
+            paymentStatus,
+            paidAt: paymentStatus === "paid" ? new Date().toISOString() : null,
+        };
+
+        fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2), "utf8");
+
+        return res.json({
+            success: true,
+            message: "결제 상태가 업데이트되었습니다.",
+            booking: bookings[index],
+        });
+    } catch (err) {
+        console.error("❌ 결제 상태 업데이트 실패:", err);
+        return res.status(500).json({
+            success: false,
+            message: "결제 상태 업데이트 중 오류가 발생했습니다.",
+        });
+    }
+});
+
 module.exports = router;
