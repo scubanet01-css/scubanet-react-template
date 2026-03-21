@@ -90,6 +90,8 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
       return occ === "1" ? "1인 예약" : occ === "2" ? "2인 예약" : "";
     };
 
+    const isScubadates = trip?.source === "scubadates";
+
     const rawOptions = ratePlans
       .filter((rp) => rp && rp.price != null)
       .map((rp) => {
@@ -100,10 +102,26 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
               ? Number(rp.occupancyValue)
               : rp.occupancy?.[0]?.id ?? 1;
 
+        let label;
+
+        if (isScubadates) {
+          // 🔥 Scubadates 전용 라벨
+          if (String(occId) === "1") {
+            label = "독실 사용";
+          } else if (String(occId) === "2") {
+            label = "2인 1실 (1인당)";
+          } else {
+            label = `${occId}인 사용`;
+          }
+        } else {
+          // 기존 Inseanq 방식 유지
+          label = makeFallbackLabel(occId, rp);
+        }
+
         return {
           occupancy: String(occId),
           price: parseFloat(rp.price),
-          label: makeFallbackLabel(occId, rp),
+          label,
           ratePlanName: rp.ratePlanName || rp.name || "",
           discountPercent: Number(rp.discountPercent || 0),
           isInstructorOnly: !!rp.isInstructorOnly,
@@ -189,7 +207,11 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
         const cabinId = cabin.cabinId || cabin.id || `cabin_${index}`;
         const cabinName = cabin.name || cabin.type || `객실 ${index + 1}`;
         const remaining = Number(cabin.remaining ?? cabin.availableSpaces ?? 0);
-
+        const spacesPerCabin = Number(cabin?.meta?.spacesPerCabin || cabin?.capacity || 0);
+        const estimatedCabins =
+          trip?.source === "scubadates" && spacesPerCabin > 0
+            ? Math.floor(remaining / spacesPerCabin)
+            : null;
         const priceOptions = getPriceOptions(cabin);
         const statusLabel = getCabinStatusLabel(cabin);
         const cabinStatus = cabin.status || "available";
@@ -218,6 +240,12 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
               )}
             </h4>
 
+            {trip?.source === "scubadates" && (
+              <p style={{ fontSize: "12px", color: "#888", marginTop: "4px" }}>
+                ※ 객실은 예약 확정 후 배정됩니다.
+              </p>
+            )}
+
             <p>
               상태:{" "}
               <strong>
@@ -226,6 +254,11 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
             </p>
 
             <p>가용 인원: {remaining}</p>
+            {trip?.source === "scubadates" && estimatedCabins !== null && (
+              <p style={{ color: "#666", fontSize: "14px", marginTop: "-6px" }}>
+                예상 가능 객실 수: 약 {estimatedCabins}실
+              </p>
+            )}
             {isSelectable && priceOptions.length > 0 ? (
               <select
                 value={
@@ -252,7 +285,13 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
 
                 {priceOptions.map((opt, idx) => (
                   <option key={idx} value={opt.occupancy}>
-                    {opt.label} : {formatCurrency(opt.price, currency)} /인
+                    {opt.label} :{" "}
+                    {formatCurrency(opt.price, currency)}
+                    {trip?.source === "scubadates"
+                      ? opt.label.includes("독실")
+                        ? " /실"
+                        : " /인"
+                      : " /인"}
                   </option>
                 ))}
               </select>
