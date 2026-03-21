@@ -4,6 +4,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import SeatBadges from "../SeatBadges";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { getCurrencyForTrip } from "../../utils/currencyUtils";
 import "./TripCard.css";
 
 // ✔ UTS JSON에서 최저가 찾기
@@ -128,6 +129,7 @@ export default function TripCard({ trip, mode = "public" }) {
     const displayPrice = rate?.price ?? null;
     const strikePrice = rate?.parentPrice ?? null;
     const discountPercent = rate?.discountPercent ?? 0;
+    const tripCurrency = getCurrencyForTrip(trip, "USD");
 
     const hasDiscount =
         strikePrice &&
@@ -178,7 +180,7 @@ export default function TripCard({ trip, mode = "public" }) {
                 <div className="price-box">
                     {displayPrice ? (
                         <strong className="price-main">
-                            {formatCurrency(displayPrice, "USD")}
+                            {formatCurrency(displayPrice, tripCurrency)}
                         </strong>
                     ) : (
                         <strong>-</strong>
@@ -186,7 +188,7 @@ export default function TripCard({ trip, mode = "public" }) {
 
                     {hasDiscount && strikePrice && (
                         <div className="price-original">
-                            {formatCurrency(strikePrice, "USD")}
+                            {formatCurrency(strikePrice, tripCurrency)}
                         </div>
                     )}
                 </div>
