@@ -36,7 +36,7 @@ function Header() {
 
                     {user?.role === "general" && (
                         <>
-                            <Link to="/my-booking" style={linkStyle}>내 예약</Link>
+                            <Link to="/booking/summary" style={linkStyle}>내 예약</Link>
                             <button onClick={handleLogout} style={logoutButtonStyle}>
                                 로그아웃
                             </button>
