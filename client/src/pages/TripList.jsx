@@ -34,7 +34,13 @@ function TripList() {
         const firstDay = new Date(`${homeMonth}-01T00:00:00`);
         if (isNaN(firstDay.getTime())) return [null, null];
 
-        return [firstDay, firstDay];
+        const lastDay = new Date(
+            firstDay.getFullYear(),
+            firstDay.getMonth() + 1,
+            0
+        );
+
+        return [firstDay, lastDay];
     }, [homeMonth]);
 
     const [trips, setTrips] = useState([]);
