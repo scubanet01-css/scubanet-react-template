@@ -147,9 +147,8 @@ const DESTINATION_RULES = {
     Philippines: [
         { name: "Tubbataha", keywords: ["tubbataha"] },
         { name: "Visayas", keywords: ["visayas"] },
-        { name: "Apo Reef", keywords: ["apo reef"] },
-        { name: "Coron", keywords: ["coron"] },
-        { name: "Anilao", keywords: ["anilao"] },
+        { name: "Apo-Coron", keywords: ["apo reef", "coron"] },
+
     ],
     Egypt: [
         { name: "Northern Wrecks", keywords: ["northern wrecks", "thistlegorm", "abu nuhas", "ras mohammed", "strait of tiran", "wrecks"] },
