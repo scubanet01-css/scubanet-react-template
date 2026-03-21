@@ -144,13 +144,11 @@ const DESTINATION_RULES = {
         { name: "Northern Atolls", keywords: ["northern atolls", "far north", "hanimaadhoo", "hanifaru", "baa atoll", "north fiesta", "northern secrets"] },
         { name: "Southern Atolls", keywords: ["southern atolls", "deep south", "addu", "fuvahmulah", "huvadhoo", "gan"] },
     ],
-    Philippines: [
-        { name: "Tubbataha", keywords: ["tubbataha"] },
-        { name: "Visayas", keywords: ["visayas"] },
-        { name: "Apo Reef", keywords: ["apo reef"] },
-        { name: "Coron", keywords: ["coron"] },
-        { name: "Anilao", keywords: ["anilao"] },
-    ],
+    //Philippines: [
+    //{ name: "Tubbataha", keywords: ["tubbataha"] },
+    //{ name: "Visayas", keywords: ["visayas", "bohol", "cebu", "negros", "leyte", "malapascua", "moalboal"] },
+    //{ name: "Apo-Coron", keywords: ["apo reef", "coron"] },
+    //],
     Egypt: [
         { name: "Northern Wrecks", keywords: ["northern wrecks", "thistlegorm", "abu nuhas", "ras mohammed", "strait of tiran", "wrecks"] },
         { name: "BDE Reefs", keywords: ["bde", "brothers", "daedalus", "elphinstone"] },
@@ -386,6 +384,45 @@ function mapEgyptFallbackDestination(value) {
     return "Northern Wrecks";
 }
 
+function mapPhilippinesFallbackDestination(value) {
+    const text = normalizeText(value);
+
+    // 1. Tubbataha
+    if (keywordMatches(text, "tubbataha")) {
+        return "Tubbataha";
+    }
+
+    // 2. Apo + Coron 통합
+    if (
+        keywordMatches(text, "apo reef") ||
+        keywordMatches(text, "coron")
+    ) {
+        return "Apo-Coron";
+    }
+
+    // 3. Anilao 제거
+    if (keywordMatches(text, "anilao")) {
+        return null;
+    }
+
+    // 4. Visayas
+    if (
+        keywordMatches(text, "visayas") ||
+        keywordMatches(text, "bohol") ||
+        keywordMatches(text, "cebu") ||
+        keywordMatches(text, "negros") ||
+        keywordMatches(text, "leyte") ||
+        keywordMatches(text, "southern leyte") ||
+        keywordMatches(text, "malapascua") ||
+        keywordMatches(text, "moalboal") ||
+        keywordMatches(text, "dumaguete")
+    ) {
+        return "Visayas";
+    }
+
+    return null;
+}
+
 export function detectNormalizedDestinations(trip, country) {
     const text = getTripSearchText(trip);
     const rules = DESTINATION_RULES[country] || [];
@@ -411,6 +448,14 @@ export function detectNormalizedDestinations(trip, country) {
 
         if (country === "Egypt") {
             const mapped = splitValues.map((value) => mapEgyptFallbackDestination(value));
+            return Array.from(new Set(mapped));
+        }
+
+        if (country === "Philippines") {
+            const mapped = splitValues
+                .map((value) => mapPhilippinesFallbackDestination(value))
+                .filter(Boolean);
+
             return Array.from(new Set(mapped));
         }
 
