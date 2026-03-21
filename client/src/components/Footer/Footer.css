@@ -5,28 +5,23 @@
     padding: 40px 20px 20px;
     margin-top: 60px;
     border-top: 1px solid #e0e0e0;
-}
 
-/* 그리드 레이아웃 */
-.footer-section {
-    margin-bottom: 32px;
-}
-
-.footer {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 40px;
 }
 
-/* 제목 */
+.footer-section {
+    margin-bottom: 32px;
+}
+
 .footer-section h3 {
     font-size: 18px;
     margin-bottom: 14px;
-    font-weight: 600;
-    color: #333;
+    font-weight: 700;
+    color: #222;
 }
 
-/* 사이트맵 리스트 */
 .footer-section ul {
     list-style: none;
     padding: 0;
@@ -37,43 +32,55 @@
     margin-bottom: 10px;
 }
 
-.footer-section ul li a {
+.footer-section a {
     text-decoration: none;
     color: #555;
     font-size: 15px;
+    line-height: 1.8;
 }
 
-.footer-section ul li a:hover {
+.footer-section a:hover {
     color: #0099ff;
 }
 
-/* 회사 정보 */
 .company-info p {
     margin: 4px 0;
     color: #555;
     font-size: 15px;
+    line-height: 1.8;
 }
 
-/* 증서 이미지 */
-.cert-image-wrapper {
-    background: white;
-    padding: 8px;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    border: 1px solid #ddd;
+.certificate-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-.cert-image-wrapper img {
-    width: 100%;
-    border-radius: 6px;
-    display: block;
+.certificate-list li {
+    margin-bottom: 10px;
+    color: #555;
+    font-size: 15px;
+    line-height: 1.8;
 }
 
-/* 하단 카피라이트 */
 .footer-bottom {
     grid-column: 1 / -1;
     margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #ddd;
     text-align: center;
     color: #777;
     font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .footer {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 32px 16px 20px;
+    }
+
+    .footer-section {
+        margin-bottom: 0;
+    }
 }
