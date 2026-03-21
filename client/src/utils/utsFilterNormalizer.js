@@ -429,9 +429,32 @@ export function detectNormalizedDestinations(trip, country) {
     const matched = [];
 
     for (const rule of rules) {
-        const isMatched = rule.keywords.some((kw) => keywordMatches(text, kw));
-        if (isMatched) {
+        const hitKeywords = rule.keywords.filter((kw) => keywordMatches(text, kw));
+
+        if (hitKeywords.length > 0) {
             matched.push(rule.name);
+
+            if (
+                country === "Philippines" &&
+                ["Philippines Aggressor", "Philippines Aggressor II", "Resolute"].includes(trip.boatName)
+            ) {
+                console.log("🔎 PH DEST DEBUG", {
+                    boatName: trip.boatName,
+                    destination: trip.destination,
+                    route: trip.route,
+                    routeName: trip.routeName,
+                    tripName: trip.tripName,
+                    title: trip.title,
+                    productName: trip.product?.name,
+                    departurePort: trip.departurePort?.name,
+                    embarkPort: trip.embarkPort,
+                    region: trip.region,
+                    area: trip.area,
+                    searchText: text,
+                    matchedRule: rule.name,
+                    hitKeywords,
+                });
+            }
         }
     }
 
