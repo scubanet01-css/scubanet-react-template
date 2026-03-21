@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./InstructorMyBooking.css";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { getCurrencyForTrip } from "../../utils/currencyUtils";
@@ -8,8 +9,158 @@ function InstructorMyBooking() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  if (!state) return <p>잘못된 접근입니다.</p>;
+  const rawUser = localStorage.getItem("scubanetUser");
+  const user = rawUser ? JSON.parse(rawUser) : null;
 
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(!state);
+
+  useEffect(() => {
+    if (state) return;
+
+    const fetchMyBookings = async () => {
+      try {
+        const res = await axios.get("/api/bookings");
+        const allBookings = res.data?.bookings || [];
+
+        const myBookings = allBookings.filter(
+          (b) =>
+            b.bookingType === "instructor" &&
+            b.guest?.email &&
+            user?.email &&
+            b.guest.email === user.email
+        );
+
+        setBookings(myBookings);
+      } catch (err) {
+        console.error("❌ 강사 예약 조회 실패:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user?.email) {
+      fetchMyBookings();
+    } else {
+      setLoading(false);
+    }
+  }, [state, user?.email]);
+
+  // ✅ 메뉴에서 직접 들어온 경우: 예약 목록 표시
+  if (!state) {
+    if (loading) {
+      return <p>예약 정보를 불러오는 중...</p>;
+    }
+
+    if (!user) {
+      return <p>로그인이 필요합니다.</p>;
+    }
+
+    return (
+      <div className="instructor-mybooking-container">
+        <h2>📘 내 예약 내역</h2>
+
+        {bookings.length === 0 ? (
+          <p>예약 내역이 없습니다.</p>
+        ) : (
+          <div className="booking-list-wrapper">
+            {bookings.map((booking) => {
+              const bookingTrip = booking.trip || {};
+              const bookingCurrency =
+                booking.currency || getCurrencyForTrip(bookingTrip);
+
+              const bookingBoatName =
+                bookingTrip?.boat?.name ||
+                bookingTrip?.boatName ||
+                "정보 없음";
+
+              const bookingTripName =
+                bookingTrip?.product?.name ||
+                bookingTrip?.title ||
+                bookingTrip?.tripName ||
+                "정보 없음";
+
+              const bookingStartDate = bookingTrip?.startDate || "";
+              const bookingEndDate = bookingTrip?.endDate || "";
+
+              return (
+                <div key={booking.bookingId} className="summary-box" style={{ marginBottom: "20px" }}>
+                  <p>
+                    <strong>예약번호:</strong> {booking.bookingId}
+                  </p>
+
+                  <p>
+                    <strong>선박:</strong> {bookingBoatName}
+                  </p>
+
+                  <p>
+                    <strong>일정:</strong> {bookingTripName}
+                  </p>
+
+                  {(bookingStartDate || bookingEndDate) && (
+                    <p>
+                      <strong>출발/도착:</strong> {bookingStartDate || "-"}
+                      {bookingEndDate ? ` ~ ${bookingEndDate}` : ""}
+                    </p>
+                  )}
+
+                  <p>
+                    <strong>총액:</strong>{" "}
+                    {formatCurrency(booking.totalPrice || 0, bookingCurrency)}
+                  </p>
+
+                  <p>
+                    <strong>입금상태:</strong>{" "}
+                    <span
+                      style={{
+                        fontWeight: "bold",
+                        color:
+                          booking.paymentStatus === "paid"
+                            ? "#16a34a"
+                            : "#f59e0b",
+                      }}
+                    >
+                      {booking.paymentStatus === "paid" ? "입금완료" : "입금대기"}
+                    </span>
+                  </p>
+
+                  {booking.invoiceFileUrl && (
+                    <p style={{ marginTop: "12px" }}>
+                      <strong>인보이스:</strong>{" "}
+                      <a href={booking.invoiceFileUrl} target="_blank" rel="noreferrer">
+                        인보이스 열기
+                      </a>
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div style={{ marginTop: 24 }}>
+          <p
+            style={{
+              marginTop: "10px",
+              fontSize: "13px",
+              color: "#666",
+              lineHeight: "1.6",
+            }}
+          >
+            현재 온라인 결제는 비활성화되어 있습니다.
+            인보이스를 확인하신 후 안내된 계좌로 송금해 주세요.
+            관리자가 입금을 확인하면 예약 상태가 입금완료로 변경됩니다.
+          </p>
+
+          <button onClick={() => navigate(-1)}>
+            ← 이전으로
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ 기존 예약 직후 상세 화면은 그대로 유지
   const {
     trip,
     selectedBookings = [],

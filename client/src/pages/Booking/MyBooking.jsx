@@ -8,8 +8,12 @@ function MyBooking() {
   const navigate = useNavigate();
   const { bookingId: bookingIdFromParams } = useParams();
 
+  const rawUser = localStorage.getItem('scubanetUser');
+  const user = rawUser ? JSON.parse(rawUser) : null;
+
   const [loading, setLoading] = useState(false);
   const [booking, setBooking] = useState(null);
+  const [myBookings, setMyBookings] = useState([]);
   const [error, setError] = useState('');
 
   // ✅ 예약 직후 state로 넘어온 값
@@ -48,7 +52,7 @@ function MyBooking() {
     }, 0);
   }, [stateCabins]);
 
-  // ✅ bookingId가 있으면 서버 조회
+  // ✅ bookingId가 있으면 서버에서 단건 조회
   useEffect(() => {
     const fetchBooking = async () => {
       if (!bookingId) return;
@@ -74,6 +78,39 @@ function MyBooking() {
 
     fetchBooking();
   }, [bookingId]);
+
+  // ✅ 메뉴에서 직접 들어온 경우: 로그인 사용자 기준 전체 예약 목록 조회
+  useEffect(() => {
+    const fetchMyBookings = async () => {
+      // 상세 모드(state 또는 bookingId)가 있으면 목록 조회 불필요
+      if (stateTrip || bookingId) return;
+
+      try {
+        setLoading(true);
+        setError('');
+
+        const res = await axios.get('/api/bookings');
+        const allBookings = res.data?.bookings || [];
+
+        const mine = allBookings.filter(
+          (item) =>
+            item?.guest?.email &&
+            user?.email &&
+            item.guest.email === user.email &&
+            item.bookingType !== 'instructor'
+        );
+
+        setMyBookings(mine);
+      } catch (err) {
+        console.error('❌ 내 예약 목록 조회 실패:', err);
+        setError('예약 목록을 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyBookings();
+  }, [stateTrip, bookingId, user?.email]);
 
   // ✅ 서버 조회 성공 시 서버 데이터 우선
   const trip = booking?.trip
@@ -122,20 +159,140 @@ function MyBooking() {
   };
 
   const getPaymentLabel = (status) => {
-    if (status === 'paid') return '결제 완료';
-    if (status === 'pending') return '결제 대기';
+    if (status === 'paid') return '입금완료';
+    if (status === 'pending') return '입금대기';
     if (status === 'failed') return '결제 실패';
     return status || '-';
   };
 
-  if (loading && !booking && !stateTrip) {
+  if (loading && !booking && !stateTrip && myBookings.length === 0) {
     return <div style={{ padding: 20 }}>예약 정보를 불러오는 중입니다...</div>;
   }
 
+  // ✅ 메뉴에서 직접 들어온 경우: 내 예약 목록 표시
   if (!trip || !guest) {
-    return <div style={{ padding: 20 }}>잘못된 접근입니다.</div>;
+    return (
+      <div style={{ padding: 20 }}>
+        <h2>예약 내역 확인</h2>
+
+        {error && (
+          <p style={{ color: 'red' }}>{error}</p>
+        )}
+
+        {!user ? (
+          <p>로그인이 필요합니다.</p>
+        ) : myBookings.length === 0 ? (
+          <p>예약 내역이 없습니다.</p>
+        ) : (
+          <>
+            {myBookings.map((item) => {
+              const itemTrip = item?.trip || {};
+              const itemTripName =
+                itemTrip?.title ||
+                itemTrip?.product?.name ||
+                itemTrip?.tripName ||
+                '정보 없음';
+
+              const itemBoatName =
+                itemTrip?.boatName ||
+                itemTrip?.boat?.name ||
+                '정보 없음';
+
+              const itemCurrency = item?.currency || 'USD';
+
+              return (
+                <div
+                  key={item.bookingId}
+                  style={{
+                    border: '1px solid #ddd',
+                    borderRadius: '10px',
+                    padding: '16px',
+                    marginBottom: '16px',
+                    background: '#fff',
+                  }}
+                >
+                  <p>
+                    <strong>예약번호:</strong> {item.bookingId}
+                  </p>
+
+                  <p>
+                    <strong>예약 상태:</strong> {getStatusLabel(item.bookingStatus || 'confirmed')}
+                  </p>
+
+                  <p>
+                    <strong>결제 상태:</strong>{' '}
+                    <span
+                      style={{
+                        fontWeight: 'bold',
+                        color: item.paymentStatus === 'paid' ? '#16a34a' : '#f59e0b',
+                      }}
+                    >
+                      {getPaymentLabel(item.paymentStatus || 'pending')}
+                    </span>
+                  </p>
+
+                  {item.createdAt && (
+                    <p>
+                      <strong>예약일시:</strong>{' '}
+                      {new Date(item.createdAt).toLocaleString('ko-KR')}
+                    </p>
+                  )}
+
+                  <p>
+                    <strong>예약자:</strong> {item.guest?.name} / {item.guest?.email}
+                  </p>
+
+                  <p>
+                    <strong>여행:</strong> {itemTripName} / {itemTrip?.startDate || '-'} 출발 / {itemBoatName}
+                  </p>
+
+                  {itemTrip?.endDate && (
+                    <p>
+                      <strong>도착일:</strong> {itemTrip.endDate}
+                    </p>
+                  )}
+
+                  <p style={{ marginTop: 12 }}>
+                    <strong>총 금액:</strong> {formatCurrency(item.totalPrice || 0, itemCurrency)}
+                  </p>
+
+                  {item.invoiceFileUrl && (
+                    <p style={{ marginTop: 12 }}>
+                      <strong>인보이스 파일:</strong>{' '}
+                      <a href={item.invoiceFileUrl} target="_blank" rel="noreferrer">
+                        인보이스 열기
+                      </a>
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        <div style={{ marginTop: 24 }}>
+          <p
+            style={{
+              marginTop: '10px',
+              fontSize: '13px',
+              color: '#666',
+              lineHeight: '1.6',
+            }}
+          >
+            현재 온라인 결제는 비활성화되어 있습니다.
+            인보이스를 확인하신 후 안내된 계좌로 송금해 주세요.
+            관리자가 입금을 확인하면 예약 상태가 입금완료로 변경됩니다.
+          </p>
+
+          <button onClick={() => navigate(-1)}>
+            ← 이전으로
+          </button>
+        </div>
+      </div>
+    );
   }
 
+  // ✅ 기존 상세 화면 유지
   return (
     <div style={{ padding: 20 }}>
       <h2>예약 내역 확인</h2>
@@ -160,7 +317,15 @@ function MyBooking() {
         </p>
 
         <p>
-          <strong>결제 상태:</strong> {getPaymentLabel(paymentStatus)}
+          <strong>결제 상태:</strong>{' '}
+          <span
+            style={{
+              fontWeight: 'bold',
+              color: paymentStatus === 'paid' ? '#16a34a' : '#f59e0b',
+            }}
+          >
+            {getPaymentLabel(paymentStatus)}
+          </span>
         </p>
 
         {createdAt && (
