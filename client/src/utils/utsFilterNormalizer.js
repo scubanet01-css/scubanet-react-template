@@ -398,7 +398,7 @@ function mapPhilippinesFallbackDestination(value) {
         keywordMatches(text, "apo") ||
         keywordMatches(text, "coron")
     ) {
-        return "Apo / Coron";
+        return "Apo-Coron";
     }
 
     // 3. Anilao → 필터에서 제거
@@ -421,8 +421,8 @@ function mapPhilippinesFallbackDestination(value) {
         return "Visayas";
     }
 
-    // 5. fallback (필리핀이면 대부분 비사야로 처리)
-    return "Visayas";
+    // 5. 모르면 넣지 않음
+    return null;
 }
 
 export function detectNormalizedDestinations(trip, country) {
@@ -454,7 +454,10 @@ export function detectNormalizedDestinations(trip, country) {
         }
 
         if (country === "Philippines") {
-            const mapped = splitValues.map((value) => mapPhilippinesFallbackDestination(value));
+            const mapped = splitValues
+                .map((value) => mapPhilippinesFallbackDestination(value))
+                .filter(Boolean);
+
             return Array.from(new Set(mapped));
         }
 
