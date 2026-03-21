@@ -145,17 +145,6 @@ const DESTINATION_RULES = {
         { name: "Southern Atolls", keywords: ["southern atolls", "deep south", "addu", "fuvahmulah", "huvadhoo", "gan"] },
     ],
 
-    Philippines: [],
-    //{ name: "Tubbataha", keywords: ["tubbataha"] },
-    //{ name: "Visayas", keywords: ["visayas", "bohol", "cebu", "negros", "leyte", "malapascua", "moalboal"] },
-    //{ name: "Apo-Coron", keywords: ["apo reef", "coron"] },
-
-
-    Egypt: [
-        { name: "Northern Wrecks", keywords: ["northern wrecks", "thistlegorm", "abu nuhas", "ras mohammed", "strait of tiran", "wrecks"] },
-        { name: "BDE Reefs", keywords: ["bde", "brothers", "daedalus", "elphinstone"] },
-        { name: "Red Sea Deep South", keywords: ["st john", "st. john", "st johns", "st. johns", "zabargad", "rocky island", "fury shoals"] },
-    ],
 
     Ecuador: [
         { name: "Galapagos", keywords: ["galapagos", "wolf", "darwin", "baltra", "san cristobal"] },
