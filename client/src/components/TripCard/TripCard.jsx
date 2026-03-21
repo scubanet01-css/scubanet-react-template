@@ -198,15 +198,16 @@ export default function TripCard({ trip, mode = "public" }) {
 
                 {/* 버튼 */}
                 <div className="trip-actions">
-                    <button
-                        className="btn-detail"
-                        onClick={() =>
-                            navigate(`/trip/${trip.id}`, { state: { trip } })
-                        }
-                    >
-                        상세보기
-                    </button>
-
+                    {/* 
+<button
+    className="btn-detail"
+    onClick={() =>
+        navigate(`/trip/${trip.id}`, { state: { trip } })
+    }
+>
+    상세보기
+</button>
+*/}
                     <button
                         className={`btn-reserve ${mode === "instructor" ? "instructor" : ""}`}
                         onClick={() =>
