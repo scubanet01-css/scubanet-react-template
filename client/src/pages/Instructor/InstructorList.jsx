@@ -1,6 +1,7 @@
 // src/pages/Instructor/InstructorList.jsx
 import React, { useState, useEffect, useMemo } from "react";
-import axios from "axios";
+import "./InstructorList.css";
+
 import {
   isWithinInterval,
   startOfDay,
@@ -10,67 +11,64 @@ import {
 } from "date-fns";
 
 import FilterBar from "../../components/Common/FilterBar";
-import TripCard from "../../components/TripCard/TripCard";
+import TripCard from "../../components/TripCard/TripCard.jsx";
+import axios from "axios";
+
 import {
   normalizeUTSTrips,
   getCountryOptions,
   getDestinationOptions,
   getBoatOptions,
-} from "../../utils/destinationUtils";
-
-import "./InstructorList.css";
+} from "../../utils/utsFilterNormalizer";
 
 function InstructorList() {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 필터 상태
   const [selectedCountry, setSelectedCountry] = useState("전체");
   const [selectedDestination, setSelectedDestination] = useState("전체");
   const [selectedBoat, setSelectedBoat] = useState("전체");
   const [specialType, setSpecialType] = useState("전체");
-  const [dateRange, setDateRange] = useState([null, null]);
 
+  const [dateRange, setDateRange] = useState([null, null]);
   const [currentPage, setCurrentPage] = useState(1);
+
   const itemsPerPage = 20;
   const [startDate, endDate] = dateRange;
 
   // -----------------------------
-  // 1) UTS JSON 로드
+  // 1. 데이터 로드
   // -----------------------------
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios.get("/data/uts-trips.json");
-        const raw = Array.isArray(res.data) ? res.data : res.data.data || [];
+    setLoading(true);
 
-        const specialCount = raw.filter((t) => t.isSpecialTrip).length;
-        console.log(
-          "📘 [InstructorList] uts-trips loaded:",
-          raw.length,
-          "개 / special:",
-          specialCount,
-          "개"
-        );
+    axios
+      .get("/data/uts-trips.json")
+      .then((res) => {
+        const raw = res.data;
 
-        // 강사용 리스트 정책: 좌석 있는 상품만
-        const withSeats = raw.filter(
+        const list = Array.isArray(raw)
+          ? raw
+          : raw?.data || [];
+
+        // 👉 강사용: 좌석 있는 것만
+        const withSeats = list.filter(
           (t) => Number(t?.spaces?.available || 0) > 0
         );
 
         setTrips(withSeats);
-      } catch (err) {
-        console.error("❌ InstructorList 데이터 오류:", err);
-      } finally {
+      })
+      .catch((err) => {
+        console.error("❌ Instructor trips load error:", err);
+        setTrips([]);
+      })
+      .finally(() => {
         setLoading(false);
-      }
-    };
-
-    fetchData();
+      });
   }, []);
 
   // -----------------------------
-  // 2) TripList와 동일한 정규화 적용
+  // 2. TripList와 동일 정규화
   // -----------------------------
   const normalizedTrips = useMemo(() => {
     return normalizeUTSTrips(trips);
@@ -80,33 +78,20 @@ function InstructorList() {
     return getCountryOptions(normalizedTrips);
   }, [normalizedTrips]);
 
-  const destinationOptions = useMemo(() => {
+  const destinationList = useMemo(() => {
     return getDestinationOptions(normalizedTrips, selectedCountry);
   }, [normalizedTrips, selectedCountry]);
-
-  const destinationList = useMemo(() => {
-    return destinationOptions.map((opt) => opt.label);
-  }, [destinationOptions]);
-
-  const selectedDestinationKey = useMemo(() => {
-    if (selectedDestination === "전체") return "전체";
-
-    const found = destinationOptions.find((opt) => opt.label === selectedDestination);
-    return found ? found.value : "전체";
-  }, [destinationOptions, selectedDestination]);
 
   const boats = useMemo(() => {
     return getBoatOptions(
       normalizedTrips,
       selectedCountry,
-      selectedDestinationKey
+      selectedDestination
     );
-  }, [normalizedTrips, selectedCountry, selectedDestinationKey]);
+  }, [normalizedTrips, selectedCountry, selectedDestination]);
 
   // -----------------------------
-  // 3) Instructor 전용 필터 로직
-  //    - Country / Destination 은 TripList와 동일한 normalized 기준
-  //    - specialType(group / discount / charter)는 강사용 유지
+  // 3. 필터
   // -----------------------------
   const filteredTrips = useMemo(() => {
     const today = startOfDay(new Date());
@@ -117,36 +102,38 @@ function InstructorList() {
       return isValid(d) && d >= today;
     });
 
-    // Country 필터
+    // Country
     if (selectedCountry !== "전체") {
       list = list.filter((t) => t.normalizedCountry === selectedCountry);
     }
 
-    // Destination 필터
-    if (selectedDestinationKey !== "전체") {
+    // Destination (핵심: destinationFilterKeys)
+    if (selectedDestination !== "전체") {
       list = list.filter(
         (t) =>
           Array.isArray(t.destinationFilterKeys) &&
-          t.destinationFilterKeys.includes(selectedDestinationKey)
+          t.destinationFilterKeys.includes(selectedDestination)
       );
     }
 
-    // Boat 필터
+    // Boat
     if (selectedBoat !== "전체") {
       list = list.filter((t) => t.boatName === selectedBoat);
     }
 
-    // Instructor 전용 specialType
+    // -----------------------------
+    // 🔥 Instructor 전용 필터
+    // -----------------------------
     if (specialType !== "전체") {
       list = list.filter((trip) => {
-        const cabins = Array.isArray(trip.cabins) ? trip.cabins : [];
-        const allRates = cabins.flatMap((c) =>
-          Array.isArray(c.ratePlans) ? c.ratePlans : []
-        );
+        const cabins = trip.cabins || [];
+        const allRates = cabins.flatMap((c) => c.ratePlans || []);
+
         const names = allRates.map((rp) =>
           String(rp.ratePlanName || rp.name || "").toLowerCase()
         );
 
+        // 그룹 / 강사 / FOC
         if (specialType === "group") {
           return (
             allRates.some((rp) => rp.isInstructorOnly) ||
@@ -159,6 +146,7 @@ function InstructorList() {
           );
         }
 
+        // 할인 + FOC
         if (specialType === "discount") {
           return (
             allRates.some((rp) => Number(rp.discountPercent || 0) > 0) ||
@@ -166,6 +154,7 @@ function InstructorList() {
           );
         }
 
+        // 풀차터
         if (specialType === "charter") {
           const s = trip.spaces || {};
           const available = Number(s.available || 0);
@@ -181,7 +170,7 @@ function InstructorList() {
       });
     }
 
-    // 날짜 필터
+    // 날짜
     if (startDate && endDate) {
       list = list.filter((t) => {
         const d = new Date(t.startDate);
@@ -192,12 +181,13 @@ function InstructorList() {
       });
     }
 
-    // TripList와 동일한 정렬: 스페셜 먼저, 그 다음 출발일 빠른 순
+    // 정렬 (TripList와 동일)
     list.sort((a, b) => {
       const aSpecial =
         a.source === "special" ||
         a.isSpecialTrip ||
         (a.id || "").startsWith("SPC_");
+
       const bSpecial =
         b.source === "special" ||
         b.isSpecialTrip ||
@@ -210,6 +200,7 @@ function InstructorList() {
       if (a.startDate && b.startDate) {
         return new Date(a.startDate) - new Date(b.startDate);
       }
+
       return 0;
     });
 
@@ -217,7 +208,7 @@ function InstructorList() {
   }, [
     normalizedTrips,
     selectedCountry,
-    selectedDestinationKey,
+    selectedDestination,
     selectedBoat,
     specialType,
     startDate,
@@ -225,7 +216,7 @@ function InstructorList() {
   ]);
 
   // -----------------------------
-  // 4) 페이지네이션
+  // 4. 페이지네이션
   // -----------------------------
   useEffect(() => {
     setCurrentPage(1);
@@ -250,7 +241,6 @@ function InstructorList() {
   return (
     <div className="instructor-container">
       <h2>강사 전용 예약 관리</h2>
-      <p>강사 전용 가격 / FOC / 그룹할인 / 차터 오퍼가 적용됩니다.</p>
 
       <FilterBar
         startDate={startDate}
@@ -258,17 +248,10 @@ function InstructorList() {
         onChangeDate={setDateRange}
         countryList={countryList}
         selectedCountry={selectedCountry}
-        onChangeCountry={(value) => {
-          setSelectedCountry(value);
-          setSelectedDestination("전체");
-          setSelectedBoat("전체");
-        }}
+        onChangeCountry={setSelectedCountry}
         destinationList={destinationList}
         selectedDestination={selectedDestination}
-        onChangeDestination={(value) => {
-          setSelectedDestination(value);
-          setSelectedBoat("전체");
-        }}
+        onChangeDestination={setSelectedDestination}
         boats={boats}
         selectedBoat={selectedBoat}
         onChangeBoat={setSelectedBoat}
@@ -277,12 +260,14 @@ function InstructorList() {
         mode="instructor"
       />
 
-      {currentTrips.map((trip) => (
-        <TripCard key={trip.id} trip={trip} mode="instructor" />
-      ))}
+      <div className="triplist-cards">
+        {currentTrips.map((trip) => (
+          <TripCard key={trip.id} trip={trip} mode="instructor" />
+        ))}
+      </div>
 
       {totalPages > 1 && (
-        <div style={{ marginTop: 20, textAlign: "center" }}>
+        <div className="triplist-pagination">
           <button
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
@@ -296,11 +281,7 @@ function InstructorList() {
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                style={{
-                  margin: 3,
-                  background: page === currentPage ? "#007bff" : "#f5f5f5",
-                  color: page === currentPage ? "white" : "black",
-                }}
+                className={page === currentPage ? "active" : ""}
               >
                 {page}
               </button>
@@ -308,7 +289,9 @@ function InstructorList() {
 
           <button
             disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            onClick={() =>
+              setCurrentPage((p) => Math.min(totalPages, p + 1))
+            }
           >
             ›
           </button>
