@@ -62,7 +62,13 @@ function TripList() {
         if (homeMonth) {
             const firstDay = new Date(`${homeMonth}-01T00:00:00`);
             if (!isNaN(firstDay.getTime())) {
-                setDateRange([firstDay, firstDay]);
+                const lastDay = new Date(
+                    firstDay.getFullYear(),
+                    firstDay.getMonth() + 1,
+                    0
+                );
+
+                setDateRange([firstDay, lastDay]);
             } else {
                 setDateRange([null, null]);
             }
