@@ -208,24 +208,6 @@ const DESTINATION_RULES = {
     ],
 };
 
-if (country === "Philippines") {
-    console.log("PH DEST DEBUG", {
-        boatName: trip.boatName,
-        destination: trip.destination,
-        route: trip.route,
-        routeName: trip.routeName,
-        tripName: trip.tripName,
-        title: trip.title,
-        productName: trip.product?.name,
-        departurePort: trip.departurePort?.name,
-        embarkPort: trip.embarkPort,
-        region: trip.region,
-        area: trip.area,
-        searchText: getTripSearchText(trip),
-        matched,
-    });
-}
-
 function normalizeText(value) {
     return String(value || "")
         .toLowerCase()
@@ -607,4 +589,22 @@ export function getBoatOptions(
             )
         ).sort(),
     ];
+}
+
+if (country === "Philippines") {
+    console.log("PH DEST DEBUG", {
+        boatName: trip.boatName,
+        destination: trip.destination,
+        route: trip.route,
+        routeName: trip.routeName,
+        tripName: trip.tripName,
+        title: trip.title,
+        productName: trip.product?.name,
+        departurePort: trip.departurePort?.name,
+        embarkPort: trip.embarkPort,
+        region: trip.region,
+        area: trip.area,
+        searchText: getTripSearchText(trip),
+        matched,
+    });
 }
