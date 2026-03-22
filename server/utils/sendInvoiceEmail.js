@@ -49,6 +49,7 @@ async function sendInvoiceEmail({
   commissionRate,
   commissionAmount,
   finalAmount,
+  agreements,
 }) {
   try {
     const tripName = getTripName(trip);
@@ -86,6 +87,19 @@ async function sendInvoiceEmail({
           <p><b>총 예약 금액:</b> ${formatMoney(totalPrice, currency)}</p>
         `;
 
+    const agreementHtml =
+      agreements
+        ? `
+          <hr/>
+          <p><b>본 예약은 고객의 약관 동의를 기반으로 확정되었습니다.</b></p>
+          <p><b>동의 일시:</b> ${agreements?.agreedAt
+          ? new Date(agreements.agreedAt).toISOString().split("T")[0]
+          : "-"
+        }</p>
+          <p>특별약관 / 일반약관 확인 완료</p>
+        `
+        : "";
+
     const mailOptions = {
       from: `"ScubaNet Travel" <noreply@scubanet-travel.com>`,
       to,
@@ -103,7 +117,7 @@ async function sendInvoiceEmail({
           <p><b>도착일:</b> ${trip?.endDate || "-"}</p>
           <p><b>선박명:</b> ${boatName}</p>
           ${settlementHtml}
-
+${agreementHtml}
           <hr/>
           <p>감사합니다.<br/>ScubaNet Travel 드림</p>
         </div>
