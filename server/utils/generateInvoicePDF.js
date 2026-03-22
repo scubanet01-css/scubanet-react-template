@@ -234,6 +234,24 @@ function generateInvoicePDF(data, outputPath) {
         { align: "left" }
       );
 
+      // -------------------------------
+      // 약관 동의 확인 문구
+      // -------------------------------
+      if (data?.agreements) {
+        const agreedDate = data.agreements.agreedAt
+          ? new Date(data.agreements.agreedAt).toISOString().split("T")[0]
+          : "-";
+
+        doc.moveDown(1.2);
+        doc.fontSize(11).fillColor("black").text(
+          "본 예약은 고객의 약관 동의를 기반으로 확정되었습니다.",
+          { align: "left" }
+        );
+        doc.moveDown(0.4);
+        doc.text(`동의 일시: ${agreedDate}`);
+        doc.text("특별약관 / 일반약관 확인 완료");
+      }
+
       doc.end();
 
       fileStream.on("finish", () => {
