@@ -81,6 +81,10 @@ function ConfirmBooking() {
     setGuestPhone((prev) => prev || resolvedPhone);
   }, [stateUser, user]);
 
+  console.log("useAuth user =", user);
+  console.log("stateUser =", stateUser);
+  console.log("localStorage user =", localStorage.getItem("user"));
+
   // ✅ 여행명 / 선박명 fallback
   const tripName =
     trip?.product?.name ||
