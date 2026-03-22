@@ -28,8 +28,8 @@ function ConfirmBooking() {
   const [guestPhone, setGuestPhone] = useState("");
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    console.log("CONFIRM_DEBUG localStorage raw =", storedUser);
+    const storedUser = localStorage.getItem("scubanetUser");
+    console.log("CONFIRM_DEBUG localStorage raw =", localStorage.getItem("scubanetUser"));
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
       console.log("CONFIRM_DEBUG localStorage parsed =", parsed);
