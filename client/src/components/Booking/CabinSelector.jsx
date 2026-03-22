@@ -1,5 +1,6 @@
 import React from "react";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { buildScubadatesBookingOptions } from "../../utils/buildScubadatesBookingOptions";
 
 function getCabinStatusLabel(cabin) {
   const capacity = Number(cabin.capacity || 0);
@@ -68,84 +69,14 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
 
     const isScubadates = trip?.source === "scubadates";
 
-    const remaining = Number(
-      cabin?.remaining ??
-      cabin?.availableSpaces ??
-      cabin?.meta?.availableSpaces ??
-      0
-    );
-
-    const spacesPerCabin = Number(
-      cabin?.meta?.spacesPerCabin ||
-      cabin?.capacity ||
-      2
-    );
-
-    // ✅ Scubadates 전용: "요금제 종류 x 인원수"로 펼치기
+    // ✅ Scubadates는 공통 함수 사용
     if (isScubadates) {
-      const maxFullCabins =
-        spacesPerCabin > 0 ? Math.floor(remaining / spacesPerCabin) : 0;
-
-      const expanded = [];
-
-      ratePlans
-        .filter((rp) => rp && rp.price != null)
-        .forEach((rp) => {
-          const occId =
-            rp.occupancyId != null
-              ? Number(rp.occupancyId)
-              : rp.occupancyValue != null
-                ? Number(rp.occupancyValue)
-                : 1;
-
-          const unitPrice = Number(rp.price);
-          if (Number.isNaN(unitPrice)) return;
-
-          // 1) 독실 사용
-          if (occId === 1) {
-            for (let roomCount = 1; roomCount <= maxFullCabins; roomCount += 1) {
-              expanded.push({
-                selectionKey: `${cabin.cabinId}_single_${roomCount}`,
-                occupancy: "1",
-                label: `독실 사용 (${roomCount}실 / ${roomCount}명)`,
-                price: unitPrice,            // 1실 가격
-                peopleCount: roomCount,      // 독실 1실 = 1명
-                roomCount,
-                totalPrice: unitPrice * roomCount,
-                unitSuffix: "/실",
-                ratePlanName: rp.ratePlanName || rp.name || "",
-                discountPercent: Number(rp.discountPercent || 0),
-                isInstructorOnly: !!rp.isInstructorOnly,
-              });
-            }
-          }
-
-          // 2) 2인 1실
-          if (occId === 2) {
-            for (let roomCount = 1; roomCount <= maxFullCabins; roomCount += 1) {
-              const peopleCount = roomCount * 2;
-
-              expanded.push({
-                selectionKey: `${cabin.cabinId}_double_${peopleCount}`,
-                occupancy: "2",
-                label: `2인 1실 (${peopleCount}명)`,
-                price: unitPrice,            // 1인당 가격
-                peopleCount,
-                roomCount,
-                totalPrice: unitPrice * peopleCount,
-                unitSuffix: "/인",
-                ratePlanName: rp.ratePlanName || rp.name || "",
-                discountPercent: Number(rp.discountPercent || 0),
-                isInstructorOnly: !!rp.isInstructorOnly,
-              });
-            }
-          }
-        });
-
-      return expanded;
+      return buildScubadatesBookingOptions(cabin, {
+        includeInstructorOnly: false,
+      });
     }
 
-    // ✅ 기존 (Inseanq 등) 로직 유지
+    // ✅ 기존(Inseanq 등) 로직 유지
     const makeFallbackLabel = (occId, rp) => {
       const occ = String(occId ?? "").trim();
       const planName = String(rp?.ratePlanName || rp?.name || "").toLowerCase();
@@ -186,7 +117,7 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
           peopleCount: String(occId) === "2" ? 2 : 1,
           roomCount: 1,
           totalPrice: String(occId) === "2" ? unitPrice * 2 : unitPrice,
-          unitSuffix: "/인",
+          unitSuffix: label === "독실 예약" ? "/실" : "/인",
           ratePlanName: rp.ratePlanName || rp.name || "",
           discountPercent: Number(rp.discountPercent || 0),
           isInstructorOnly: !!rp.isInstructorOnly,
