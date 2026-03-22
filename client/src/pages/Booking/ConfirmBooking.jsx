@@ -25,6 +25,53 @@ function ConfirmBooking() {
 
   const [showTermsModal, setShowTermsModal] = useState(false);
 
+  const [agreeAll, setAgreeAll] = useState(false);
+  const [agreeCancellation, setAgreeCancellation] = useState(false);
+  const [agreeSafety, setAgreeSafety] = useState(false);
+  const [agreeResponsibility, setAgreeResponsibility] = useState(false);
+  const [agreeTermsReview, setAgreeTermsReview] = useState(false);
+
+  // 2단계에서는 임시로 false가 아니라 true로 두면 체크 흐름 테스트가 쉬움
+  // 다음 단계에서 실제 약관 스크롤 읽기와 연결하면서 false로 바꿀 것
+  const [specialTermsRead, setSpecialTermsRead] = useState(true);
+  const [generalTermsRead, setGeneralTermsRead] = useState(true);
+
+  const handleAgreeAllChange = (checked) => {
+    setAgreeAll(checked);
+    setAgreeCancellation(checked);
+    setAgreeSafety(checked);
+    setAgreeResponsibility(checked);
+
+    if (specialTermsRead && generalTermsRead) {
+      setAgreeTermsReview(checked);
+    } else {
+      setAgreeTermsReview(false);
+    }
+  };
+
+  useEffect(() => {
+    const allChecked =
+      agreeCancellation &&
+      agreeSafety &&
+      agreeResponsibility &&
+      agreeTermsReview;
+
+    setAgreeAll(allChecked);
+  }, [
+    agreeCancellation,
+    agreeSafety,
+    agreeResponsibility,
+    agreeTermsReview,
+  ]);
+
+  const canConfirmTerms =
+    agreeCancellation &&
+    agreeSafety &&
+    agreeResponsibility &&
+    agreeTermsReview &&
+    specialTermsRead &&
+    generalTermsRead;
+
   useEffect(() => {
     const storedUser = localStorage.getItem("scubanetUser");
 
@@ -318,11 +365,13 @@ function ConfirmBooking() {
           <div
             style={{
               width: "100%",
-              maxWidth: "640px",
+              maxWidth: "720px",
               background: "#fff",
               borderRadius: "12px",
               padding: "24px",
               boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+              maxHeight: "90vh",
+              overflowY: "auto",
             }}
           >
             <h3 style={{ marginTop: 0, marginBottom: "12px" }}>
@@ -336,18 +385,162 @@ function ConfirmBooking() {
 
             <div
               style={{
-                padding: "14px",
-                border: "1px solid #eee",
+                marginTop: "24px",
+                padding: "16px",
+                border: "1px solid #ddd",
                 borderRadius: "10px",
                 background: "#fafafa",
-                marginBottom: "20px",
-                fontSize: "14px",
-                color: "#555",
               }}
             >
-              약관동의 모달 1단계 테스트 중입니다.
-              <br />
-              지금 단계에서는 버튼 클릭 시 이 모달이 뜨는지만 먼저 확인합니다.
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "8px",
+                  marginBottom: "12px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={agreeAll}
+                  onChange={(e) => handleAgreeAllChange(e.target.checked)}
+                  style={{ marginTop: "4px" }}
+                />
+                <span>아래 모든 필수 약관 및 중요사항에 동의합니다.</span>
+              </label>
+
+              <div style={{ display: "grid", gap: "10px" }}>
+                <label
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                    alignItems: "flex-start",
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={agreeCancellation}
+                    onChange={(e) => setAgreeCancellation(e.target.checked)}
+                    style={{ marginTop: "4px" }}
+                  />
+                  <span>
+                    취소 및 환불 규정을 확인하였으며 이에 동의합니다. (필수)
+                  </span>
+                </label>
+
+                <label
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                    alignItems: "flex-start",
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={agreeSafety}
+                    onChange={(e) => setAgreeSafety(e.target.checked)}
+                    style={{ marginTop: "4px" }}
+                  />
+                  <span>
+                    다이빙, 프리다이빙, 스노클링 및 여행 중 발생할 수 있는 위험과
+                    사고에 대한 책임이 본인에게 있음을 이해하고 동의합니다. (필수)
+                  </span>
+                </label>
+
+                <label
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                    alignItems: "flex-start",
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={agreeResponsibility}
+                    onChange={(e) => setAgreeResponsibility(e.target.checked)}
+                    style={{ marginTop: "4px" }}
+                  />
+                  <span>
+                    스쿠버넷트레블은 현지 리조트/리브어보드/투어 운영사의 예약을
+                    대행하는 여행사이며, 현지 서비스의 실제 제공과 운영에 대한 1차
+                    책임은 해당 운영사에 있음을 이해합니다. (필수)
+                  </span>
+                </label>
+
+                <label
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                    alignItems: "flex-start",
+                    cursor: specialTermsRead && generalTermsRead ? "pointer" : "not-allowed",
+                    opacity: specialTermsRead && generalTermsRead ? 1 : 0.6,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={agreeTermsReview}
+                    onChange={(e) => setAgreeTermsReview(e.target.checked)}
+                    style={{ marginTop: "4px" }}
+                    disabled={!specialTermsRead || !generalTermsRead}
+                  />
+                  <span>
+                    특별약관 및 일반약관 전문을 모두 확인하였으며, 이에 따라 예약이
+                    확정되고 인보이스가 발송되는 것에 동의합니다. (필수)
+                  </span>
+                </label>
+              </div>
+
+              <div
+                style={{
+                  marginTop: "14px",
+                  display: "flex",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    alert("다음 단계에서 특별약관 전문 모달을 연결합니다.");
+                    setSpecialTermsRead(true);
+                  }}
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: "8px",
+                    border: "1px solid #ccc",
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  특별약관 보기
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    alert("다음 단계에서 일반약관 전문 모달을 연결합니다.");
+                    setGeneralTermsRead(true);
+                  }}
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: "8px",
+                    border: "1px solid #ccc",
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  일반약관 보기
+                </button>
+              </div>
+
+              <p style={{ marginTop: "12px", fontSize: "13px", color: "#666" }}>
+                필수 항목에 모두 동의해야 예약이 확정되며, 인보이스가 전송됩니다.
+              </p>
             </div>
 
             <div
@@ -355,6 +548,7 @@ function ConfirmBooking() {
                 display: "flex",
                 justifyContent: "flex-end",
                 gap: "10px",
+                marginTop: "20px",
               }}
             >
               <button
@@ -373,14 +567,17 @@ function ConfirmBooking() {
 
               <button
                 type="button"
-                disabled
+                disabled={!canConfirmTerms}
+                onClick={() => {
+                  alert("다음 단계에서 여기서 기존 handleConfirmBooking을 연결합니다.");
+                }}
                 style={{
                   padding: "10px 16px",
                   borderRadius: "8px",
                   border: "none",
-                  background: "#d9d9d9",
-                  color: "#666",
-                  cursor: "not-allowed",
+                  background: canConfirmTerms ? "#111" : "#d9d9d9",
+                  color: "#fff",
+                  cursor: canConfirmTerms ? "pointer" : "not-allowed",
                 }}
               >
                 동의하고 예약 확정
