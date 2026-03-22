@@ -23,6 +23,8 @@ function ConfirmBooking() {
   const [guestEmail, setGuestEmail] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
 
+  const [showTermsModal, setShowTermsModal] = useState(false);
+
   useEffect(() => {
     const storedUser = localStorage.getItem("scubanetUser");
 
@@ -295,10 +297,98 @@ function ConfirmBooking() {
           ← 이전
         </button>
 
-        <button onClick={handleConfirmBooking}>
+        <button onClick={() => setShowTermsModal(true)}>
           예약 확정
         </button>
       </div>
+
+      {showTermsModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "640px",
+              background: "#fff",
+              borderRadius: "12px",
+              padding: "24px",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+            }}
+          >
+            <h3 style={{ marginTop: 0, marginBottom: "12px" }}>
+              예약 약관 동의
+            </h3>
+
+            <p style={{ lineHeight: "1.6", color: "#444", marginBottom: "20px" }}>
+              다음 약관 및 중요사항에 모두 동의해야 예약이 확정되며,
+              인보이스가 이메일로 발송됩니다.
+            </p>
+
+            <div
+              style={{
+                padding: "14px",
+                border: "1px solid #eee",
+                borderRadius: "10px",
+                background: "#fafafa",
+                marginBottom: "20px",
+                fontSize: "14px",
+                color: "#555",
+              }}
+            >
+              약관동의 모달 1단계 테스트 중입니다.
+              <br />
+              지금 단계에서는 버튼 클릭 시 이 모달이 뜨는지만 먼저 확인합니다.
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setShowTermsModal(false)}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  background: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                닫기
+              </button>
+
+              <button
+                type="button"
+                disabled
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: "#d9d9d9",
+                  color: "#666",
+                  cursor: "not-allowed",
+                }}
+              >
+                동의하고 예약 확정
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
