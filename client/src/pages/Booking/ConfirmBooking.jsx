@@ -3,6 +3,17 @@ import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { useAuth } from "../../hooks/useAuth";
+import {
+  SPECIAL_TERMS_VERSION,
+  specialTermsTitle,
+  specialTermsText,
+} from "../../data/terms/specialTerms";
+
+import {
+  GENERAL_TERMS_VERSION,
+  generalTermsTitle,
+  generalTermsText,
+} from "../../data/terms/generalTerms";
 
 function ConfirmBooking() {
   const navigate = useNavigate();
@@ -72,6 +83,8 @@ function ConfirmBooking() {
     agreeTermsReview &&
     specialTermsRead &&
     generalTermsRead;
+
+
 
   useEffect(() => {
     const storedUser = localStorage.getItem("scubanetUser");
@@ -193,6 +206,8 @@ function ConfirmBooking() {
     );
   }
 
+
+
   const handleConfirmBooking = async (agreements) => {
 
     if (!guestName || !guestEmail || !guestPhone) {
@@ -265,6 +280,20 @@ function ConfirmBooking() {
       alert('❌ 인보이스 생성 또는 이메일 발송 중 오류가 발생했습니다.');
     }
   };
+
+  const currentTermsTitle =
+    termsModalType === "special"
+      ? specialTermsTitle
+      : termsModalType === "general"
+        ? generalTermsTitle
+        : "";
+
+  const currentTermsText =
+    termsModalType === "special"
+      ? specialTermsText
+      : termsModalType === "general"
+        ? generalTermsText
+        : "";
 
   return (
     <div className="confirm-booking">
@@ -582,8 +611,8 @@ function ConfirmBooking() {
                     specialTermsRead,
                     generalTermsRead,
                     agreedAt: new Date().toISOString(),
-                    specialTermsVersion: "special-2026-03-22",
-                    generalTermsVersion: "general-2026-03-22",
+                    specialTermsVersion: SPECIAL_TERMS_VERSION,
+                    generalTermsVersion: GENERAL_TERMS_VERSION,
                   };
 
                   handleConfirmBooking(agreements);
@@ -650,21 +679,12 @@ function ConfirmBooking() {
                 overflowY: "auto",
                 height: "300px",
                 fontSize: "14px",
-                lineHeight: "1.6",
+                lineHeight: "1.8",
                 background: "#fafafa",
+                whiteSpace: "pre-wrap",
               }}
             >
-              {/* 🔥 여기 나중에 실제 약관 넣으면 된다 */}
-              <p>약관 내용...</p>
-              <p>약관 내용...</p>
-              <p>약관 내용...</p>
-              <p>약관 내용...</p>
-              <p>약관 내용...</p>
-              <p>약관 내용...</p>
-              <p>약관 내용...</p>
-              <p>약관 내용...</p>
-              <p>약관 내용...</p>
-              <p>약관 내용...</p>
+              {currentTermsText}
             </div>
 
             {/* 버튼 영역 */}
