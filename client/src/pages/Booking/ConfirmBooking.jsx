@@ -98,20 +98,24 @@ function ConfirmBooking() {
     '(선박 정보 없음)';
 
   // ✅ 인원 해석 함수
-  const getOccupancyCount = (occupancyType, occupancyValue) => {
+  const getOccupancyCount = (item) => {
+    const explicitPeople = Number(item?.peopleCount || 0);
+    if (explicitPeople > 0) return explicitPeople;
+
+    const occupancyValue = item?.occupancyValue;
+    const occupancyType = item?.occupancyType;
+
     if (occupancyValue != null && occupancyValue !== '') {
       const parsed = parseInt(String(occupancyValue), 10);
       if (!Number.isNaN(parsed) && parsed > 0) {
-        if (parsed === 3) return 1; // 독실은 1실 기준
         return parsed;
       }
     }
 
     if (!occupancyType) return 1;
-    if (occupancyType === '독실 예약') return 1;
-    if (occupancyType === '독방사용') return 1;
-    if (occupancyType === '1인 예약') return 1;
-    if (occupancyType === '2인 예약') return 2;
+    if (occupancyType.includes('독실')) return 1;
+    if (occupancyType.includes('1인')) return 1;
+    if (occupancyType.includes('2인')) return 2;
 
     return 1;
   };
@@ -121,9 +125,11 @@ function ConfirmBooking() {
     if (!Array.isArray(selectedCabins)) return 0;
 
     return selectedCabins.reduce((sum, item) => {
-      const count = getOccupancyCount(item?.occupancyType, item?.occupancyValue);
-      const price = Number(item?.price) || 0;
-      return sum + price * count;
+      const lineTotal =
+        Number(item?.totalPrice || 0) ||
+        (Number(item?.price || 0) * getOccupancyCount(item));
+
+      return sum + lineTotal;
     }, 0);
   }, [selectedCabins]);
 
@@ -150,10 +156,14 @@ function ConfirmBooking() {
       trip,
       selectedBookings: selectedCabins.map((item) => ({
         cabinId: item?.cabinId || item?.id || null,
-        cabinName: item?.cabinName || '(객실명 없음)',
-        occupancyType: item?.occupancyType || '-',
-        occupancyValue: item?.occupancyValue || '',
+        cabinName: item?.cabinName || "(객실명 없음)",
+        occupancyType: item?.occupancyType || "-",
+        occupancyValue: item?.occupancyValue || "",
+        peopleCount: Number(item?.peopleCount || 0),
+        roomCount: Number(item?.roomCount || 0),
+        unitSuffix: item?.unitSuffix || "",
         price: Number(item?.price) || 0,
+        totalPrice: Number(item?.totalPrice || 0),
       })),
       guest: {
         name: guestName,
@@ -222,19 +232,23 @@ function ConfirmBooking() {
         <h3>선택한 객실</h3>
         <ul>
           {selectedCabins.map((item, idx) => {
-            const occupancyCount = getOccupancyCount(
-              item?.occupancyType,
-              item?.occupancyValue
-            );
+            const occupancyCount = getOccupancyCount(item);
             const unitPrice = Number(item?.price) || 0;
-            const lineTotal = unitPrice * occupancyCount;
+            const lineTotal =
+              Number(item?.totalPrice || 0) ||
+              (unitPrice * occupancyCount);
+
+            const unitSuffix =
+              item?.unitSuffix ||
+              (item?.occupancyType?.includes("독실") ? "/실" : "/인");
 
             return (
               <li key={idx}>
-                🛏 {item?.cabinName || '(객실명 없음)'} / 인원: {item?.occupancyType || '-'} / 요금:{' '}
+                🛏 {item?.cabinName || "(객실명 없음)"} / 인원: {item?.occupancyType || "-"} / 요금:{" "}
                 {formatCurrency(unitPrice, currency)}
-                {occupancyCount > 1 ? ` × ${occupancyCount}` : ''}
-                {' → '}
+                {unitSuffix}
+                {occupancyCount > 1 ? ` × ${occupancyCount}` : ""}
+                {" → "}
                 {formatCurrency(lineTotal, currency)}
               </li>
             );
