@@ -9,9 +9,6 @@ function ConfirmBooking() {
   const { state } = useLocation();
   const { user } = useAuth();
 
-  console.log("CONFIRM_DEBUG useAuth user =", user);
-  console.log("CONFIRM_DEBUG location state =", state);
-
   // ✅ SelectCabin.jsx 또는 이전 단계에서 전달된 state
   const {
     trip,
@@ -21,7 +18,6 @@ function ConfirmBooking() {
     currency,
   } = state || {};
 
-  console.log("CONFIRM_DEBUG stateUser =", stateUser);
   // ✅ 예약자 정보 상태값
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
@@ -29,10 +25,9 @@ function ConfirmBooking() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("scubanetUser");
-    console.log("CONFIRM_DEBUG localStorage raw =", localStorage.getItem("scubanetUser"));
+
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
-      console.log("CONFIRM_DEBUG localStorage parsed =", parsed);
 
       setGuestName(
         (prev) =>
@@ -279,14 +274,6 @@ function ConfirmBooking() {
           style={{ display: 'block', marginBottom: '8px' }}
         />
       </section>
-
-      <div style={{ background: "#fff3cd", padding: "12px", marginBottom: "16px", fontSize: "12px" }}>
-        <div><strong>DEBUG user:</strong> {JSON.stringify(user)}</div>
-        <div><strong>DEBUG stateUser:</strong> {JSON.stringify(stateUser)}</div>
-        <div><strong>DEBUG local guestName:</strong> {guestName}</div>
-        <div><strong>DEBUG local guestEmail:</strong> {guestEmail}</div>
-        <div><strong>DEBUG local guestPhone:</strong> {guestPhone}</div>
-      </div>
 
       <div style={{ marginTop: '24px' }}>
         <button
