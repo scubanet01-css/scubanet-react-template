@@ -84,6 +84,8 @@ function saveBooking(params) {
         emailSent = false,
         paymentStatus = "pending",
         bookingStatus = "confirmed",
+        agreements = null,
+        agreementMeta = null,
     } = params || {};
 
     const bookings = readBookings();
@@ -133,8 +135,8 @@ function saveBooking(params) {
         paymentStatus,
         bookingStatus,
 
-        agreements: data?.agreements || null,
-        agreementMeta: data?.agreementMeta || null,
+        agreements,
+        agreementMeta,
     };
 
     bookings.push(savedBooking);
