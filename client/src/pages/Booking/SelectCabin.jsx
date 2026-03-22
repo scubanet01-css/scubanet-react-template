@@ -5,12 +5,17 @@ import { formatCurrency } from '../../utils/formatCurrency';
 import { getCurrencyForTrip } from "../../utils/currencyUtils";
 
 // 🧠 인원 수 해석 함수
-const getOccupancyCount = (occupancyType) => {
-  if (!occupancyType) return 1;
-  if (occupancyType === '독실 예약') return 1;
-  if (occupancyType === '2인 예약') return 2;
-  if (occupancyType === '1인 예약') return 1;
-  return 1; // 기본값 fallback
+const getOccupancyCount = (item) => {
+  const explicitPeople = Number(item?.peopleCount || 0);
+  if (explicitPeople > 0) return explicitPeople;
+
+  const occupancyType = item?.occupancyType || "";
+
+  if (occupancyType.includes("독실")) return 1;
+  if (occupancyType.includes("2인")) return 2;
+  if (occupancyType.includes("1인")) return 1;
+
+  return 1;
 };
 
 function SelectCabin({ bookingData }) {
@@ -44,7 +49,11 @@ function SelectCabin({ bookingData }) {
 
   // ⭐ 총액 계산
   const totalAmount = selectedCabins.reduce((sum, item) => {
-    return sum + item.price * getOccupancyCount(item.occupancyType);
+    const lineTotal =
+      Number(item?.totalPrice || 0) ||
+      (Number(item?.price || 0) * getOccupancyCount(item));
+
+    return sum + lineTotal;
   }, 0);
 
   return (
@@ -62,12 +71,27 @@ function SelectCabin({ bookingData }) {
         <div className="booking-summary-panel" style={{ marginTop: '24px' }}>
           <h4>선택된 객실 요약</h4>
           <ul>
-            {selectedCabins.map((item, idx) => (
-              <li key={idx}>
-                🛏 객실: {item.cabinName} / 인원: {item.occupancyType} / 요금:
-                {formatCurrency(item.price, currency)}
-              </li>
-            ))}
+            {selectedCabins.map((item, idx) => {
+              const peopleCount = getOccupancyCount(item);
+              const unitSuffix =
+                item?.unitSuffix ||
+                (item?.occupancyType?.includes("독실") ? "/실" : "/인");
+
+              const lineTotal =
+                Number(item?.totalPrice || 0) ||
+                (Number(item?.price || 0) * peopleCount);
+
+              return (
+                <li key={idx}>
+                  🛏 객실: {item.cabinName} / 인원: {item.occupancyType} / 요금:{" "}
+                  {formatCurrency(item.price, currency)}
+                  {unitSuffix}
+                  {peopleCount > 1 ? ` × ${peopleCount}` : ""}
+                  {" → "}
+                  {formatCurrency(lineTotal, currency)}
+                </li>
+              );
+            })}
           </ul>
 
           <p>
