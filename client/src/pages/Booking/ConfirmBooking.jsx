@@ -193,7 +193,7 @@ function ConfirmBooking() {
     );
   }
 
-  const handleConfirmBooking = async () => {
+  const handleConfirmBooking = async (agreements) => {
 
     if (!guestName || !guestEmail || !guestPhone) {
       alert('예약자 정보를 모두 입력해주세요.');
@@ -221,7 +221,10 @@ function ConfirmBooking() {
       },
       totalPrice,
       bookingType: 'general',
+      agreements,
     };
+
+    console.log(payload);
 
     try {
 
@@ -570,7 +573,20 @@ function ConfirmBooking() {
                 type="button"
                 disabled={!canConfirmTerms}
                 onClick={() => {
-                  alert("다음 단계에서 여기서 기존 handleConfirmBooking을 연결합니다.");
+                  const agreements = {
+                    agreeAll,
+                    agreeCancellation,
+                    agreeSafety,
+                    agreeResponsibility,
+                    agreeTermsReview,
+                    specialTermsRead,
+                    generalTermsRead,
+                    agreedAt: new Date().toISOString(),
+                    specialTermsVersion: "special-2026-03-22",
+                    generalTermsVersion: "general-2026-03-22",
+                  };
+
+                  handleConfirmBooking(agreements);
                 }}
                 style={{
                   padding: "10px 16px",
