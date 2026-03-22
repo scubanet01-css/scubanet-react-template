@@ -9,6 +9,9 @@ function ConfirmBooking() {
   const { state } = useLocation();
   const { user } = useAuth();
 
+  console.log("🔍 useAuth user =", user);
+  console.log("🔍 location state =", state);
+
   // ✅ SelectCabin.jsx 또는 이전 단계에서 전달된 state
   const {
     trip,
@@ -18,6 +21,8 @@ function ConfirmBooking() {
     currency,
   } = state || {};
 
+  console.log("🔍 stateUser =", stateUser);
+
   // ✅ 예약자 정보 상태값
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
@@ -25,8 +30,10 @@ function ConfirmBooking() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
+    console.log("🔍 localStorage raw user =", storedUser);
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
+      console.log("🔍 localStorage parsed user =", parsed);
 
       setGuestName(
         (prev) =>
@@ -81,9 +88,7 @@ function ConfirmBooking() {
     setGuestPhone((prev) => prev || resolvedPhone);
   }, [stateUser, user]);
 
-  console.log("useAuth user =", user);
-  console.log("stateUser =", stateUser);
-  console.log("localStorage user =", localStorage.getItem("user"));
+
 
   // ✅ 여행명 / 선박명 fallback
   const tripName =
@@ -275,6 +280,10 @@ function ConfirmBooking() {
           style={{ display: 'block', marginBottom: '8px' }}
         />
       </section>
+
+      console.log("🔍 guestName =", guestName);
+      console.log("🔍 guestEmail =", guestEmail);
+      console.log("🔍 guestPhone =", guestPhone);
 
       <div style={{ marginTop: '24px' }}>
         <button
