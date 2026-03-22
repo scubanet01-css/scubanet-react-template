@@ -2,32 +2,39 @@ import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatCurrency';
+import { useAuth } from "../../hooks/useAuth";
 
 function ConfirmBooking() {
   const navigate = useNavigate();
   const { state } = useLocation();
+  const { user } = useAuth();
 
   // ✅ SelectCabin.jsx 또는 이전 단계에서 전달된 state
   const {
     trip,
     selectedCabins = [],
     selectedRatePlan,
-    user,
+    user: stateUser,
     currency,
   } = state || {};
 
   // ✅ 예약자 정보 상태값
-  const [guestName, setGuestName] = useState(user?.name || '');
-  const [guestEmail, setGuestEmail] = useState(user?.email || '');
-  const [guestPhone, setGuestPhone] = useState(user?.phone || '');
-
+  const [guestName, setGuestName] = useState(
+    stateUser?.name || user?.name || ""
+  );
+  const [guestEmail, setGuestEmail] = useState(
+    stateUser?.email || user?.email || ""
+  );
+  const [guestPhone, setGuestPhone] = useState(
+    stateUser?.phone || user?.phone || ""
+  );
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
-      setGuestName(parsed.name || '');
-      setGuestEmail(parsed.email || '');
-      setGuestPhone(parsed.phone || '');
+      setGuestName((prev) => prev || parsed.name || "");
+      setGuestEmail((prev) => prev || parsed.email || "");
+      setGuestPhone((prev) => prev || parsed.phone || "");
     }
   }, []);
 
