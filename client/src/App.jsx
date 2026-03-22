@@ -41,11 +41,50 @@ function App() {
           <Route path="/specialtrips" element={<SpecialTripsPage />} />
 
           {/* 예약 절차 */}
-          <Route path="/booking/:tripId" element={<Booking />} />
-          <Route path="/booking/confirm" element={<ConfirmBooking />} />
-          <Route path="/booking/summary" element={<MyBooking />} />
-          <Route path="/booking/summary/:bookingId" element={<MyBooking />} />
-          <Route path="/booking/payment" element={<PaymentPage />} />
+          <Route
+            path="/booking/:tripId"
+            element={
+              <ProtectedRoute>
+                <Booking />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/booking/confirm"
+            element={
+              <ProtectedRoute>
+                <ConfirmBooking />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/booking/summary"
+            element={
+              <ProtectedRoute>
+                <MyBooking />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/booking/summary/:bookingId"
+            element={
+              <ProtectedRoute>
+                <MyBooking />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/booking/payment"
+            element={
+              <ProtectedRoute>
+                <PaymentPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* 인증 */}
           <Route path="/auth/login" element={<Login />} />
