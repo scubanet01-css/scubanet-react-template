@@ -426,7 +426,6 @@ function mapPhilippinesFallbackDestination(value) {
 }
 
 export function detectNormalizedDestinations(trip, country) {
-    console.log("DEST FN CALLED", country, trip?.boatName, trip?.destination);
     const text = getTripSearchText(trip);
     // 🔥🔥🔥 필리핀 우선순위 규칙 (여기 추가)
     if (country === "Philippines") {

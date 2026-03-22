@@ -141,6 +141,9 @@ function InstructorBooking() {
   const navigate = useNavigate();
   const trip = state?.trip;
 
+  console.log("INSTR_DEBUG source =", trip?.source);
+  console.log("INSTR_DEBUG boatName =", trip?.boatName);
+
   console.log("trip.inventory[0] =", trip?.inventory?.[0]);
   console.log("trip.inventory =", trip?.inventory);
   console.log("trip.pricing.cabins[0] =", trip?.pricing?.cabins?.[0]);
@@ -369,6 +372,8 @@ function InstructorBooking() {
     });
   }, [trip, instructorGroupPrice]);
 
+  console.log("INSTR_DEBUG cabinGroups =", cabinGroups);
+
   // -----------------------------------
   // occupancy label
   // -----------------------------------
@@ -581,6 +586,10 @@ function InstructorBooking() {
           const booked = cabin.booked || 0;
           const subCabins = cabin.subCabins || [];
 
+          console.log("INSTR_DEBUG cabin =", cabin.name);
+          console.log("INSTR_DEBUG occupancy =", cabin.occupancy);
+          console.log("INSTR_DEBUG occupancyOptions =", cabin.occupancyOptions);
+
           return (
             <div key={`${cabin.id}-${index}`} className="cabin-card">
               <h4>{cabin.name}</h4>
@@ -600,6 +609,9 @@ function InstructorBooking() {
               <div className="book-controls" style={{ marginTop: "12px" }}>
                 {cabin.available > 0 ? (
                   <>
+                    <p style={{ color: "red", fontSize: "12px" }}>
+                      DEBUG source: {trip?.source} / options: {(cabin.occupancyOptions || []).length}
+                    </p>
                     <select
                       value={selectedOcc[cabin.id] ?? ""}
                       onChange={(e) => {
