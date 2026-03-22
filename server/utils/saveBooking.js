@@ -132,6 +132,9 @@ function saveBooking(params) {
         emailSent,
         paymentStatus,
         bookingStatus,
+
+        agreements: data?.agreements || null,
+        agreementMeta: data?.agreementMeta || null,
     };
 
     bookings.push(savedBooking);
