@@ -141,14 +141,6 @@ function InstructorBooking() {
   const navigate = useNavigate();
   const trip = state?.trip;
 
-  console.log("INSTR_DEBUG source =", trip?.source);
-  console.log("INSTR_DEBUG boatName =", trip?.boatName);
-
-  console.log("trip.inventory[0] =", trip?.inventory?.[0]);
-  console.log("trip.inventory =", trip?.inventory);
-  console.log("trip.pricing.cabins[0] =", trip?.pricing?.cabins?.[0]);
-  console.log("trip.pricing.cabins[1] =", trip?.pricing?.cabins?.[1]);
-
   const currency = getCurrencyForTrip(trip);
 
   const [selectedBookings, setSelectedBookings] = useState([]);
@@ -372,8 +364,6 @@ function InstructorBooking() {
     });
   }, [trip, instructorGroupPrice]);
 
-  console.log("INSTR_DEBUG cabinGroups =", cabinGroups);
-
   // -----------------------------------
   // occupancy label
   // -----------------------------------
@@ -545,8 +535,6 @@ function InstructorBooking() {
 
   const totalPrice = baseTotal - focDiscount;
 
-  console.log("🧩 FOC 계산 결과:", focDetails);
-
   return (
     <div className="instructor-detail-container">
       <h2>{boatName}</h2>
@@ -586,10 +574,6 @@ function InstructorBooking() {
           const booked = cabin.booked || 0;
           const subCabins = cabin.subCabins || [];
 
-          console.log("INSTR_DEBUG cabin =", cabin.name);
-          console.log("INSTR_DEBUG occupancy =", cabin.occupancy);
-          console.log("INSTR_DEBUG occupancyOptions =", cabin.occupancyOptions);
-
           return (
             <div key={`${cabin.id}-${index}`} className="cabin-card">
               <h4>{cabin.name}</h4>
@@ -610,7 +594,7 @@ function InstructorBooking() {
                 {cabin.available > 0 ? (
                   <>
                     <p style={{ color: "red", fontSize: "12px" }}>
-                      DEBUG source: {trip?.source} / options: {(cabin.occupancyOptions || []).length}
+
                     </p>
                     <select
                       value={selectedOcc[cabin.id] ?? ""}
@@ -660,39 +644,6 @@ function InstructorBooking() {
                   <span style={{ color: "#e74c3c" }}>🔴 Full</span>
                 )}
               </div>
-
-              {trip?.source === "scubadates"
-                ? (cabin.occupancyOptions || []).map((opt, j) => (
-                  <div key={j} className="price-row">
-                    <span>{opt.label}</span>
-                    <span className="price">
-                      {formatCurrency(opt.price, currency)}
-                      {opt.unitSuffix}
-                    </span>
-                  </div>
-                ))
-                : cabin.occupancy?.map((occ, j) => {
-                  let occLabel = "";
-                  if (occ.id === 1) occLabel = "1인 예약";
-                  else if (occ.id === 2) occLabel = "2인 예약";
-                  else if (occ.id === 3) occLabel = "독실 예약";
-
-                  if (!occLabel) return null;
-
-                  return (
-                    <div key={j} className="price-row">
-                      <span>{occLabel}</span>
-                      <span className="price">
-                        {formatCurrencyLocal(occ.price, currency)}
-                      </span>
-                      {occ.parentPrice && (
-                        <span className="original">
-                          {formatCurrencyLocal(occ.parentPrice, currency)}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
             </div>
           );
         })}

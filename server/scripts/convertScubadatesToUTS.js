@@ -232,7 +232,6 @@ function mapTrip(item) {
 }
 
 function main() {
-    console.log("🚀 Scubadates → UTS 변환 시작");
 
     if (!fs.existsSync(INPUT_FILE)) {
         throw new Error(`입력 파일이 없습니다: ${INPUT_FILE}`);
@@ -256,16 +255,8 @@ function main() {
         console.warn("⚠️ chown 실패:", e.message);
     }
 
-    console.log(`✅ 변환 완료: ${OUTPUT_FILE}`);
-    console.log(`✅ 총 변환 trip 수: ${utsTrips.length}`);
-
     if (utsTrips.length > 0) {
         const first = utsTrips[0];
-        console.log("🔎 첫 UTS trip 확인:");
-        console.log(`- tripId: ${first.tripId}`);
-        console.log(`- boatName: ${first.boatName}`);
-        console.log(`- itineraryName: ${first.itineraryName}`);
-        console.log(`- priceFrom: ${first.priceFrom} ${first.currency || ""}`);
     }
 }
 

@@ -20,7 +20,6 @@ import {
     getBoatOptions,
 } from "../utils/utsFilterNormalizer";
 
-console.log("🚀 TripList.jsx Loaded at", new Date().toISOString());
 
 function TripList() {
     const location = useLocation();
@@ -80,10 +79,6 @@ function TripList() {
         setSelectedBoat("전체");
         setCurrentPage(1);
     }, [homeCountry, homeMonth]);
-
-    console.log("TRIPLIST location.state:", location.state);
-    console.log("TRIPLIST homeCountry:", homeCountry);
-    console.log("TRIPLIST homeMonth:", homeMonth);
 
     useEffect(() => {
         setLoading(true);
@@ -263,8 +258,7 @@ function TripList() {
         startDate,
         endDate,
     ]);
-    console.log("TRIPLIST selectedCountry:", selectedCountry);
-    console.log("TRIPLIST filteredTrips length:", filteredTrips.length);
+
     useEffect(() => {
         setCurrentPage(1);
     }, [
@@ -282,11 +276,6 @@ function TripList() {
         startIndex,
         startIndex + itemsPerPage
     );
-
-    console.log("homeCountry:", homeCountry);
-    console.log("homeMonth:", homeMonth);
-    console.log("selectedCountry:", selectedCountry);
-    console.log("dateRange:", dateRange);
 
     if (loading) return <p>데이터 불러오는 중...</p>;
 

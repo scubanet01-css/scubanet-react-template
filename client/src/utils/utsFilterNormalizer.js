@@ -271,16 +271,7 @@ export function detectNormalizedCountry(trip) {
         if (matchedKeyword) {
             if (
                 ["The Smiling Seahorse", "Bavaria", "Sachika"].includes(trip.boatName)
-            ) {
-                console.log("🔎 detectNormalizedCountry match", {
-                    boatName: trip.boatName,
-                    title: trip.tripName || trip.title || trip.routeName || "",
-                    rawCountry: trip.country,
-                    matchedCountry: rule.country,
-                    matchedKeyword,
-                    searchText: text,
-                });
-            }
+            ) { }
 
             return rule.country;
         }
@@ -288,14 +279,7 @@ export function detectNormalizedCountry(trip) {
 
     if (
         ["The Smiling Seahorse", "Bavaria", "Sachika"].includes(trip.boatName)
-    ) {
-        console.log("🔎 detectNormalizedCountry fallback Others", {
-            boatName: trip.boatName,
-            title: trip.tripName || trip.title || trip.routeName || "",
-            rawCountry: trip.country,
-            searchText: text,
-        });
-    }
+    ) { }
 
     return "Others";
 }
@@ -452,24 +436,6 @@ export function detectNormalizedDestinations(trip, country) {
 
     const rules = DESTINATION_RULES[country] || [];
     const matched = [];
-
-    if (country === "Philippines") {
-        console.log("PH DEST ENTRY", {
-            boatName: trip.boatName,
-            destination: trip.destination,
-            route: trip.route,
-            routeName: trip.routeName,
-            tripName: trip.tripName,
-            title: trip.title,
-            productName: trip.product?.name,
-            departurePort: trip.departurePort?.name,
-            embarkPort: trip.embarkPort,
-            region: trip.region,
-            area: trip.area,
-            rulesCount: rules.length,
-            searchText: text,
-        });
-    }
 
     for (const rule of rules) {
         const isMatched = rule.keywords.some((kw) => keywordMatches(text, kw));

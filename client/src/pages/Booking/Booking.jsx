@@ -23,15 +23,6 @@ function Booking() {
     cabins: initialCabins,
   });
 
-  useEffect(() => {
-    console.log("📦 [Booking] tripId =", tripId);
-    console.log("📦 [Booking] trip =", trip);
-    console.log("📦 [Booking] trip.spaces =", trip?.spaces);
-    console.log("📦 [Booking] trip.cabins =", trip?.cabins);
-    console.log("📦 [Booking] bookingData.cabins =", bookingData.cabins);
-    console.log("📦 [Booking] first cabin =", bookingData.cabins?.[0]);
-  }, [tripId, trip, bookingData]);
-
   if (!trip) {
     return <p>잘못된 접근입니다. trip 정보가 없습니다.</p>;
   }

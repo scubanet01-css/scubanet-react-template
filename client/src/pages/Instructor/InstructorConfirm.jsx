@@ -98,8 +98,6 @@ function InstructorConfirm() {
         },
       };
 
-      console.log("📤 강사 인보이스 전송 데이터:", invoiceData);
-
       const res = await fetch("/api/send-invoice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
