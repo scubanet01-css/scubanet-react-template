@@ -30,11 +30,12 @@ function ConfirmBooking() {
   const [agreeSafety, setAgreeSafety] = useState(false);
   const [agreeResponsibility, setAgreeResponsibility] = useState(false);
   const [agreeTermsReview, setAgreeTermsReview] = useState(false);
+  const [specialTermsRead, setSpecialTermsRead] = useState(false);
+  const [generalTermsRead, setGeneralTermsRead] = useState(false);
+  const [termsModalType, setTermsModalType] = useState(null);
+  // "special" | "general" | null
 
-  // 2단계에서는 임시로 false가 아니라 true로 두면 체크 흐름 테스트가 쉬움
-  // 다음 단계에서 실제 약관 스크롤 읽기와 연결하면서 false로 바꿀 것
-  const [specialTermsRead, setSpecialTermsRead] = useState(true);
-  const [generalTermsRead, setGeneralTermsRead] = useState(true);
+  const [termsScrollDone, setTermsScrollDone] = useState(false);
 
   const handleAgreeAllChange = (checked) => {
     setAgreeAll(checked);
@@ -506,8 +507,8 @@ function ConfirmBooking() {
                 <button
                   type="button"
                   onClick={() => {
-                    alert("다음 단계에서 특별약관 전문 모달을 연결합니다.");
-                    setSpecialTermsRead(true);
+                    setTermsModalType("special");
+                    setTermsScrollDone(false);
                   }}
                   style={{
                     padding: "10px 14px",
@@ -523,8 +524,8 @@ function ConfirmBooking() {
                 <button
                   type="button"
                   onClick={() => {
-                    alert("다음 단계에서 일반약관 전문 모달을 연결합니다.");
-                    setGeneralTermsRead(true);
+                    setTermsModalType("general");
+                    setTermsScrollDone(false);
                   }}
                   style={{
                     padding: "10px 14px",
@@ -586,6 +587,108 @@ function ConfirmBooking() {
           </div>
         </div>
       )}
+
+      {termsModalType && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 10000,
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "700px",
+              background: "#fff",
+              borderRadius: "12px",
+              padding: "20px",
+              display: "flex",
+              flexDirection: "column",
+              maxHeight: "90vh",
+            }}
+          >
+            <h3 style={{ marginBottom: "10px" }}>
+              {termsModalType === "special"
+                ? "특별약관"
+                : "일반약관"}
+            </h3>
+
+            {/* 🔥 스크롤 영역 */}
+            <div
+              onScroll={(e) => {
+                const el = e.target;
+                if (el.scrollTop + el.clientHeight >= el.scrollHeight - 5) {
+                  setTermsScrollDone(true);
+                }
+              }}
+              style={{
+                border: "1px solid #ddd",
+                padding: "14px",
+                borderRadius: "8px",
+                overflowY: "auto",
+                height: "300px",
+                fontSize: "14px",
+                lineHeight: "1.6",
+                background: "#fafafa",
+              }}
+            >
+              {/* 🔥 여기 나중에 실제 약관 넣으면 된다 */}
+              <p>약관 내용...</p>
+              <p>약관 내용...</p>
+              <p>약관 내용...</p>
+              <p>약관 내용...</p>
+              <p>약관 내용...</p>
+              <p>약관 내용...</p>
+              <p>약관 내용...</p>
+              <p>약관 내용...</p>
+              <p>약관 내용...</p>
+              <p>약관 내용...</p>
+            </div>
+
+            {/* 버튼 영역 */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+                marginTop: "16px",
+              }}
+            >
+              <button onClick={() => setTermsModalType(null)}>
+                닫기
+              </button>
+
+              <button
+                disabled={!termsScrollDone}
+                onClick={() => {
+                  if (termsModalType === "special") {
+                    setSpecialTermsRead(true);
+                  } else {
+                    setGeneralTermsRead(true);
+                  }
+                  setTermsModalType(null);
+                }}
+                style={{
+                  background: termsScrollDone ? "#111" : "#ccc",
+                  color: "#fff",
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  border: "none",
+                }}
+              >
+                읽음 확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
