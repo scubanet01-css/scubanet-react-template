@@ -41,9 +41,28 @@ router.post("/send-invoice", async (req, res) => {
       finalAmount,
       guest,
       bookingType,
+      agreements,
     } = req.body || {};
 
     console.log("📦 [2] 받은 데이터:", req.body);
+
+    // ✅ 약관 동의 서버 검증
+    if (
+      !agreements ||
+      !agreements.agreeCancellation ||
+      !agreements.agreeSafety ||
+      !agreements.agreeResponsibility ||
+      !agreements.agreeTermsReview ||
+      !agreements.specialTermsRead ||
+      !agreements.generalTermsRead
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "약관 동의가 완료되지 않았습니다.",
+      });
+    }
+
+    console.log("📌 [약관동의 확인 완료]:", agreements);
 
     const resolvedBookingType = inferBookingType(req.body);
     const tripName = getTripName(trip);
@@ -84,6 +103,7 @@ router.post("/send-invoice", async (req, res) => {
         commissionAmount,
         finalAmount,
         bookingType: resolvedBookingType,
+        agreements, // ✅ 필요 시 PDF 생성기에서 사용 가능하도록 전달
       },
       filePath
     );
@@ -103,9 +123,11 @@ router.post("/send-invoice", async (req, res) => {
       commissionRate,
       commissionAmount,
       finalAmount,
+      agreements, // ✅ 필요 시 이메일 템플릿에서 사용 가능하도록 전달
     });
 
     console.log(`📬 이메일 발송 성공: ${guest.email}`);
+
     const publicFileUrl = `http://210.114.22.82:3002/data/${filename}`;
 
     const savedBooking = saveBooking({
@@ -119,6 +141,15 @@ router.post("/send-invoice", async (req, res) => {
       emailSent: true,
       paymentStatus: "pending",
       bookingStatus: "confirmed",
+
+      // ✅ 약관 동의 정보 저장
+      agreements,
+
+      // ✅ 법적 증빙용 메타데이터 저장
+      agreementMeta: {
+        ip: req.ip,
+        userAgent: req.headers["user-agent"] || "",
+      },
     });
 
     res.json({
@@ -128,7 +159,6 @@ router.post("/send-invoice", async (req, res) => {
       bookingType: resolvedBookingType,
       bookingId: savedBooking.bookingId,
     });
-
   } catch (error) {
     console.error("❌ 인보이스 생성 또는 이메일 발송 실패:", error);
 
