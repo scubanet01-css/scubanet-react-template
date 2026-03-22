@@ -9,8 +9,8 @@ function ConfirmBooking() {
   const { state } = useLocation();
   const { user } = useAuth();
 
-  console.log("🔍 useAuth user =", user);
-  console.log("🔍 location state =", state);
+  console.log("CONFIRM_DEBUG useAuth user =", user);
+  console.log("CONFIRM_DEBUG location state =", state);
 
   // ✅ SelectCabin.jsx 또는 이전 단계에서 전달된 state
   const {
@@ -21,8 +21,7 @@ function ConfirmBooking() {
     currency,
   } = state || {};
 
-  console.log("🔍 stateUser =", stateUser);
-
+  console.log("CONFIRM_DEBUG stateUser =", stateUser);
   // ✅ 예약자 정보 상태값
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
@@ -30,10 +29,10 @@ function ConfirmBooking() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    console.log("🔍 localStorage raw user =", storedUser);
+    console.log("CONFIRM_DEBUG localStorage raw =", storedUser);
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
-      console.log("🔍 localStorage parsed user =", parsed);
+      console.log("CONFIRM_DEBUG localStorage parsed =", parsed);
 
       setGuestName(
         (prev) =>
@@ -281,9 +280,17 @@ function ConfirmBooking() {
         />
       </section>
 
-      console.log("🔍 guestName =", guestName);
-      console.log("🔍 guestEmail =", guestEmail);
-      console.log("🔍 guestPhone =", guestPhone);
+      console.log("CONFIRM_DEBUG guestName =", guestName);
+      console.log("CONFIRM_DEBUG guestEmail =", guestEmail);
+      console.log("CONFIRM_DEBUG guestPhone =", guestPhone);
+
+      <div style={{ background: "#fff3cd", padding: "12px", marginBottom: "16px", fontSize: "12px" }}>
+        <div><strong>DEBUG user:</strong> {JSON.stringify(user)}</div>
+        <div><strong>DEBUG stateUser:</strong> {JSON.stringify(stateUser)}</div>
+        <div><strong>DEBUG local guestName:</strong> {guestName}</div>
+        <div><strong>DEBUG local guestEmail:</strong> {guestEmail}</div>
+        <div><strong>DEBUG local guestPhone:</strong> {guestPhone}</div>
+      </div>
 
       <div style={{ marginTop: '24px' }}>
         <button
