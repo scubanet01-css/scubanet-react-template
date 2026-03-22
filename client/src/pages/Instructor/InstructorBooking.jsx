@@ -323,7 +323,6 @@ function InstructorBooking() {
     return tripCabins.map((cabin, index) => {
       const isScubadates = trip?.source === "scubadates";
 
-      // ✅ Scubadates: 공통 옵션 생성 함수 사용
       if (isScubadates) {
         const occupancyOptions = buildScubadatesBookingOptions(cabin, {
           includeInstructorOnly: true,
@@ -340,22 +339,15 @@ function InstructorBooking() {
         return {
           id: cabin?.cabinId || cabin?.id || `general-${index}`,
           name: cabin?.name || `객실 ${index + 1}`,
-          occupancy: [], // 기존 occupancy 대신 occupancyOptions 사용
+          occupancy: [],
           occupancyOptions,
           available: availableSpaces,
           option: 0,
           booked: 0,
-          subCabins: [
-            {
-              id: cabin?.cabinId || cabin?.id || `room-${index}`,
-              name: cabin?.name || `객실 ${index + 1}`,
-              availableSpaces,
-            },
-          ],
         };
       }
 
-      // ✅ 기존 inseanq / special 아닌 일반 구조 유지
+      // 기존 구조 유지
       const occupancy = buildOccupancyFromRatePlans(cabin?.ratePlans || []);
 
       return {
@@ -370,16 +362,9 @@ function InstructorBooking() {
               { id: 3, price: instructorGroupPrice || 0 },
             ],
         occupancyOptions: [],
-        available: Number(cabin?.remaining || 0) > 0 ? 1 : 0,
+        available: Number(cabin?.remaining || 0),
         option: 0,
         booked: 0,
-        subCabins: [
-          {
-            id: cabin?.cabinId || cabin?.id || `room-${index}`,
-            name: cabin?.name || `객실 ${index + 1}`,
-            availableSpaces: Number(cabin?.remaining || 0) > 0 ? 1 : 0,
-          },
-        ],
       };
     });
   }, [trip, instructorGroupPrice]);
@@ -397,27 +382,13 @@ function InstructorBooking() {
   // -----------------------------------
   // 예약 추가
   // -----------------------------------
-  const handleAddBooking = (room, selectedOption, cabinName) => {
-    const newBooking = {
-      id: room.id,
-      cabin: cabinName,
-      room: room.name,
-      selectionKey: selectedOption.selectionKey,
-      occId: selectedOption.occupancy,
-      occLabel: selectedOption.label,
-      price: Number(selectedOption.price) || 0,           // 단가
-      peopleCount: Number(selectedOption.peopleCount) || 1,
-      roomCount: Number(selectedOption.roomCount) || 1,
-      totalPrice: Number(selectedOption.totalPrice) || 0, // 총액
-      unitSuffix: selectedOption.unitSuffix || "/인",
-    };
-
+  const handleAddBooking = (bookingItem) => {
     setSelectedBookings((prev) => {
-      const exists = prev.find((b) => b.id === room.id);
+      const exists = prev.find((b) => b.id === bookingItem.id);
       if (exists) {
-        return prev.map((b) => (b.id === room.id ? newBooking : b));
+        return prev.map((b) => (b.id === bookingItem.id ? bookingItem : b));
       }
-      return [...prev, newBooking];
+      return [...prev, bookingItem];
     });
   };
 
@@ -426,29 +397,43 @@ function InstructorBooking() {
     setSelectedOcc((prev) => ({ ...prev, [roomId]: "" }));
   };
 
-  const handleOccChange = (room, selectedValue, cabinName, cabin) => {
-    setSelectedOcc((prev) => ({ ...prev, [room.id]: selectedValue }));
+  const handleOccChange = (selectedValue, cabin) => {
+    setSelectedOcc((prev) => ({ ...prev, [cabin.id]: selectedValue }));
 
     if (!selectedValue) {
-      removeBooking(room.id);
+      setSelectedBookings((prev) => prev.filter((b) => b.id !== cabin.id));
       return;
     }
 
-    // ✅ Scubadates 전용: selectionKey 기반
+    // ✅ Scubadates
     if (trip?.source === "scubadates") {
       const selectedOption = (cabin.occupancyOptions || []).find(
         (opt) => opt.selectionKey === selectedValue
       );
 
-      if (selectedOption) {
-        handleAddBooking(room, selectedOption, cabinName);
-      } else {
+      if (!selectedOption) {
         console.warn("⚠️ Scubadates option not found:", selectedValue);
+        return;
       }
+
+      handleAddBooking({
+        id: cabin.id,
+        cabin: cabin.name,
+        room: cabin.name,
+        selectionKey: selectedOption.selectionKey,
+        occId: selectedOption.occupancy,
+        occLabel: selectedOption.label,
+        price: Number(selectedOption.price) || 0,            // 단가
+        peopleCount: Number(selectedOption.peopleCount) || 1,
+        roomCount: Number(selectedOption.roomCount) || 1,
+        totalPrice: Number(selectedOption.totalPrice) || 0,
+        unitSuffix: selectedOption.unitSuffix || "/인",
+      });
+
       return;
     }
 
-    // ✅ 기존 구조 유지 (inseanq / special)
+    // ✅ 기존 inseanq / special 유지
     const occ = (cabin.occupancy || []).find(
       (o) => Number(o.id) === Number(selectedValue)
     );
@@ -462,20 +447,19 @@ function InstructorBooking() {
     const peopleCount = Number(selectedValue) === 2 ? 2 : 1;
 
     if (occPrice > 0) {
-      handleAddBooking(
-        room,
-        {
-          selectionKey: `${room.id}_${selectedValue}`,
-          occupancy: String(selectedValue),
-          label: occLabel,
-          price: occPrice,
-          peopleCount,
-          roomCount: 1,
-          totalPrice: occPrice * peopleCount,
-          unitSuffix: occLabel === "독실 예약" ? "/실" : "/인",
-        },
-        cabinName
-      );
+      handleAddBooking({
+        id: cabin.id,
+        cabin: cabin.name,
+        room: cabin.name,
+        selectionKey: `${cabin.id}_${selectedValue}`,
+        occId: selectedValue,
+        occLabel,
+        price: occPrice,
+        peopleCount,
+        roomCount: 1,
+        totalPrice: occPrice * peopleCount,
+        unitSuffix: occLabel === "독실 예약" ? "/실" : "/인",
+      });
     } else {
       console.warn("⚠️ Price not found for selected occupancy id:", selectedValue);
     }
@@ -613,69 +597,57 @@ function InstructorBooking() {
                 </span>
               </div>
 
-              {subCabins.length > 0 && (
-                <div className="subcabin-list">
-                  {subCabins.map((room) => (
-                    <div key={room.id} className="subcabin-item">
-                      <span className="room-name">{room.name}</span>
-                      <span className="room-status">
-                        {room.availableSpaces > 0 ? (
-                          <span style={{ color: "#00b386" }}>
-                            🟢 {room.availableSpaces} Available
-                          </span>
-                        ) : (
-                          <span style={{ color: "#e74c3c" }}>🔴 Full</span>
-                        )}
-                      </span>
+              <div className="book-controls" style={{ marginTop: "12px" }}>
+                {cabin.available > 0 ? (
+                  <>
+                    <select
+                      value={selectedOcc[cabin.id] ?? ""}
+                      onChange={(e) => {
+                        const selectedValue = e.target.value;
+                        handleOccChange(selectedValue, cabin);
+                      }}
+                      className="occ-select"
+                    >
+                      <option value="">예약 유형 선택</option>
 
-                      {room.availableSpaces > 0 && (
-                        <div className="book-controls">
-                          <select
-                            value={selectedOcc[room.id] ?? ""}
-                            onChange={(e) => {
-                              const selectedValue = e.target.value;
-                              handleOccChange(room, selectedValue, cabin.name, cabin);
-                            }}
-                            className="occ-select"
-                          >
-                            <option value="">예약 유형 선택</option>
+                      {trip?.source === "scubadates"
+                        ? (cabin.occupancyOptions || []).map((opt) => (
+                          <option key={opt.selectionKey} value={opt.selectionKey}>
+                            {opt.label} - {formatCurrency(opt.price, currency)}
+                            {opt.unitSuffix}
+                          </option>
+                        ))
+                        : (cabin.occupancy || [])
+                          .filter(
+                            (o) =>
+                              [1, 2, 3].includes(Number(o.id)) &&
+                              parseFloat(o.price) > 0
+                          )
+                          .map((o) => {
+                            const label = getOccLabelById(o.id);
+                            return label ? (
+                              <option key={o.id} value={o.id}>
+                                {label}
+                              </option>
+                            ) : null;
+                          })}
+                    </select>
 
-                            {trip?.source === "scubadates"
-                              ? (cabin.occupancyOptions || []).map((opt) => (
-                                <option key={opt.selectionKey} value={opt.selectionKey}>
-                                  {opt.label} - {formatCurrency(opt.price, currency)}
-                                  {opt.unitSuffix}
-                                </option>
-                              ))
-                              : (cabin.occupancy || [])
-                                .filter(
-                                  (o) =>
-                                    [1, 2, 3].includes(Number(o.id)) &&
-                                    parseFloat(o.price) > 0
-                                )
-                                .map((o) => {
-                                  const label = getOccLabelById(o.id);
-                                  return label ? (
-                                    <option key={o.id} value={o.id}>
-                                      {label}
-                                    </option>
-                                  ) : null;
-                                })}
-                          </select>
-
-                          <button
-                            className="book-btn"
-                            onClick={() => removeBooking(room.id)}
-                            disabled={!selectedBookings.find((b) => b.id === room.id)}
-                          >
-                            예약 취소
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+                    <button
+                      className="book-btn"
+                      onClick={() => {
+                        setSelectedBookings((prev) => prev.filter((b) => b.id !== cabin.id));
+                        setSelectedOcc((prev) => ({ ...prev, [cabin.id]: "" }));
+                      }}
+                      disabled={!selectedBookings.find((b) => b.id === cabin.id)}
+                    >
+                      예약 취소
+                    </button>
+                  </>
+                ) : (
+                  <span style={{ color: "#e74c3c" }}>🔴 Full</span>
+                )}
+              </div>
 
               {trip?.source === "scubadates"
                 ? (cabin.occupancyOptions || []).map((opt, j) => (
@@ -698,11 +670,9 @@ function InstructorBooking() {
                   return (
                     <div key={j} className="price-row">
                       <span>{occLabel}</span>
-
                       <span className="price">
                         {formatCurrencyLocal(occ.price, currency)}
                       </span>
-
                       {occ.parentPrice && (
                         <span className="original">
                           {formatCurrencyLocal(occ.parentPrice, currency)}
