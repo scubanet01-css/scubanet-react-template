@@ -4,6 +4,7 @@ import { formatCurrency } from "../../utils/formatCurrency";
 import { getBestFOCOffer } from "../../utils/getBestFOCOffer";
 import "./InstructorBooking.css";
 import { getCurrencyForTrip } from "../../utils/currencyUtils";
+import { buildScubadatesBookingOptions } from "../../utils/buildScubadatesBookingOptions";
 
 // 💰 이 파일에서만 쓸 간단 통화 포맷 함수
 const formatCurrencyLocal = (amount, currency = "USD") => {
@@ -320,6 +321,41 @@ function InstructorBooking() {
     const tripCabins = Array.isArray(trip?.cabins) ? trip.cabins : [];
 
     return tripCabins.map((cabin, index) => {
+      const isScubadates = trip?.source === "scubadates";
+
+      // ✅ Scubadates: 공통 옵션 생성 함수 사용
+      if (isScubadates) {
+        const occupancyOptions = buildScubadatesBookingOptions(cabin, {
+          includeInstructorOnly: true,
+        });
+
+        const availableSpaces =
+          Number(
+            cabin?.remaining ??
+            cabin?.availableSpaces ??
+            cabin?.meta?.availableSpaces ??
+            0
+          ) || 0;
+
+        return {
+          id: cabin?.cabinId || cabin?.id || `general-${index}`,
+          name: cabin?.name || `객실 ${index + 1}`,
+          occupancy: [], // 기존 occupancy 대신 occupancyOptions 사용
+          occupancyOptions,
+          available: availableSpaces,
+          option: 0,
+          booked: 0,
+          subCabins: [
+            {
+              id: cabin?.cabinId || cabin?.id || `room-${index}`,
+              name: cabin?.name || `객실 ${index + 1}`,
+              availableSpaces,
+            },
+          ],
+        };
+      }
+
+      // ✅ 기존 inseanq / special 아닌 일반 구조 유지
       const occupancy = buildOccupancyFromRatePlans(cabin?.ratePlans || []);
 
       return {
@@ -333,6 +369,7 @@ function InstructorBooking() {
               { id: 2, price: instructorGroupPrice || 0 },
               { id: 3, price: instructorGroupPrice || 0 },
             ],
+        occupancyOptions: [],
         available: Number(cabin?.remaining || 0) > 0 ? 1 : 0,
         option: 0,
         booked: 0,
@@ -360,18 +397,19 @@ function InstructorBooking() {
   // -----------------------------------
   // 예약 추가
   // -----------------------------------
-  const handleAddBooking = (room, occId, cabinName, basePrice) => {
-    const occLabel = getOccLabelById(occId);
-    const multiplier = Number(occId) === 2 ? 2 : 1;
-    const finalPrice = parseFloat(basePrice) * multiplier;
-
+  const handleAddBooking = (room, selectedOption, cabinName) => {
     const newBooking = {
       id: room.id,
       cabin: cabinName,
       room: room.name,
-      occId,
-      occLabel,
-      price: finalPrice,
+      selectionKey: selectedOption.selectionKey,
+      occId: selectedOption.occupancy,
+      occLabel: selectedOption.label,
+      price: Number(selectedOption.price) || 0,           // 단가
+      peopleCount: Number(selectedOption.peopleCount) || 1,
+      roomCount: Number(selectedOption.roomCount) || 1,
+      totalPrice: Number(selectedOption.totalPrice) || 0, // 총액
+      unitSuffix: selectedOption.unitSuffix || "/인",
     };
 
     setSelectedBookings((prev) => {
@@ -388,33 +426,68 @@ function InstructorBooking() {
     setSelectedOcc((prev) => ({ ...prev, [roomId]: "" }));
   };
 
-  const handleOccChange = (room, occId, cabinName, cabin) => {
-    setSelectedOcc((prev) => ({ ...prev, [room.id]: occId }));
+  const handleOccChange = (room, selectedValue, cabinName, cabin) => {
+    setSelectedOcc((prev) => ({ ...prev, [room.id]: selectedValue }));
 
-    if (!occId) {
+    if (!selectedValue) {
       removeBooking(room.id);
       return;
     }
 
+    // ✅ Scubadates 전용: selectionKey 기반
+    if (trip?.source === "scubadates") {
+      const selectedOption = (cabin.occupancyOptions || []).find(
+        (opt) => opt.selectionKey === selectedValue
+      );
+
+      if (selectedOption) {
+        handleAddBooking(room, selectedOption, cabinName);
+      } else {
+        console.warn("⚠️ Scubadates option not found:", selectedValue);
+      }
+      return;
+    }
+
+    // ✅ 기존 구조 유지 (inseanq / special)
     const occ = (cabin.occupancy || []).find(
-      (o) => Number(o.id) === Number(occId)
+      (o) => Number(o.id) === Number(selectedValue)
     );
+
     const occPrice =
       parseFloat(occ?.price || 0) ||
       instructorGroupPrice ||
       0;
 
+    const occLabel = getOccLabelById(selectedValue);
+    const peopleCount = Number(selectedValue) === 2 ? 2 : 1;
+
     if (occPrice > 0) {
-      handleAddBooking(room, occId, cabinName, occPrice);
+      handleAddBooking(
+        room,
+        {
+          selectionKey: `${room.id}_${selectedValue}`,
+          occupancy: String(selectedValue),
+          label: occLabel,
+          price: occPrice,
+          peopleCount,
+          roomCount: 1,
+          totalPrice: occPrice * peopleCount,
+          unitSuffix: occLabel === "독실 예약" ? "/실" : "/인",
+        },
+        cabinName
+      );
     } else {
-      console.warn("⚠️ Price not found for selected occupancy id:", occId);
+      console.warn("⚠️ Price not found for selected occupancy id:", selectedValue);
     }
   };
 
   // -----------------------------------
   // 총 금액
   // -----------------------------------
-  const baseTotal = selectedBookings.reduce((sum, b) => sum + b.price, 0);
+  const baseTotal = selectedBookings.reduce(
+    (sum, b) => sum + Number(b.totalPrice || 0),
+    0
+  );
 
   // -----------------------------------
   // FOC 오퍼 재구성
@@ -442,13 +515,11 @@ function InstructorBooking() {
   const unitPrices = [];
 
   selectedBookings.forEach((b) => {
-    if (b.occLabel === "2인 예약") {
-      pax += 2;
-      const unit = Number(b.price) / 2;
-      unitPrices.push(unit, unit);
-    } else {
-      pax += 1;
-      unitPrices.push(Number(b.price));
+    const peopleCount = Number(b.peopleCount || 1);
+    pax += peopleCount;
+
+    for (let i = 0; i < peopleCount; i += 1) {
+      unitPrices.push(Number(b.price || 0));
     }
   });
 
@@ -562,26 +633,34 @@ function InstructorBooking() {
                           <select
                             value={selectedOcc[room.id] ?? ""}
                             onChange={(e) => {
-                              const occId = Number(e.target.value);
-                              handleOccChange(room, occId, cabin.name, cabin);
+                              const selectedValue = e.target.value;
+                              handleOccChange(room, selectedValue, cabin.name, cabin);
                             }}
                             className="occ-select"
                           >
                             <option value="">예약 유형 선택</option>
-                            {(cabin.occupancy || [])
-                              .filter(
-                                (o) =>
-                                  [1, 2, 3].includes(Number(o.id)) &&
-                                  parseFloat(o.price) > 0
-                              )
-                              .map((o) => {
-                                const label = getOccLabelById(o.id);
-                                return label ? (
-                                  <option key={o.id} value={o.id}>
-                                    {label}
-                                  </option>
-                                ) : null;
-                              })}
+
+                            {trip?.source === "scubadates"
+                              ? (cabin.occupancyOptions || []).map((opt) => (
+                                <option key={opt.selectionKey} value={opt.selectionKey}>
+                                  {opt.label} - {formatCurrency(opt.price, currency)}
+                                  {opt.unitSuffix}
+                                </option>
+                              ))
+                              : (cabin.occupancy || [])
+                                .filter(
+                                  (o) =>
+                                    [1, 2, 3].includes(Number(o.id)) &&
+                                    parseFloat(o.price) > 0
+                                )
+                                .map((o) => {
+                                  const label = getOccLabelById(o.id);
+                                  return label ? (
+                                    <option key={o.id} value={o.id}>
+                                      {label}
+                                    </option>
+                                  ) : null;
+                                })}
                           </select>
 
                           <button
@@ -598,30 +677,40 @@ function InstructorBooking() {
                 </div>
               )}
 
-              {cabin.occupancy?.map((occ, j) => {
-                let occLabel = "";
-                if (occ.id === 1) occLabel = "1인 예약";
-                else if (occ.id === 2) occLabel = "2인 예약";
-                else if (occ.id === 3) occLabel = "독실 예약";
-
-                if (!occLabel) return null;
-
-                return (
+              {trip?.source === "scubadates"
+                ? (cabin.occupancyOptions || []).map((opt, j) => (
                   <div key={j} className="price-row">
-                    <span>{occLabel}</span>
-
+                    <span>{opt.label}</span>
                     <span className="price">
-                      {formatCurrencyLocal(occ.price, currency)}
+                      {formatCurrency(opt.price, currency)}
+                      {opt.unitSuffix}
                     </span>
-
-                    {occ.parentPrice && (
-                      <span className="original">
-                        {formatCurrencyLocal(occ.parentPrice, currency)}
-                      </span>
-                    )}
                   </div>
-                );
-              })}
+                ))
+                : cabin.occupancy?.map((occ, j) => {
+                  let occLabel = "";
+                  if (occ.id === 1) occLabel = "1인 예약";
+                  else if (occ.id === 2) occLabel = "2인 예약";
+                  else if (occ.id === 3) occLabel = "독실 예약";
+
+                  if (!occLabel) return null;
+
+                  return (
+                    <div key={j} className="price-row">
+                      <span>{occLabel}</span>
+
+                      <span className="price">
+                        {formatCurrencyLocal(occ.price, currency)}
+                      </span>
+
+                      {occ.parentPrice && (
+                        <span className="original">
+                          {formatCurrencyLocal(occ.parentPrice, currency)}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           );
         })}
@@ -634,7 +723,12 @@ function InstructorBooking() {
             {selectedBookings.map((b, i) => (
               <li key={i}>
                 {b.cabin} / {b.room} / {b.occLabel} —{" "}
-                <strong>{formatCurrency(b.price, currency)}</strong>
+                <strong>
+                  {formatCurrency(b.price, currency)}
+                  {b.unitSuffix || "/인"}
+                  {" → "}
+                  {formatCurrency(b.totalPrice, currency)}
+                </strong>
               </li>
             ))}
           </ul>

@@ -44,10 +44,7 @@ function InstructorConfirm() {
   // ✅ 총 인원 계산
   const totalGuests = useMemo(() => {
     return selectedBookings.reduce((sum, b) => {
-      if (b?.occLabel === "2인 예약") return sum + 2;
-      if (b?.occLabel === "1인 예약") return sum + 1;
-      if (b?.occLabel === "독실 예약") return sum + 1;
-      return sum;
+      return sum + Number(b?.peopleCount || 1);
     }, 0);
   }, [selectedBookings]);
 
@@ -176,6 +173,9 @@ function InstructorConfirm() {
                 <td>{b.occLabel}</td>
                 <td style={{ textAlign: "right" }}>
                   {formatCurrency(b.price, currency)}
+                  {b.unitSuffix || "/인"}
+                  {" → "}
+                  {formatCurrency(b.totalPrice || b.price, currency)}
                 </td>
               </tr>
             ))}
