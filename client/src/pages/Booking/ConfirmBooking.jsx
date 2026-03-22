@@ -19,24 +19,67 @@ function ConfirmBooking() {
   } = state || {};
 
   // ✅ 예약자 정보 상태값
-  const [guestName, setGuestName] = useState(
-    stateUser?.name || user?.name || ""
-  );
-  const [guestEmail, setGuestEmail] = useState(
-    stateUser?.email || user?.email || ""
-  );
-  const [guestPhone, setGuestPhone] = useState(
-    stateUser?.phone || user?.phone || ""
-  );
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
-      setGuestName((prev) => prev || parsed.name || "");
-      setGuestEmail((prev) => prev || parsed.email || "");
-      setGuestPhone((prev) => prev || parsed.phone || "");
+
+      setGuestName(
+        (prev) =>
+          prev ||
+          parsed.name ||
+          parsed.username ||
+          parsed.userName ||
+          ""
+      );
+
+      setGuestEmail(
+        (prev) =>
+          prev ||
+          parsed.email ||
+          ""
+      );
+
+      setGuestPhone(
+        (prev) =>
+          prev ||
+          parsed.phone ||
+          parsed.phoneNumber ||
+          parsed.mobile ||
+          ""
+      );
     }
   }, []);
+
+  useEffect(() => {
+    const resolvedName =
+      stateUser?.name ||
+      user?.name ||
+      user?.username ||
+      user?.userName ||
+      "";
+
+    const resolvedEmail =
+      stateUser?.email ||
+      user?.email ||
+      "";
+
+    const resolvedPhone =
+      stateUser?.phone ||
+      stateUser?.phoneNumber ||
+      user?.phone ||
+      user?.phoneNumber ||
+      user?.mobile ||
+      "";
+
+    setGuestName((prev) => prev || resolvedName);
+    setGuestEmail((prev) => prev || resolvedEmail);
+    setGuestPhone((prev) => prev || resolvedPhone);
+  }, [stateUser, user]);
 
   // ✅ 여행명 / 선박명 fallback
   const tripName =
