@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../../hooks/useAuth";
 import "./Login.css";
 
 export default function Login() {
   const navigate = useNavigate();
-
+  const { login } = useAuth();
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -58,7 +59,7 @@ export default function Login() {
         return;
       }
 
-      localStorage.setItem("scubanetUser", JSON.stringify(user));
+      login(user);
 
       alert(res.data.message || "로그인되었습니다.");
 
@@ -92,7 +93,7 @@ export default function Login() {
       <div className="login-card">
         <div className="login-header">
           <h1>로그인</h1>
-          <p>스쿠버넷 트래블 계정으로 로그인하세요.</p>
+          <p>스쿠버넷트래블 계정으로 로그인하세요.</p>
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>

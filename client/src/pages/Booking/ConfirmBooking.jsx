@@ -280,10 +280,6 @@ function ConfirmBooking() {
         />
       </section>
 
-      console.log("CONFIRM_DEBUG guestName =", guestName);
-      console.log("CONFIRM_DEBUG guestEmail =", guestEmail);
-      console.log("CONFIRM_DEBUG guestPhone =", guestPhone);
-
       <div style={{ background: "#fff3cd", padding: "12px", marginBottom: "16px", fontSize: "12px" }}>
         <div><strong>DEBUG user:</strong> {JSON.stringify(user)}</div>
         <div><strong>DEBUG stateUser:</strong> {JSON.stringify(stateUser)}</div>
