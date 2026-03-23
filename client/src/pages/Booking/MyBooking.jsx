@@ -47,6 +47,21 @@ function MyBooking() {
     return 1;
   };
 
+  const getCabinLineTotal = (cabin) => {
+    const explicitTotal = Number(cabin?.totalPrice || 0);
+    if (explicitTotal > 0) return explicitTotal;
+
+    const count = getOccupancyCount(cabin);
+    const unitPrice = Number(cabin?.price || 0);
+    return unitPrice * count;
+  };
+
+  const getUnitSuffix = (cabin) => {
+    if (cabin?.unitSuffix) return cabin.unitSuffix;
+    if (cabin?.occupancyType?.includes("독실")) return "/실";
+    return "/인";
+  };
+
   const stateComputedTotal = useMemo(() => {
     if (!Array.isArray(stateCabins)) return 0;
 
@@ -469,14 +484,25 @@ function MyBooking() {
         )}
       </div>
 
-      <h3>객실</h3>
+      <h3>선택한 객실</h3>
       <ul>
-        {cabins.map((cabin, i) => (
-          <li key={i}>
-            {cabin.cabinName} / 인원: {cabin.occupancyType} / 요금:{' '}
-            {formatCurrency(cabin.price, currency)}
-          </li>
-        ))}
+        {cabins.map((cabin, i) => {
+          const occupancyCount = getOccupancyCount(cabin);
+          const unitPrice = Number(cabin?.price || 0);
+          const lineTotal = getCabinLineTotal(cabin);
+          const unitSuffix = getUnitSuffix(cabin);
+
+          return (
+            <li key={i}>
+              🛏 {cabin?.cabinName || "(객실명 없음)"} / 인원: {cabin?.occupancyType || "-"} / 요금:{" "}
+              {formatCurrency(unitPrice, currency)}
+              {unitSuffix}
+              {occupancyCount > 1 ? ` × ${occupancyCount}` : ""}
+              {" → "}
+              {formatCurrency(lineTotal, currency)}
+            </li>
+          );
+        })}
       </ul>
 
       {renderPriceBox({
