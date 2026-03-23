@@ -192,6 +192,13 @@ function AdminBoatAssets() {
     const [vesselId, setVesselId] = useState("");
     const [boatName, setBoatName] = useState("");
 
+    // ✅ Instructor Policy
+    const [policyContractStatus, setPolicyContractStatus] = useState("none");
+    const [policyBookingMode, setPolicyBookingMode] = useState("inquiry");
+    const [policyCommission, setPolicyCommission] = useState(0);
+    const [policyFOC, setPolicyFOC] = useState("");
+    const [policyMemo, setPolicyMemo] = useState("");
+
     // Hero
     // { id, file, preview, title, description, isPrimary, order }
     const [heroImage, setHeroImage] = useState(null);
@@ -1395,6 +1402,40 @@ function AdminBoatAssets() {
         }
     }
 
+    async function saveInstructorPolicy() {
+        try {
+            if (!vesselId) {
+                alert("vesselId 선택 필요");
+                return;
+            }
+
+            const res = await fetch("/api/instructor-policy", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    vesselId,
+                    contractStatus: policyContractStatus,
+                    bookingMode: policyBookingMode,
+                    commissionPercent: policyCommission,
+                    focPolicy: policyFOC,
+                    memo: policyMemo,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || "저장 실패");
+            }
+
+            alert("강사 정책 저장 완료");
+        } catch (err) {
+            console.error(err);
+            alert("저장 실패");
+        }
+    }
 
     const previewJson = useMemo(() => buildPayload(), [
         vesselId,
@@ -1438,6 +1479,61 @@ function AdminBoatAssets() {
                     </div>
                 )}
             </section>
+
+            <h3>강사 예약 정책</h3>
+
+            <div style={{ marginBottom: 20 }}>
+
+                <div>
+                    <label>계약 상태</label>
+                    <select value={policyContractStatus} onChange={(e) => setPolicyContractStatus(e.target.value)}>
+                        <option value="none">미계약</option>
+                        <option value="contracted">계약완료</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>예약 모드</label>
+                    <select value={policyBookingMode} onChange={(e) => setPolicyBookingMode(e.target.value)}>
+                        <option value="inquiry">문의</option>
+                        <option value="bookable">예약가능</option>
+                        <option value="hidden">숨김</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>커미션 (%)</label>
+                    <input
+                        type="number"
+                        value={policyCommission}
+                        onChange={(e) => setPolicyCommission(e.target.value)}
+                    />
+                </div>
+
+                <div>
+                    <label>FOC 정책</label>
+                    <input
+                        type="text"
+                        value={policyFOC}
+                        onChange={(e) => setPolicyFOC(e.target.value)}
+                        placeholder="예: 10+1"
+                    />
+                </div>
+
+                <div>
+                    <label>메모</label>
+                    <input
+                        type="text"
+                        value={policyMemo}
+                        onChange={(e) => setPolicyMemo(e.target.value)}
+                    />
+                </div>
+
+                <button onClick={saveInstructorPolicy}>
+                    강사 정책 저장
+                </button>
+
+            </div>
 
             {!vesselId ? (
                 <div style={{ marginTop: 16, color: "#777" }}>
