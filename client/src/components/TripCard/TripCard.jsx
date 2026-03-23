@@ -179,7 +179,7 @@ export default function TripCard({ trip, mode = "public" }) {
                         )}
                         {instructorCommission > 0 && (
                             <span className="offer-foc-badge">
-                                커미션 {instructorCommission}%
+                                기준 커미션 {instructorCommission}%
                             </span>
                         )}
                     </div>
