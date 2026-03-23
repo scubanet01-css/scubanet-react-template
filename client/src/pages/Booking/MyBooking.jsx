@@ -4,7 +4,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatCurrency';
 
 function MyBooking() {
-  const { state } = useLocation();
+  const location = useLocation();
+  const state = location.state || {};
   const navigate = useNavigate();
   const { bookingId: bookingIdFromParams } = useParams();
 
@@ -32,19 +33,39 @@ function MyBooking() {
   // ✅ URL 파라미터 우선
   const bookingId = bookingIdFromParams || stateBookingId || null;
 
+  // -----------------------------
+  // 공통 유틸
+  // -----------------------------
   const getOccupancyCount = (cabin) => {
     if (!cabin) return 1;
 
-    if (cabin.occupancyValue) {
-      const value = parseInt(cabin.occupancyValue, 10);
+    if (cabin.occupancyValue != null && cabin.occupancyValue !== '') {
+      const parsed = parseInt(String(cabin.occupancyValue), 10);
 
-      if (value === 3) return 1; // 독실
-      if (value === 2) return 2;
-      return 1;
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        // 내부 규칙상 3이 독실일 수 있으므로 1명 처리
+        if (parsed === 3) return 1;
+        return parsed;
+      }
     }
 
-    if (cabin.occupancyType?.includes('2인')) return 2;
+    const type = cabin.occupancyType || '';
+
+    if (type.includes('2인')) return 2;
+    if (type.includes('1인')) return 1;
+    if (type.includes('독실')) return 1;
+    if (type.includes('독방')) return 1;
+
     return 1;
+  };
+
+  const getUnitSuffix = (cabin) => {
+    if (cabin?.unitSuffix) return cabin.unitSuffix;
+
+    const type = cabin?.occupancyType || '';
+    if (type.includes('독실') || type.includes('독방')) return '/실';
+
+    return '/인';
   };
 
   const getCabinLineTotal = (cabin) => {
@@ -53,28 +74,132 @@ function MyBooking() {
 
     const count = getOccupancyCount(cabin);
     const unitPrice = Number(cabin?.price || 0);
+
     return unitPrice * count;
   };
 
-  const getUnitSuffix = (cabin) => {
-    if (cabin?.unitSuffix) return cabin.unitSuffix;
-    if (cabin?.occupancyType?.includes("독실")) return "/실";
-    return "/인";
+  const getStatusLabel = (status) => {
+    if (status === 'confirmed') return '예약확정';
+    if (status === 'pending') return '확인대기';
+    if (status === 'cancelled') return '예약취소';
+    return status || '-';
+  };
+
+  const getPaymentLabel = (status) => {
+    if (status === 'paid') return '입금완료';
+    if (status === 'pending') return '입금대기';
+    if (status === 'failed') return '결제실패';
+    return status || '-';
   };
 
   const stateComputedTotal = useMemo(() => {
     if (!Array.isArray(stateCabins)) return 0;
 
     return stateCabins.reduce((sum, cabin) => {
-      const count = getOccupancyCount(cabin);
-      return sum + (Number(cabin.price) || 0) * count;
+      return sum + getCabinLineTotal(cabin);
     }, 0);
   }, [stateCabins]);
 
+  // -----------------------------
+  // 스타일
+  // -----------------------------
+  const pageWrapStyle = {
+    padding: '24px 20px',
+    maxWidth: '1080px',
+    margin: '0 auto',
+  };
+
+  const cardStyle = {
+    border: '1px solid #e5e7eb',
+    borderRadius: '14px',
+    background: '#fff',
+    padding: '20px',
+    marginTop: '16px',
+  };
+
+  const sectionTitleStyle = {
+    fontSize: '28px',
+    fontWeight: '700',
+    marginBottom: '18px',
+    color: '#111827',
+  };
+
+  const bookingInfoLineStyle = {
+    marginBottom: '14px',
+    fontSize: '16px',
+    lineHeight: '1.6',
+    color: '#111827',
+  };
+
+  const subHeadingStyle = {
+    marginTop: '28px',
+    marginBottom: '14px',
+    fontSize: '24px',
+    fontWeight: '700',
+    color: '#111827',
+  };
+
+  const mutedTextStyle = {
+    fontSize: '13px',
+    color: '#666',
+    lineHeight: '1.7',
+  };
+
+  const listRowStyle = {
+    borderBottom: '1px solid #e5e7eb',
+    padding: '16px 0',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '16px',
+    flexWrap: 'wrap',
+  };
+
+  const listPrimaryStyle = {
+    fontWeight: '700',
+    fontSize: '18px',
+    marginBottom: '6px',
+    color: '#111827',
+  };
+
+  const listSecondaryStyle = {
+    fontSize: '15px',
+    color: '#374151',
+    lineHeight: '1.7',
+  };
+
+  const listMetaStyle = {
+    fontSize: '14px',
+    color: '#6b7280',
+    marginTop: '4px',
+  };
+
+  const actionButtonStyle = {
+    padding: '9px 16px',
+    borderRadius: '10px',
+    border: '1px solid #d1d5db',
+    background: '#fff',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#111827',
+  };
+
+  const backButtonStyle = {
+    padding: '9px 16px',
+    borderRadius: '10px',
+    border: '1px solid #d1d5db',
+    background: '#fff',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#111827',
+  };
+
   const priceBoxStyles = {
     box: {
-      marginTop: '16px',
-      padding: '16px',
+      marginTop: '18px',
+      padding: '18px',
       border: '1px solid #e5e7eb',
       borderRadius: '12px',
       background: '#fafafa',
@@ -84,8 +209,8 @@ function MyBooking() {
       justifyContent: 'space-between',
       alignItems: 'center',
       gap: '12px',
-      padding: '8px 0',
-      fontSize: '15px',
+      padding: '10px 0',
+      fontSize: '16px',
     },
     discount: {
       color: '#c62828',
@@ -97,10 +222,10 @@ function MyBooking() {
       marginTop: '4px',
     },
     total: {
-      marginTop: '8px',
-      paddingTop: '12px',
+      marginTop: '10px',
+      paddingTop: '14px',
       borderTop: '1px solid #ddd',
-      fontSize: '17px',
+      fontSize: '18px',
       fontWeight: '700',
     },
   };
@@ -148,7 +273,9 @@ function MyBooking() {
     );
   };
 
-  // ✅ bookingId가 있으면 서버에서 단건 조회
+  // -----------------------------
+  // 상세 조회
+  // -----------------------------
   useEffect(() => {
     const fetchBooking = async () => {
       if (!bookingId) return;
@@ -175,11 +302,13 @@ function MyBooking() {
     fetchBooking();
   }, [bookingId]);
 
-  // ✅ 메뉴에서 직접 들어온 경우: 로그인 사용자 기준 전체 예약 목록 조회
+  // -----------------------------
+  // 목록 조회
+  // -----------------------------
   useEffect(() => {
     const fetchMyBookings = async () => {
-      // 상세 모드(state 또는 bookingId)가 있으면 목록 조회 불필요
-      if (stateTrip || bookingId) return;
+      // 상세 모드에서는 목록 조회 불필요
+      if (bookingId) return;
 
       try {
         setLoading(true);
@@ -196,6 +325,13 @@ function MyBooking() {
             item.bookingType !== 'instructor'
         );
 
+        // 최신순 정렬
+        mine.sort((a, b) => {
+          const aTime = new Date(a?.createdAt || 0).getTime();
+          const bTime = new Date(b?.createdAt || 0).getTime();
+          return bTime - aTime;
+        });
+
         setMyBookings(mine);
       } catch (err) {
         console.error('❌ 내 예약 목록 조회 실패:', err);
@@ -206,9 +342,11 @@ function MyBooking() {
     };
 
     fetchMyBookings();
-  }, [stateTrip, bookingId, user?.email]);
+  }, [bookingId, user?.email]);
 
-  // ✅ 서버 조회 성공 시 서버 데이터 우선
+  // -----------------------------
+  // 상세 데이터 우선순위
+  // -----------------------------
   const trip = booking?.trip
     ? {
       product: { name: booking.trip.title },
@@ -268,40 +406,29 @@ function MyBooking() {
     trip?.boatName ||
     '정보 없음';
 
-  const getStatusLabel = (status) => {
-    if (status === 'confirmed') return '예약 확정';
-    if (status === 'pending') return '확인 대기';
-    if (status === 'cancelled') return '예약 취소';
-    return status || '-';
-  };
-
-  const getPaymentLabel = (status) => {
-    if (status === 'paid') return '입금완료';
-    if (status === 'pending') return '입금대기';
-    if (status === 'failed') return '결제 실패';
-    return status || '-';
-  };
-
-  if (loading && !booking && !stateTrip && myBookings.length === 0) {
-    return <div style={{ padding: 20 }}>예약 정보를 불러오는 중입니다...</div>;
+  // -----------------------------
+  // 로딩
+  // -----------------------------
+  if (loading && !bookingId && myBookings.length === 0) {
+    return <div style={pageWrapStyle}>예약 정보를 불러오는 중입니다...</div>;
   }
 
-  // ✅ 메뉴에서 직접 들어온 경우: 내 예약 목록 표시
-  if (!trip || !guest) {
+  // -----------------------------
+  // 목록 화면
+  // -----------------------------
+  if (!bookingId) {
     return (
-      <div style={{ padding: 20 }}>
-        <h2>예약 내역 확인</h2>
+      <div style={pageWrapStyle}>
+        <h2 style={sectionTitleStyle}>예약 내역 확인</h2>
 
-        {error && (
-          <p style={{ color: 'red' }}>{error}</p>
-        )}
+        {error && <p style={{ color: 'red' }}>{error}</p>}
 
         {!user ? (
           <p>로그인이 필요합니다.</p>
         ) : myBookings.length === 0 ? (
           <p>예약 내역이 없습니다.</p>
         ) : (
-          <>
+          <div style={cardStyle}>
             {myBookings.map((item) => {
               const itemTrip = item?.trip || {};
               const itemTripName =
@@ -319,29 +446,17 @@ function MyBooking() {
               const itemFinalPrice = Number(item?.finalPrice ?? item?.totalPrice ?? 0);
 
               return (
-                <div
-                  key={item.bookingId}
-                  style={{
-                    borderBottom: '1px solid #e5e7eb',
-                    padding: '14px 0',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: '16px',
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <div style={{ flex: '1 1 700px', minWidth: '280px' }}>
-                    <div style={{ fontWeight: '700', marginBottom: '6px' }}>
-                      {item.bookingId}
-                    </div>
+                <div key={item.bookingId} style={listRowStyle}>
+                  <div style={{ flex: '1 1 720px', minWidth: '280px' }}>
+                    <div style={listPrimaryStyle}>{item.bookingId}</div>
 
-                    <div style={{ fontSize: '14px', color: '#374151', lineHeight: 1.6 }}>
+                    <div style={listSecondaryStyle}>
                       {itemTripName} / {itemTrip?.startDate || '-'} 출발 / {itemBoatName}
                     </div>
 
-                    <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
-                      결제상태: {getPaymentLabel(item.paymentStatus || 'pending')} / 최종금액:{' '}
+                    <div style={listMetaStyle}>
+                      예약상태: {getStatusLabel(item.bookingStatus || 'confirmed')} / 결제상태:{' '}
+                      {getPaymentLabel(item.paymentStatus || 'pending')} / 최종금액:{' '}
                       {formatCurrency(itemFinalPrice, itemCurrency)}
                     </div>
                   </div>
@@ -349,15 +464,7 @@ function MyBooking() {
                   <div style={{ flexShrink: 0 }}>
                     <button
                       onClick={() => navigate(`/booking/summary/${item.bookingId}`)}
-                      style={{
-                        padding: '8px 14px',
-                        borderRadius: '8px',
-                        border: '1px solid #d1d5db',
-                        background: '#fff',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                      }}
+                      style={actionButtonStyle}
                     >
                       상세보기
                     </button>
@@ -365,52 +472,18 @@ function MyBooking() {
                 </div>
               );
             })}
-          </>
+          </div>
         )}
-
-        <div style={{ marginTop: 16, display: 'flex', gap: '10px' }}>
-          <button
-            onClick={() => navigate(`/booking/summary/${item.bookingId}`)}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '8px',
-              border: '1px solid #d1d5db',
-              background: '#fff',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500',
-            }}
-          >
-            상세보기
-          </button>
-        </div>
-
-        <div style={{ marginTop: 24 }}>
-          <p
-            style={{
-              marginTop: '10px',
-              fontSize: '13px',
-              color: '#666',
-              lineHeight: '1.6',
-            }}
-          >
-            현재 온라인 결제는 비활성화되어 있습니다.
-            인보이스를 확인하신 후 안내된 계좌로 송금해 주세요.
-            관리자가 입금을 확인하면 예약 상태가 입금완료로 변경됩니다.
-          </p>
-
-          <button onClick={() => navigate(-1)}>
-            ← 이전으로
-          </button>
-        </div>
       </div>
     );
   }
 
-  // ✅ 기존 상세 화면 유지 + 할인 구조 반영
+  // -----------------------------
+  // 상세 화면
+  // -----------------------------
   return (
-    <div style={{ padding: 20 }}>
-      <h2>예약 내역 확인</h2>
+    <div style={pageWrapStyle}>
+      <h2 style={sectionTitleStyle}>예약 내역 확인</h2>
 
       {loading && (
         <p style={{ color: '#666' }}>최신 예약 정보를 불러오는 중입니다...</p>
@@ -420,116 +493,106 @@ function MyBooking() {
         <p style={{ color: 'red' }}>{error}</p>
       )}
 
-      <div style={{ marginBottom: 16 }}>
+      <div style={cardStyle}>
         {bookingId && (
-          <p>
+          <div style={bookingInfoLineStyle}>
             <strong>예약번호:</strong> {bookingId}
-          </p>
+          </div>
         )}
 
-        <p>
+        <div style={bookingInfoLineStyle}>
           <strong>예약 상태:</strong> {getStatusLabel(bookingStatus)}
-        </p>
+        </div>
 
-        <p>
+        <div style={bookingInfoLineStyle}>
           <strong>결제 상태:</strong>{' '}
           <span
             style={{
-              fontWeight: 'bold',
+              fontWeight: '700',
               color: paymentStatus === 'paid' ? '#16a34a' : '#f59e0b',
             }}
           >
             {getPaymentLabel(paymentStatus)}
           </span>
-        </p>
+        </div>
 
         {createdAt && (
-          <p>
+          <div style={bookingInfoLineStyle}>
             <strong>예약일시:</strong>{' '}
             {new Date(createdAt).toLocaleString('ko-KR')}
-          </p>
+          </div>
         )}
-      </div>
 
-      <div style={{ marginBottom: 20 }}>
-        <p>
-          <strong>예약자:</strong> {guest.name} / {guest.email}
-        </p>
+        <div style={bookingInfoLineStyle}>
+          <strong>예약자:</strong> {guest?.name} / {guest?.email}
+        </div>
 
-        {guest.phone && (
-          <p>
+        {guest?.phone && (
+          <div style={bookingInfoLineStyle}>
             <strong>전화번호:</strong> {guest.phone}
-          </p>
+          </div>
         )}
 
-        <p>
-          <strong>여행:</strong> {tripName} / {trip.startDate} 출발 / {boatName}
-        </p>
+        <div style={bookingInfoLineStyle}>
+          <strong>여행:</strong> {tripName} / {trip?.startDate || '-'} 출발 / {boatName}
+        </div>
 
         {trip?.endDate && (
-          <p>
+          <div style={bookingInfoLineStyle}>
             <strong>도착일:</strong> {trip.endDate}
+          </div>
+        )}
+
+        <h3 style={subHeadingStyle}>선택한 객실</h3>
+
+        <ul style={{ marginTop: 0, paddingLeft: '22px' }}>
+          {cabins.map((cabin, i) => {
+            const occupancyCount = getOccupancyCount(cabin);
+            const unitPrice = Number(cabin?.price || 0);
+            const lineTotal = getCabinLineTotal(cabin);
+            const unitSuffix = getUnitSuffix(cabin);
+
+            return (
+              <li key={i} style={{ marginBottom: '10px', lineHeight: '1.7', fontSize: '16px' }}>
+                🛏 {cabin?.cabinName || '(객실명 없음)'} / 인원: {cabin?.occupancyType || '-'} / 요금:{' '}
+                {formatCurrency(unitPrice, currency)}
+                {unitSuffix}
+                {occupancyCount > 1 ? ` × ${occupancyCount}` : ''}
+                {' → '}
+                {formatCurrency(lineTotal, currency)}
+              </li>
+            );
+          })}
+        </ul>
+
+        {renderPriceBox({
+          basePrice,
+          discountAmount,
+          finalPrice,
+          promotion,
+          currency,
+        })}
+
+        {invoiceFileUrl && (
+          <p style={{ marginTop: 18, fontSize: '16px' }}>
+            <strong>인보이스 파일:</strong>{' '}
+            <a href={invoiceFileUrl} target="_blank" rel="noreferrer">
+              인보이스 열기
+            </a>
           </p>
         )}
       </div>
 
-      <h3>선택한 객실</h3>
-      <ul>
-        {cabins.map((cabin, i) => {
-          const occupancyCount = getOccupancyCount(cabin);
-          const unitPrice = Number(cabin?.price || 0);
-          const lineTotal = getCabinLineTotal(cabin);
-          const unitSuffix = getUnitSuffix(cabin);
-
-          return (
-            <li key={i}>
-              🛏 {cabin?.cabinName || "(객실명 없음)"} / 인원: {cabin?.occupancyType || "-"} / 요금:{" "}
-              {formatCurrency(unitPrice, currency)}
-              {unitSuffix}
-              {occupancyCount > 1 ? ` × ${occupancyCount}` : ""}
-              {" → "}
-              {formatCurrency(lineTotal, currency)}
-            </li>
-          );
-        })}
-      </ul>
-
-      {renderPriceBox({
-        basePrice,
-        discountAmount,
-        finalPrice,
-        promotion,
-        currency,
-      })}
-
-      {invoiceFileUrl && (
-        <p style={{ marginTop: 12 }}>
-          <strong>인보이스 파일:</strong>{' '}
-          <a
-            href={invoiceFileUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            인보이스 열기
-          </a>
-        </p>
-      )}
-
-      <div style={{ marginTop: 24 }}>
-        <p
-          style={{
-            marginTop: "10px",
-            fontSize: "13px",
-            color: "#666",
-            lineHeight: "1.6",
-          }}
-        >
-          현재 온라인 결제는 비활성화되어 있습니다.
-          인보이스를 확인하신 후 안내된 계좌로 송금해 주세요.
+      <div style={{ marginTop: '20px' }}>
+        <p style={mutedTextStyle}>
+          현재 온라인 결제는 비활성화되어 있습니다. 인보이스를 확인하신 후 안내된 계좌로 송금해 주세요.
           관리자가 입금을 확인하면 예약 상태가 입금완료로 변경됩니다.
         </p>
 
-        <button onClick={() => navigate('/booking/summary')}>
+        <button
+          onClick={() => navigate('/booking/summary')}
+          style={backButtonStyle}
+        >
           ← 목록으로
         </button>
       </div>
