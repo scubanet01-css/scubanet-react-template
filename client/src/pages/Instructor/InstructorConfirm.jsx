@@ -1,5 +1,4 @@
-import React, { useMemo } from "react";
-import { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./InstructorConfirm.css";
 import { formatCurrency } from "../../utils/formatCurrency";
@@ -24,9 +23,9 @@ function InstructorConfirm() {
   const {
     trip,
     selectedBookings = [],
-    totalPrice = 0,      // ✅ FOC 적용 후 합계
-    focDiscount = 0,     // ✅ FOC 할인액
-    focDetails = [],     // ✅ FOC 상세 구조
+    totalPrice = 0, // ✅ FOC 적용 후 합계
+    focDiscount = 0, // ✅ FOC 할인액
+    focDetails = [], // ✅ FOC 상세 구조
     currency: incomingCurrency,
   } = state || {};
 
@@ -35,15 +34,9 @@ function InstructorConfirm() {
   const currency = incomingCurrency || getCurrencyForTrip(trip);
 
   const tripName =
-    trip?.product?.name ||
-    trip?.title ||
-    trip?.tripName ||
-    "정보 없음";
+    trip?.product?.name || trip?.title || trip?.tripName || "정보 없음";
 
-  const boatName =
-    trip?.boat?.name ||
-    trip?.boatName ||
-    "정보 없음";
+  const boatName = trip?.boat?.name || trip?.boatName || "정보 없음";
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "-";
@@ -54,6 +47,9 @@ function InstructorConfirm() {
     });
   };
 
+  // -----------------------------------
+  // 약관 동의 상태
+  // -----------------------------------
   const [showTermsModal, setShowTermsModal] = useState(false);
 
   const [agreeAll, setAgreeAll] = useState(false);
@@ -81,7 +77,7 @@ function InstructorConfirm() {
   }, [totalPrice, focDiscount]);
 
   // ✅ 커미션율
-  // 현재 기존 기준 유지:
+  // 기존 기준 유지:
   // - FOC 적용되었거나, 총 인원 3명 이상이면 15%
   // - 아니면 10%
   const commissionRate = useMemo(() => {
@@ -105,15 +101,71 @@ function InstructorConfirm() {
       ? focDetails.map((f) => f.offerName || f.name || "").join(", ")
       : "Group Offer";
 
+  // -----------------------------------
+  // 약관 모달용 계산값 / 로직
+  // -----------------------------------
+  const handleAgreeAllChange = (checked) => {
+    setAgreeAll(checked);
+    setAgreeCancellation(checked);
+    setAgreeSafety(checked);
+    setAgreeResponsibility(checked);
+
+    if (specialTermsRead && generalTermsRead) {
+      setAgreeTermsReview(checked);
+    } else {
+      setAgreeTermsReview(false);
+    }
+  };
+
+  useEffect(() => {
+    const allChecked =
+      agreeCancellation &&
+      agreeSafety &&
+      agreeResponsibility &&
+      agreeTermsReview;
+
+    setAgreeAll(allChecked);
+  }, [
+    agreeCancellation,
+    agreeSafety,
+    agreeResponsibility,
+    agreeTermsReview,
+  ]);
+
+  const currentTermsTitle =
+    termsModalType === "special"
+      ? specialTermsTitle
+      : termsModalType === "general"
+        ? generalTermsTitle
+        : "";
+
+  const currentTermsText =
+    termsModalType === "special"
+      ? specialTermsText
+      : termsModalType === "general"
+        ? generalTermsText
+        : "";
+
+  const canConfirmTerms =
+    agreeCancellation &&
+    agreeSafety &&
+    agreeResponsibility &&
+    agreeTermsReview &&
+    specialTermsRead &&
+    generalTermsRead;
+
+  // -----------------------------------
+  // 강사 예약 확정
+  // -----------------------------------
   const handleConfirm = async (agreements) => {
     try {
       const invoiceData = {
         trip,
         selectedBookings,
-        totalPrice,         // ✅ FOC 적용 후 판매 금액
+        totalPrice, // ✅ FOC 적용 후 판매 금액
         focDiscount,
         focDetails,
-        commissionRate: Number((commissionRate * 100).toFixed(0)), // 서버는 % 숫자 형태로 받게 맞춤
+        commissionRate: Number((commissionRate * 100).toFixed(0)),
         commissionAmount,
         finalAmount,
         bookingType: "instructor",
@@ -140,6 +192,8 @@ function InstructorConfirm() {
 
       alert("✅ 인보이스가 성공적으로 생성되고 이메일로 발송되었습니다!");
 
+      setShowTermsModal(false);
+
       navigate("/instructor/my-booking", {
         state: {
           trip,
@@ -161,28 +215,6 @@ function InstructorConfirm() {
       alert("인보이스 생성 또는 이메일 발송 중 오류가 발생했습니다.");
     }
   };
-
-  const currentTermsTitle =
-    termsModalType === "special"
-      ? specialTermsTitle
-      : termsModalType === "general"
-        ? generalTermsTitle
-        : "";
-
-  const currentTermsText =
-    termsModalType === "special"
-      ? specialTermsText
-      : termsModalType === "general"
-        ? generalTermsText
-        : "";
-
-  const canConfirmTerms =
-    agreeCancellation &&
-    agreeSafety &&
-    agreeResponsibility &&
-    agreeTermsReview &&
-    specialTermsRead &&
-    generalTermsRead;
 
   return (
     <div className="instructor-confirm-container">
@@ -271,10 +303,15 @@ function InstructorConfirm() {
           ← 이전으로
         </button>
 
-        <button className="confirm-btn" onClick={() => setShowTermsModal(true)}>
+        <button
+          className="confirm-btn"
+          onClick={() => setShowTermsModal(true)}
+        >
           예약 확정
         </button>
       </div>
+
+      {/* 메인 약관 동의 모달 */}
       {showTermsModal && (
         <div
           style={{
@@ -304,7 +341,13 @@ function InstructorConfirm() {
               예약 약관 동의
             </h3>
 
-            <p style={{ lineHeight: "1.6", color: "#444", marginBottom: "20px" }}>
+            <p
+              style={{
+                lineHeight: "1.6",
+                color: "#444",
+                marginBottom: "20px",
+              }}
+            >
               다음 약관 및 중요사항에 모두 동의해야 예약이 확정되며,
               인보이스가 이메일로 발송됩니다.
             </p>
@@ -403,7 +446,10 @@ function InstructorConfirm() {
                     display: "flex",
                     gap: "8px",
                     alignItems: "flex-start",
-                    cursor: specialTermsRead && generalTermsRead ? "pointer" : "not-allowed",
+                    cursor:
+                      specialTermsRead && generalTermsRead
+                        ? "pointer"
+                        : "not-allowed",
                     opacity: specialTermsRead && generalTermsRead ? 1 : 0.6,
                   }}
                 >
@@ -415,8 +461,8 @@ function InstructorConfirm() {
                     disabled={!specialTermsRead || !generalTermsRead}
                   />
                   <span>
-                    특별약관 및 일반약관 전문을 모두 확인하였으며, 이에 따라 예약이
-                    확정되고 인보이스가 발송되는 것에 동의합니다. (필수)
+                    특별약관 및 일반약관 전문을 모두 확인하였으며, 이에 따라
+                    예약이 확정되고 인보이스가 발송되는 것에 동의합니다. (필수)
                   </span>
                 </label>
               </div>
@@ -464,8 +510,11 @@ function InstructorConfirm() {
                 </button>
               </div>
 
-              <p style={{ marginTop: "12px", fontSize: "13px", color: "#666" }}>
-                필수 항목에 모두 동의해야 예약이 확정되며, 인보이스가 전송됩니다.
+              <p
+                style={{ marginTop: "12px", fontSize: "13px", color: "#666" }}
+              >
+                필수 항목에 모두 동의해야 예약이 확정되며, 인보이스가
+                전송됩니다.
               </p>
             </div>
 
@@ -526,6 +575,7 @@ function InstructorConfirm() {
         </div>
       )}
 
+      {/* 약관 전문 읽기 모달 */}
       {termsModalType && (
         <div
           style={{
@@ -551,13 +601,8 @@ function InstructorConfirm() {
               maxHeight: "90vh",
             }}
           >
-            <h3 style={{ marginBottom: "10px" }}>
-              {termsModalType === "special"
-                ? "특별약관"
-                : "일반약관"}
-            </h3>
+            <h3 style={{ marginBottom: "10px" }}>{currentTermsTitle}</h3>
 
-            {/* 🔥 스크롤 영역 */}
             <div
               onScroll={(e) => {
                 const el = e.target;
@@ -580,7 +625,6 @@ function InstructorConfirm() {
               {currentTermsText}
             </div>
 
-            {/* 버튼 영역 */}
             <div
               style={{
                 display: "flex",
@@ -589,11 +633,22 @@ function InstructorConfirm() {
                 marginTop: "16px",
               }}
             >
-              <button onClick={() => setTermsModalType(null)}>
+              <button
+                type="button"
+                onClick={() => setTermsModalType(null)}
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  background: "#fff",
+                  cursor: "pointer",
+                }}
+              >
                 닫기
               </button>
 
               <button
+                type="button"
                 disabled={!termsScrollDone}
                 onClick={() => {
                   if (termsModalType === "special") {
@@ -609,6 +664,7 @@ function InstructorConfirm() {
                   padding: "10px 14px",
                   borderRadius: "8px",
                   border: "none",
+                  cursor: termsScrollDone ? "pointer" : "not-allowed",
                 }}
               >
                 읽음 확인
