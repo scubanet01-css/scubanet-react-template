@@ -535,6 +535,26 @@ function InstructorBooking() {
 
   const totalPrice = baseTotal - focDiscount;
 
+  // -----------------------------------
+  // 커미션 계산
+  // 규칙:
+  // - 3명 이상: 정책 커미션 그대로
+  // - 1~2명: 정책 커미션 - 5%
+  // -----------------------------------
+  const baseCommissionPercent =
+    Number(trip?.pricing?.instructorCommissionPercent || 0) || 0;
+
+  const appliedCommissionPercent =
+    pax >= 3
+      ? baseCommissionPercent
+      : Math.max(0, baseCommissionPercent - 5);
+
+  const commissionRate = appliedCommissionPercent / 100;
+
+  const commissionAmount = Math.round(totalPrice * commissionRate);
+
+  const finalPrice = Math.max(0, totalPrice - commissionAmount);
+
   return (
     <div className="instructor-detail-container">
       <h2>{boatName}</h2>
@@ -678,7 +698,16 @@ function InstructorBooking() {
           )}
 
           <p>
-            <strong>총 합계:</strong> {formatCurrencyLocal(totalPrice, currency)}
+            <strong>FOC 적용 후 합계:</strong> {formatCurrencyLocal(totalPrice, currency)}
+          </p>
+
+          <p>
+            <strong>적용 커미션 ({appliedCommissionPercent}%):</strong>{" "}
+            -{formatCurrencyLocal(commissionAmount, currency)}
+          </p>
+
+          <p>
+            <strong>최종 결제금액:</strong> {formatCurrencyLocal(finalPrice, currency)}
           </p>
 
           <button
@@ -688,9 +717,13 @@ function InstructorBooking() {
                 state: {
                   trip,
                   selectedBookings,
-                  totalPrice,
+                  totalPrice,          // FOC 적용 후 금액
                   focDiscount,
                   focDetails,
+                  commissionRate,      // 0.10, 0.15 같은 실수값
+                  commissionAmount,    // 실제 커미션 금액
+                  finalPrice,          // 최종 결제금액
+                  appliedCommissionPercent, // 10, 15 같은 표시용 %
                   bookingType: "instructor",
                   currency,
                 },
