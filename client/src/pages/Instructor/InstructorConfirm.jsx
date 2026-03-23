@@ -23,9 +23,13 @@ function InstructorConfirm() {
   const {
     trip,
     selectedBookings = [],
-    totalPrice = 0, // ✅ FOC 적용 후 합계
-    focDiscount = 0, // ✅ FOC 할인액
-    focDetails = [], // ✅ FOC 상세 구조
+    totalPrice = 0, // FOC 적용 후 합계
+    focDiscount = 0,
+    focDetails = [],
+    commissionRate: incomingCommissionRate,
+    commissionAmount: incomingCommissionAmount,
+    finalPrice: incomingFinalPrice,
+    appliedCommissionPercent: incomingAppliedCommissionPercent,
     currency: incomingCurrency,
   } = state || {};
 
@@ -81,30 +85,45 @@ function InstructorConfirm() {
   // - FOC 적용되었거나, 총 인원 3명 이상이면 15%
   // - 아니면 10%
   const commissionRate = useMemo(() => {
+    if (typeof incomingCommissionRate === "number") {
+      return incomingCommissionRate;
+    }
+
     const basePercent =
-      Number(
-        trip?.pricing?.instructorCommissionPercent ??
-        bookingData?.trip?.pricing?.instructorCommissionPercent ??
-        0
-      ) || 0;
+      Number(trip?.pricing?.instructorCommissionPercent || 0) || 0;
 
     const guestCount = Number(totalGuests || 0);
-
     const appliedPercent =
       guestCount >= 3 ? basePercent : Math.max(0, basePercent - 5);
 
     return appliedPercent / 100;
-  }, [trip, bookingData, totalGuests]);
+  }, [incomingCommissionRate, trip, totalGuests]);
 
   // ✅ 커미션 금액
   const commissionAmount = useMemo(() => {
+    if (typeof incomingCommissionAmount === "number") {
+      return incomingCommissionAmount;
+    }
+
     return Math.round(Number(totalPrice || 0) * commissionRate);
-  }, [totalPrice, commissionRate]);
+  }, [incomingCommissionAmount, totalPrice, commissionRate]);
 
   // ✅ 최종 결제 금액
   const finalAmount = useMemo(() => {
+    if (typeof incomingFinalPrice === "number") {
+      return incomingFinalPrice;
+    }
+
     return Math.round(Number(totalPrice || 0) - commissionAmount);
-  }, [totalPrice, commissionAmount]);
+  }, [incomingFinalPrice, totalPrice, commissionAmount]);
+
+  const appliedCommissionPercent = useMemo(() => {
+    if (typeof incomingAppliedCommissionPercent === "number") {
+      return incomingAppliedCommissionPercent;
+    }
+
+    return Math.round(commissionRate * 100);
+  }, [incomingAppliedCommissionPercent, commissionRate]);
 
   const focLabel =
     Array.isArray(focDetails) && focDetails.length > 0
@@ -297,7 +316,7 @@ function InstructorConfirm() {
           )}
 
           <p style={{ marginBottom: 4 }}>
-            강사 커미션 ({(commissionRate * 100).toFixed(0)}%): -
+            강사 커미션 ({appliedCommissionPercent}%): -
             {formatCurrency(commissionAmount, currency)}
           </p>
 
