@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { getBestFOCOffer } from "../../utils/getBestFOCOffer";
@@ -16,6 +16,33 @@ const formatCurrencyLocal = (amount, currency = "USD") => {
   if (currency === "SAR") return `SAR ${formatted}`;
   return `$${formatted}`;
 };
+
+import { useEffect, useState } from "react";
+
+const [policy, setPolicy] = useState(null);
+
+useEffect(() => {
+  const vesselId = "vessel_sample_1"; // 🔥 테스트용
+
+  fetch(`/api/instructor-policy/${vesselId}`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("🔥 정책:", data);
+      setPolicy(data);
+    })
+    .catch(err => {
+      console.error("❌ 정책 불러오기 실패:", err);
+    });
+}, []);
+
+{
+  policy && (
+    <div>
+      <p>커미션: {policy.commissionPercent}%</p>
+      <p>예약모드: {policy.bookingMode}</p>
+    </div>
+  )
+}
 
 // ⭐ FOC 규칙 필터링
 const filterFOCOffers = (offers) => {
