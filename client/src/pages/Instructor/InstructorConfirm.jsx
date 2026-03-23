@@ -81,10 +81,20 @@ function InstructorConfirm() {
   // - FOC 적용되었거나, 총 인원 3명 이상이면 15%
   // - 아니면 10%
   const commissionRate = useMemo(() => {
-    const hasFOC = Number(focDiscount || 0) > 0;
-    if (hasFOC || totalGuests >= 3) return 0.15;
-    return 0.1;
-  }, [focDiscount, totalGuests]);
+    const basePercent =
+      Number(
+        trip?.pricing?.instructorCommissionPercent ??
+        bookingData?.trip?.pricing?.instructorCommissionPercent ??
+        0
+      ) || 0;
+
+    const guestCount = Number(totalGuests || 0);
+
+    const appliedPercent =
+      guestCount >= 3 ? basePercent : Math.max(0, basePercent - 5);
+
+    return appliedPercent / 100;
+  }, [trip, bookingData, totalGuests]);
 
   // ✅ 커미션 금액
   const commissionAmount = useMemo(() => {
