@@ -138,6 +138,10 @@ export default function TripCard({ trip, mode = "public" }) {
 
     // ⭐ 인스트럭터 모드일 때만 FOC 표시
     const focLabel = mode === "instructor" ? getFOCLabel(trip) : null;
+    const instructorCommission =
+        mode === "instructor"
+            ? Number(trip?.pricing?.instructorCommissionPercent || 0)
+            : 0;
 
     return (
         <div className="trip-card">
@@ -172,6 +176,11 @@ export default function TripCard({ trip, mode = "public" }) {
 
                         {focLabel && (
                             <span className="offer-foc-badge">{focLabel}</span>
+                        )}
+                        {instructorCommission > 0 && (
+                            <span className="offer-foc-badge">
+                                커미션 {instructorCommission}%
+                            </span>
                         )}
                     </div>
                 </div>
