@@ -17,15 +17,6 @@ const formatCurrencyLocal = (amount, currency = "USD") => {
   return `$${formatted}`;
 };
 
-{
-  policy && (
-    <div>
-      <p>커미션: {policy.commissionPercent}%</p>
-      <p>예약모드: {policy.bookingMode}</p>
-    </div>
-  )
-}
-
 // ⭐ FOC 규칙 필터링
 const filterFOCOffers = (offers) => {
   return offers.filter((offer) => {
