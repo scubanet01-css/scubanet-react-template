@@ -64,6 +64,7 @@ function InstructorList() {
         // ✅ trip마다 policy 붙이기
         const merged = withSeats.map((trip) => {
           const vesselId = trip?.vesselId || trip?.boatId || trip?.boatCode || "";
+          console.log("🔥 instructor vessel check:", trip?.boatName, vesselId, policyMap[vesselId]);
           const policy = policyMap[vesselId] || null;
 
           return {
