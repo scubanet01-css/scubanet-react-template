@@ -22,6 +22,10 @@ function MyBooking() {
   const stateGuest = state?.guest || null;
   const stateCurrency = state?.currency || null;
   const stateTotalPrice = state?.totalPrice;
+  const stateBasePrice = state?.basePrice;
+  const stateDiscountAmount = state?.discountAmount;
+  const stateFinalPrice = state?.finalPrice;
+  const statePromotion = state?.promotion || null;
   const stateInvoiceFileUrl = state?.invoiceFileUrl || null;
   const stateBookingId = state?.bookingId || null;
 
@@ -51,6 +55,83 @@ function MyBooking() {
       return sum + (Number(cabin.price) || 0) * count;
     }, 0);
   }, [stateCabins]);
+
+  const priceBoxStyles = {
+    box: {
+      marginTop: '16px',
+      padding: '16px',
+      border: '1px solid #e5e7eb',
+      borderRadius: '12px',
+      background: '#fafafa',
+    },
+    row: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: '12px',
+      padding: '8px 0',
+      fontSize: '15px',
+    },
+    discount: {
+      color: '#c62828',
+      fontWeight: '600',
+    },
+    note: {
+      fontSize: '13px',
+      color: '#666',
+      marginTop: '4px',
+    },
+    total: {
+      marginTop: '8px',
+      paddingTop: '12px',
+      borderTop: '1px solid #ddd',
+      fontSize: '17px',
+      fontWeight: '700',
+    },
+  };
+
+  const renderPriceBox = ({
+    basePrice,
+    discountAmount,
+    finalPrice,
+    promotion,
+    currency,
+  }) => {
+    const resolvedBasePrice = Number(basePrice ?? finalPrice ?? 0);
+    const resolvedDiscountAmount = Number(discountAmount ?? 0);
+    const resolvedFinalPrice = Number(finalPrice ?? 0);
+    const hasPromotionDiscount = resolvedDiscountAmount > 0;
+
+    return (
+      <div style={priceBoxStyles.box}>
+        <div style={priceBoxStyles.row}>
+          <span>기본 금액</span>
+          <span>{formatCurrency(resolvedBasePrice, currency)}</span>
+        </div>
+
+        {hasPromotionDiscount && (
+          <>
+            <div style={{ ...priceBoxStyles.row, ...priceBoxStyles.discount }}>
+              <span>
+                {promotion?.title || '프로모션 할인'}
+                {promotion?.discountValue ? ` (${promotion.discountValue}%)` : ''}
+              </span>
+              <span>- {formatCurrency(resolvedDiscountAmount, currency)}</span>
+            </div>
+
+            <div style={priceBoxStyles.note}>
+              일반예약 프로모션 적용
+            </div>
+          </>
+        )}
+
+        <div style={{ ...priceBoxStyles.row, ...priceBoxStyles.total }}>
+          <span>최종 금액</span>
+          <span>{formatCurrency(resolvedFinalPrice, currency)}</span>
+        </div>
+      </div>
+    );
+  };
 
   // ✅ bookingId가 있으면 서버에서 단건 조회
   useEffect(() => {
@@ -127,10 +208,31 @@ function MyBooking() {
   const cabins = booking?.selectedBookings || stateCabins || [];
   const guest = booking?.guest || stateGuest || null;
   const currency = booking?.currency || stateCurrency || 'USD';
+
   const total =
     booking?.totalPrice ??
     stateTotalPrice ??
     stateComputedTotal;
+
+  const basePrice =
+    booking?.basePrice ??
+    stateBasePrice ??
+    total;
+
+  const discountAmount =
+    booking?.discountAmount ??
+    stateDiscountAmount ??
+    0;
+
+  const finalPrice =
+    booking?.finalPrice ??
+    stateFinalPrice ??
+    total;
+
+  const promotion =
+    booking?.promotion ||
+    statePromotion ||
+    null;
 
   const invoiceFileUrl =
     booking?.invoiceFileUrl ||
@@ -200,6 +302,11 @@ function MyBooking() {
 
               const itemCurrency = item?.currency || 'USD';
 
+              const itemFinalPrice = Number(item?.finalPrice ?? item?.totalPrice ?? 0);
+              const itemBasePrice = Number(item?.basePrice ?? itemFinalPrice);
+              const itemDiscountAmount = Number(item?.discountAmount ?? 0);
+              const itemPromotion = item?.promotion || null;
+
               return (
                 <div
                   key={item.bookingId}
@@ -252,9 +359,13 @@ function MyBooking() {
                     </p>
                   )}
 
-                  <p style={{ marginTop: 12 }}>
-                    <strong>총 금액:</strong> {formatCurrency(item.totalPrice || 0, itemCurrency)}
-                  </p>
+                  {renderPriceBox({
+                    basePrice: itemBasePrice,
+                    discountAmount: itemDiscountAmount,
+                    finalPrice: itemFinalPrice,
+                    promotion: itemPromotion,
+                    currency: itemCurrency,
+                  })}
 
                   {item.invoiceFileUrl && (
                     <p style={{ marginTop: 12 }}>
@@ -292,7 +403,7 @@ function MyBooking() {
     );
   }
 
-  // ✅ 기존 상세 화면 유지
+  // ✅ 기존 상세 화면 유지 + 할인 구조 반영
   return (
     <div style={{ padding: 20 }}>
       <h2>예약 내역 확인</h2>
@@ -368,9 +479,13 @@ function MyBooking() {
         ))}
       </ul>
 
-      <p style={{ marginTop: 16 }}>
-        <strong>총 금액:</strong> {formatCurrency(total, currency)}
-      </p>
+      {renderPriceBox({
+        basePrice,
+        discountAmount,
+        finalPrice,
+        promotion,
+        currency,
+      })}
 
       {invoiceFileUrl && (
         <p style={{ marginTop: 12 }}>
