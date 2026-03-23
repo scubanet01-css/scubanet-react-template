@@ -1,8 +1,21 @@
 import React, { useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./InstructorConfirm.css";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { getCurrencyForTrip } from "../../utils/currencyUtils";
+
+import {
+  SPECIAL_TERMS_VERSION,
+  specialTermsTitle,
+  specialTermsText,
+} from "../../data/terms/specialTerms";
+
+import {
+  GENERAL_TERMS_VERSION,
+  generalTermsTitle,
+  generalTermsText,
+} from "../../data/terms/generalTerms";
 
 function InstructorConfirm() {
   const { state } = useLocation();
@@ -41,6 +54,20 @@ function InstructorConfirm() {
     });
   };
 
+  const [showTermsModal, setShowTermsModal] = useState(false);
+
+  const [agreeAll, setAgreeAll] = useState(false);
+  const [agreeCancellation, setAgreeCancellation] = useState(false);
+  const [agreeSafety, setAgreeSafety] = useState(false);
+  const [agreeResponsibility, setAgreeResponsibility] = useState(false);
+  const [agreeTermsReview, setAgreeTermsReview] = useState(false);
+
+  const [specialTermsRead, setSpecialTermsRead] = useState(false);
+  const [generalTermsRead, setGeneralTermsRead] = useState(false);
+
+  const [termsModalType, setTermsModalType] = useState(null);
+  const [termsScrollDone, setTermsScrollDone] = useState(false);
+
   // ✅ 총 인원 계산
   const totalGuests = useMemo(() => {
     return selectedBookings.reduce((sum, b) => {
@@ -78,7 +105,7 @@ function InstructorConfirm() {
       ? focDetails.map((f) => f.offerName || f.name || "").join(", ")
       : "Group Offer";
 
-  const handleConfirm = async () => {
+  const handleConfirm = async (agreements) => {
     try {
       const invoiceData = {
         trip,
@@ -96,6 +123,7 @@ function InstructorConfirm() {
           email: "scubanet01@gmail.com",
           phone: "01030192402",
         },
+        agreements,
       };
 
       const res = await fetch("/api/send-invoice", {
@@ -133,6 +161,28 @@ function InstructorConfirm() {
       alert("인보이스 생성 또는 이메일 발송 중 오류가 발생했습니다.");
     }
   };
+
+  const currentTermsTitle =
+    termsModalType === "special"
+      ? specialTermsTitle
+      : termsModalType === "general"
+        ? generalTermsTitle
+        : "";
+
+  const currentTermsText =
+    termsModalType === "special"
+      ? specialTermsText
+      : termsModalType === "general"
+        ? generalTermsText
+        : "";
+
+  const canConfirmTerms =
+    agreeCancellation &&
+    agreeSafety &&
+    agreeResponsibility &&
+    agreeTermsReview &&
+    specialTermsRead &&
+    generalTermsRead;
 
   return (
     <div className="instructor-confirm-container">
@@ -221,10 +271,159 @@ function InstructorConfirm() {
           ← 이전으로
         </button>
 
-        <button className="confirm-btn" onClick={handleConfirm}>
+        <button className="confirm-btn" onClick={() => setShowTermsModal(true)}>
           예약 확정
         </button>
       </div>
+      {showTermsModal && (
+        <div className="terms-modal-overlay">
+          <div className="terms-modal">
+
+            <h3>약관 동의</h3>
+
+            {/* 체크박스 */}
+            <label>
+              <input
+                type="checkbox"
+                checked={agreeAll}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setAgreeAll(checked);
+                  setAgreeCancellation(checked);
+                  setAgreeSafety(checked);
+                  setAgreeResponsibility(checked);
+                  setAgreeTermsReview(checked);
+                }}
+              />
+              전체 동의
+            </label>
+
+            <label>
+              <input
+                type="checkbox"
+                checked={agreeCancellation}
+                onChange={(e) => setAgreeCancellation(e.target.checked)}
+              />
+              취소 및 환불 규정 동의
+            </label>
+
+            <label>
+              <input
+                type="checkbox"
+                checked={agreeSafety}
+                onChange={(e) => setAgreeSafety(e.target.checked)}
+              />
+              다이빙 위험 동의
+            </label>
+
+            <label>
+              <input
+                type="checkbox"
+                checked={agreeResponsibility}
+                onChange={(e) => setAgreeResponsibility(e.target.checked)}
+              />
+              여행사 책임 범위 동의
+            </label>
+
+            <label>
+              <input
+                type="checkbox"
+                checked={agreeTermsReview}
+                disabled={!specialTermsRead || !generalTermsRead}
+                onChange={(e) => setAgreeTermsReview(e.target.checked)}
+              />
+              약관 전문 확인 동의
+            </label>
+
+            {/* 약관 보기 버튼 */}
+            <div style={{ marginTop: "10px" }}>
+              <button
+                onClick={() => {
+                  setTermsModalType("special");
+                  setTermsScrollDone(false);
+                }}
+              >
+                특별약관 보기
+              </button>
+
+              <button
+                onClick={() => {
+                  setTermsModalType("general");
+                  setTermsScrollDone(false);
+                }}
+              >
+                일반약관 보기
+              </button>
+            </div>
+
+            {/* 약관 내용 */}
+            {termsModalType && (
+              <div style={{ marginTop: "10px" }}>
+                <h4>{currentTermsTitle}</h4>
+
+                <div
+                  onScroll={(e) => {
+                    const el = e.target;
+                    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 5) {
+                      setTermsScrollDone(true);
+                    }
+                  }}
+                  style={{
+                    height: "200px",
+                    overflowY: "auto",
+                    border: "1px solid #ddd",
+                    padding: "10px",
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {currentTermsText}
+                </div>
+
+                <button
+                  disabled={!termsScrollDone}
+                  onClick={() => {
+                    if (termsModalType === "special") {
+                      setSpecialTermsRead(true);
+                    } else {
+                      setGeneralTermsRead(true);
+                    }
+                    setTermsModalType(null);
+                  }}
+                >
+                  모두 읽고 확인
+                </button>
+              </div>
+            )}
+
+            {/* 최종 버튼 */}
+            <div style={{ marginTop: "20px" }}>
+              <button onClick={() => setShowTermsModal(false)}>취소</button>
+
+              <button
+                disabled={!canConfirmTerms}
+                onClick={() => {
+                  const agreements = {
+                    agreeAll,
+                    agreeCancellation,
+                    agreeSafety,
+                    agreeResponsibility,
+                    agreeTermsReview,
+                    specialTermsRead,
+                    generalTermsRead,
+                    agreedAt: new Date().toISOString(),
+                    specialTermsVersion: SPECIAL_TERMS_VERSION,
+                    generalTermsVersion: GENERAL_TERMS_VERSION,
+                  };
+
+                  handleConfirm(agreements);
+                }}
+              >
+                동의하고 예약 확정
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
