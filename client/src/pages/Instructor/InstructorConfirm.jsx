@@ -30,6 +30,7 @@ function InstructorConfirm() {
     commissionAmount: incomingCommissionAmount,
     finalPrice: incomingFinalPrice,
     appliedCommissionPercent: incomingAppliedCommissionPercent,
+    baseCommissionPercent: incomingBaseCommissionPercent,
     currency: incomingCurrency,
   } = state || {};
 
@@ -124,6 +125,20 @@ function InstructorConfirm() {
 
     return Math.round(commissionRate * 100);
   }, [incomingAppliedCommissionPercent, commissionRate]);
+
+  const baseCommissionPercent = useMemo(() => {
+    if (typeof incomingBaseCommissionPercent === "number") {
+      return incomingBaseCommissionPercent;
+    }
+
+    return Number(trip?.pricing?.instructorCommissionPercent || 0) || 0;
+  }, [incomingBaseCommissionPercent, trip]);
+
+  const commissionNote = useMemo(() => {
+    return totalGuests >= 3
+      ? "3명 이상 소그룹 기준"
+      : "1~2명 예약 기준 (-5% 적용)";
+  }, [totalGuests]);
 
   const focLabel =
     Array.isArray(focDetails) && focDetails.length > 0
@@ -315,8 +330,12 @@ function InstructorConfirm() {
             </>
           )}
 
-          <p style={{ marginBottom: 4 }}>
-            강사 커미션 ({appliedCommissionPercent}%): -
+          <p>
+            정책 커미션: {baseCommissionPercent}%
+          </p>
+
+          <p>
+            적용 커미션: {appliedCommissionPercent}% ({commissionNote}) -{" "}
             {formatCurrency(commissionAmount, currency)}
           </p>
 

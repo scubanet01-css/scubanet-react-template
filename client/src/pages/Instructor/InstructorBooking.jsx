@@ -555,6 +555,11 @@ function InstructorBooking() {
 
   const finalPrice = Math.max(0, totalPrice - commissionAmount);
 
+  const commissionNote =
+    pax >= 3
+      ? "3명 이상 소그룹 기준"
+      : "1~2명 예약 기준 (-5% 적용)";
+
   return (
     <div className="instructor-detail-container">
       <h2>{boatName}</h2>
@@ -702,7 +707,11 @@ function InstructorBooking() {
           </p>
 
           <p>
-            <strong>적용 커미션 ({appliedCommissionPercent}%):</strong>{" "}
+            <strong>정책 커미션:</strong> {baseCommissionPercent}%
+          </p>
+
+          <p>
+            <strong>적용 커미션:</strong> {appliedCommissionPercent}% ({commissionNote}){" "}
             -{formatCurrencyLocal(commissionAmount, currency)}
           </p>
 
@@ -724,6 +733,7 @@ function InstructorBooking() {
                   commissionAmount,    // 실제 커미션 금액
                   finalPrice,          // 최종 결제금액
                   appliedCommissionPercent, // 10, 15 같은 표시용 %
+                  baseCommissionPercent,
                   bookingType: "instructor",
                   currency,
                 },
