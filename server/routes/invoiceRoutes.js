@@ -35,10 +35,19 @@ router.post("/send-invoice", async (req, res) => {
       trip,
       selectedBookings,
       totalPrice,
+
+      // ✅ 일반예약 프로모션 관련 필드 추가
+      basePrice,
+      discountAmount,
+      finalPrice,
+      promotion,
+
+      // ✅ 강사예약 정산 필드 유지
       focDiscount,
       commissionRate,
       commissionAmount,
       finalAmount,
+
       guest,
       bookingType,
       agreements,
@@ -97,13 +106,22 @@ router.post("/send-invoice", async (req, res) => {
         trip,
         cabins,
         guest,
+
+        // ✅ 금액 정보
         totalPrice,
+        basePrice,
+        discountAmount,
+        finalPrice,
+        promotion,
+
+        // ✅ 강사예약 정산 정보
         focDiscount,
         commissionRate,
         commissionAmount,
         finalAmount,
+
         bookingType: resolvedBookingType,
-        agreements, // ✅ 필요 시 PDF 생성기에서 사용 가능하도록 전달
+        agreements,
       },
       filePath
     );
@@ -117,13 +135,22 @@ router.post("/send-invoice", async (req, res) => {
       filePath,
       trip,
       guest,
+
+      // ✅ 예약/금액 정보
       bookingType: resolvedBookingType,
       totalPrice,
+      basePrice,
+      discountAmount,
+      finalPrice,
+      promotion,
+
+      // ✅ 강사예약 정산 정보
       focDiscount,
       commissionRate,
       commissionAmount,
       finalAmount,
-      agreements, // ✅ 필요 시 이메일 템플릿에서 사용 가능하도록 전달
+
+      agreements,
     });
 
     console.log(`📬 이메일 발송 성공: ${guest.email}`);
@@ -134,13 +161,26 @@ router.post("/send-invoice", async (req, res) => {
       trip,
       selectedBookings: cabins,
       guest,
+
+      // ✅ 금액 정보 저장
       totalPrice,
+      basePrice,
+      discountAmount,
+      finalPrice,
+      promotion,
+
       bookingType: resolvedBookingType,
       invoiceFileUrl: publicFileUrl,
       invoiceFilePath: filePath,
       emailSent: true,
       paymentStatus: "pending",
       bookingStatus: "confirmed",
+
+      // ✅ 강사예약 정산 정보도 저장
+      focDiscount,
+      commissionRate,
+      commissionAmount,
+      finalAmount,
 
       // ✅ 약관 동의 정보 저장
       agreements,
