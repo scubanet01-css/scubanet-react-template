@@ -262,6 +262,20 @@ function AdminBoatAssets() {
         return Array.from(map.values());
     }, [utsTrips]);
 
+    const selectedVesselTrip = useMemo(() => {
+        return utsTrips.find((t) => t.vesselId === vesselId) || null;
+    }, [utsTrips, vesselId]);
+
+    const isInseanqVessel = selectedVesselTrip?.source === "inseanq";
+
+    const currentSourceLabel = selectedVesselTrip?.source || "";
+
+    useEffect(() => {
+        if (isInseanqVessel) {
+            setPolicyFOC("");
+        }
+    }, [isInseanqVessel]);
+
     // -------------------------------
     // Cleanup previews on unmount / vessel change
     // -------------------------------
@@ -1419,7 +1433,7 @@ function AdminBoatAssets() {
                     contractStatus: policyContractStatus,
                     bookingMode: policyBookingMode,
                     commissionPercent: policyCommission,
-                    focPolicy: policyFOC,
+                    focPolicy: isInseanqVessel ? "" : policyFOC,
                     memo: policyMemo,
                 }),
             });
@@ -1512,12 +1526,35 @@ function AdminBoatAssets() {
 
                 <div>
                     <label>FOC 정책</label>
-                    <input
-                        type="text"
-                        value={policyFOC}
-                        onChange={(e) => setPolicyFOC(e.target.value)}
-                        placeholder="예: 10+1"
-                    />
+
+                    {isInseanqVessel ? (
+                        <div
+                            style={{
+                                marginTop: 6,
+                                padding: "10px 12px",
+                                background: "#f5f5f5",
+                                border: "1px solid #ddd",
+                                borderRadius: 6,
+                                color: "#666",
+                            }}
+                        >
+                            Inseanq 선박은 원본 FOC를 그대로 사용합니다.
+                        </div>
+                    ) : (
+                        <input
+                            type="text"
+                            value={policyFOC}
+                            onChange={(e) => setPolicyFOC(e.target.value)}
+                            placeholder="예: 10+1"
+                            style={{ display: "block", width: "100%", marginTop: 6 }}
+                        />
+                    )}
+
+                    {currentSourceLabel && (
+                        <div style={{ marginTop: 6, fontSize: 12, color: "#888" }}>
+                            source: {currentSourceLabel}
+                        </div>
+                    )}
                 </div>
 
                 <div>
