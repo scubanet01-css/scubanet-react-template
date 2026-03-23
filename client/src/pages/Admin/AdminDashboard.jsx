@@ -78,6 +78,12 @@ function AdminDashboard() {
                 />
 
                 <MenuCard
+                    to="/admin/promotions"
+                    title="할인 이벤트 관리"
+                    desc="프로모션을 등록하고 수정합니다."
+                />
+
+                <MenuCard
                     to="/admin/users"
                     title="회원 관리"
                     desc="일반회원, 강사회원, 관리자 계정을 조회하고 강사 승인 상태를 관리합니다."

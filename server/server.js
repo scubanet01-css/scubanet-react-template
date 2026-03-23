@@ -14,6 +14,7 @@ const sendInvoiceEmail = require("./utils/sendInvoiceEmail");
 const invoiceRoutes = require("./routes/invoiceRoutes");
 const adminBoatAssetsRoutes = require("./routes/adminBoatAssets");
 const bookingRoutes = require("./routes/bookingRoutes");
+const adminPromotionsRouter = require("./routes/adminPromotions");
 
 // ✅ Special Trips 유틸 직접 사용
 const {
@@ -80,6 +81,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/uploads", express.static("/var/scubanet-data/uploads"));
 app.use(authRouter);
+app.use("/admin/api/promotions", adminPromotionsRouter);
 
 // --------------------------------------------------
 // ✅ Special Trips Admin API (여기가 핵심)

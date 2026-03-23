@@ -1,0 +1,26 @@
+{
+    "version": 1,
+    "updatedAt": "2026-03-23T18:00:00+09:00",
+    "promotions": [
+        {
+            "id": "promo_general_20260401_20260430",
+            "title": "오픈 기념 일반예약 5% 할인",
+            "description": "오픈 기념 4월 예약 고객 대상 일반예약 5% 할인 이벤트",
+            "targetBookingType": "general",
+            "discountType": "percent",
+            "discountValue": 5,
+            "bookingStartDate": "2026-03-23",
+            "bookingEndDate": "2026-04-30",
+            "applyScope": "global",
+            "scopeConfig": {},
+            "status": "approved",
+            "isActive": true,
+            "stackable": false,
+            "priority": 100,
+            "createdAt": "2026-03-23T18:00:00+09:00",
+            "updatedAt": "2026-03-23T18:00:00+09:00",
+            "createdBy": "admin",
+            "updatedBy": "admin"
+        }
+    ]
+}

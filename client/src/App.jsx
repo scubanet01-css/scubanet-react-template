@@ -25,6 +25,7 @@ import AdminSpecialTrips from './pages/Admin/AdminSpecialTrips';
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminBookings from "./pages/Admin/AdminBookings";
 import AdminUsers from "./pages/Admin/AdminUsers";
+import AdminPromotions from "./pages/Admin/AdminPromotions";
 
 import { AuthProvider } from './hooks/useAuth';
 
@@ -165,6 +166,16 @@ function App() {
             element={
               <ProtectedRoute allowedRole="admin">
                 <AdminBookings />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 관리자 프로모션 관리 */}
+          <Route
+            path="/admin/promotions"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <AdminPromotions />
               </ProtectedRoute>
             }
           />
