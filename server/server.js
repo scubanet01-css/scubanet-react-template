@@ -274,3 +274,41 @@ app.listen(port, "0.0.0.0", () => {
   console.log(`✅ API on http://localhost:${port}`);
   console.log(`✅ 중계 서버가 http://localhost:${port} 에서 실행 중입니다.`);
 });
+
+// ✅ instructor policy 파일 경로
+const POLICY_FILE = "/var/scubanet-data/instructor-policies.json";
+
+// ✅ 정책 전체 조회
+app.get("/api/instructor-policy", (req, res) => {
+  try {
+    const fs = require("fs");
+
+    if (!fs.existsSync(POLICY_FILE)) {
+      return res.json({});
+    }
+
+    const data = JSON.parse(fs.readFileSync(POLICY_FILE, "utf-8"));
+    res.json(data);
+  } catch (err) {
+    console.error("❌ 정책 조회 실패:", err);
+    res.status(500).json({ error: "Failed to load policies" });
+  }
+});
+
+// ✅ 특정 vessel 조회
+app.get("/api/instructor-policy/:vesselId", (req, res) => {
+  try {
+    const fs = require("fs");
+    const { vesselId } = req.params;
+
+    if (!fs.existsSync(POLICY_FILE)) {
+      return res.json(null);
+    }
+
+    const data = JSON.parse(fs.readFileSync(POLICY_FILE, "utf-8"));
+    res.json(data[vesselId] || null);
+  } catch (err) {
+    console.error("❌ 정책 조회 실패:", err);
+    res.status(500).json({ error: "Failed to load policy" });
+  }
+});
