@@ -396,6 +396,23 @@ function MyBooking() {
           </>
         )}
 
+        <div style={{ marginTop: 16, display: 'flex', gap: '10px' }}>
+          <button
+            onClick={() => navigate(`/booking/summary/${item.bookingId}`)}
+            style={{
+              padding: '8px 14px',
+              borderRadius: '8px',
+              border: '1px solid #d1d5db',
+              background: '#fff',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            상세보기
+          </button>
+        </div>
+
         <div style={{ marginTop: 24 }}>
           <p
             style={{
@@ -540,8 +557,8 @@ function MyBooking() {
           관리자가 입금을 확인하면 예약 상태가 입금완료로 변경됩니다.
         </p>
 
-        <button onClick={() => navigate(-1)}>
-          ← 이전으로
+        <button onClick={() => navigate('/booking/summary')}>
+          ← 목록으로
         </button>
       </div>
     </div>
