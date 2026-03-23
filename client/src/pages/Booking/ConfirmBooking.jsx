@@ -255,7 +255,6 @@ function ConfirmBooking() {
 
 
   const handleConfirmBooking = async (agreements) => {
-
     if (!guestName || !guestEmail || !guestPhone) {
       alert('예약자 정보를 모두 입력해주세요.');
       return;
@@ -280,15 +279,23 @@ function ConfirmBooking() {
         email: guestEmail,
         phone: guestPhone,
       },
-      totalPrice,
+
+      // ✅ 금액 정보
+      basePrice,
+      discountAmount,
+      finalPrice: discountedPrice,
+      totalPrice: discountedPrice,
+
+      // ✅ 프로모션 정보
+      promotion: appliedPromotion,
+
       bookingType: 'general',
       agreements,
     };
 
-    console.log(payload);
+    console.log("📦 최종 예약 payload:", payload);
 
     try {
-
       const response = await axios.post('/api/send-invoice', payload);
 
       if (response.data?.success) {
@@ -311,7 +318,16 @@ function ConfirmBooking() {
                 email: guestEmail,
                 phone: guestPhone,
               },
-              totalPrice,
+
+              // ✅ 금액 정보
+              basePrice,
+              discountAmount,
+              finalPrice: discountedPrice,
+              totalPrice: discountedPrice,
+
+              // ✅ 프로모션 정보
+              promotion: appliedPromotion,
+
               invoiceFileUrl: response.data.fileUrl || null,
               bookingId: savedBookingId,
               bookingType: 'general',
