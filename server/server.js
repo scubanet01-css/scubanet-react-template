@@ -312,3 +312,46 @@ app.get("/api/instructor-policy/:vesselId", (req, res) => {
     res.status(500).json({ error: "Failed to load policy" });
   }
 });
+
+// ✅ 정책 저장
+app.post("/api/instructor-policy", (req, res) => {
+  try {
+    const {
+      vesselId,
+      contractStatus = "none",
+      bookingMode = "inquiry",
+      commissionPercent = 0,
+      focPolicy = "",
+      memo = "",
+    } = req.body || {};
+
+    if (!vesselId) {
+      return res.status(400).json({ error: "vesselId is required" });
+    }
+
+    let data = {};
+
+    if (fs.existsSync(POLICY_FILE)) {
+      data = JSON.parse(fs.readFileSync(POLICY_FILE, "utf-8"));
+    }
+
+    data[vesselId] = {
+      contractStatus,
+      bookingMode,
+      commissionPercent: Number(commissionPercent) || 0,
+      focPolicy: focPolicy || "",
+      memo: memo || "",
+    };
+
+    fs.writeFileSync(POLICY_FILE, JSON.stringify(data, null, 2), "utf-8");
+
+    res.json({
+      success: true,
+      vesselId,
+      policy: data[vesselId],
+    });
+  } catch (err) {
+    console.error("❌ 정책 저장 실패:", err);
+    res.status(500).json({ error: "Failed to save policy" });
+  }
+});
