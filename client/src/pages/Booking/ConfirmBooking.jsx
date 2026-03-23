@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { useAuth } from "../../hooks/useAuth";
+import { getActivePromotion, applyPromotion } from "../../utils/promotionUtils";
 import {
   SPECIAL_TERMS_VERSION,
   specialTermsTitle,
@@ -20,6 +21,11 @@ function ConfirmBooking() {
   const { state } = useLocation();
   const { user } = useAuth();
 
+  const [promotions, setPromotions] = useState([]);
+  const [promotionLoading, setPromotionLoading] = useState(false);
+
+
+
   // ✅ SelectCabin.jsx 또는 이전 단계에서 전달된 state
   const {
     trip,
@@ -33,6 +39,8 @@ function ConfirmBooking() {
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
+
+
 
   const [showTermsModal, setShowTermsModal] = useState(false);
 
@@ -60,6 +68,23 @@ function ConfirmBooking() {
       setAgreeTermsReview(false);
     }
   };
+
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        setPromotionLoading(true);
+        const res = await axios.get("/admin/api/promotions");
+        setPromotions(Array.isArray(res.data?.promotions) ? res.data.promotions : []);
+      } catch (error) {
+        console.error("프로모션 조회 실패:", error);
+        setPromotions([]);
+      } finally {
+        setPromotionLoading(false);
+      }
+    };
+
+    fetchPromotions();
+  }, []);
 
   useEffect(() => {
     const allChecked =
@@ -196,6 +221,27 @@ function ConfirmBooking() {
     }, 0);
   }, [selectedCabins]);
 
+  const bookingType = "general";
+  const basePrice = Number(totalPrice || 0);
+  const bookingDate = new Date().toISOString().slice(0, 10);
+
+  const activePromotion = getActivePromotion(
+    promotions,
+    bookingType,
+    bookingDate
+  );
+
+  const promotionResult = applyPromotion({
+    basePrice,
+    bookingType,
+    bookingDate,
+    promotion: activePromotion,
+  });
+
+  const discountedPrice = promotionResult.finalPrice;
+  const discountAmount = promotionResult.discountAmount;
+  const appliedPromotion = promotionResult.appliedPromotion;
+
   // ✅ state 데이터가 없을 경우 에러 방지
   if (!trip || !Array.isArray(selectedCabins) || selectedCabins.length === 0) {
     return (
@@ -295,6 +341,39 @@ function ConfirmBooking() {
         ? generalTermsText
         : "";
 
+  const promoStyles = {
+    box: {
+      marginTop: "16px",
+      padding: "16px",
+      border: "1px solid #e5e7eb",
+      borderRadius: "12px",
+      background: "#fafafa",
+    },
+    row: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: "12px",
+      padding: "8px 0",
+      fontSize: "15px",
+    },
+    discount: {
+      color: "#c62828",
+      fontWeight: "600",
+    },
+    note: {
+      fontSize: "13px",
+      color: "#666",
+    },
+    total: {
+      marginTop: "8px",
+      paddingTop: "12px",
+      borderTop: "1px solid #ddd",
+      fontSize: "17px",
+      fontWeight: "700",
+    },
+  };
+
   return (
     <div className="confirm-booking">
       <h2>예약 확인</h2>
@@ -335,9 +414,32 @@ function ConfirmBooking() {
           })}
         </ul>
 
-        <p>
-          <strong>총 합계:</strong> {formatCurrency(totalPrice, currency)}
-        </p>
+        <div style={promoStyles.box}>
+          <div style={promoStyles.row}>
+            <span>기본 금액</span>
+            <span>{formatCurrency(basePrice, currency)}</span>
+          </div>
+
+          {appliedPromotion && discountAmount > 0 && (
+            <>
+              <div style={{ ...promoStyles.row, ...promoStyles.discount }}>
+                <span>
+                  {appliedPromotion.title} ({appliedPromotion.discountValue}%)
+                </span>
+                <span>- {formatCurrency(discountAmount, currency)}</span>
+              </div>
+
+              <div style={promoStyles.note}>
+                일반예약 프로모션 적용
+              </div>
+            </>
+          )}
+
+          <div style={{ ...promoStyles.row, ...promoStyles.total }}>
+            <span>총 합계</span>
+            <span>{formatCurrency(discountedPrice, currency)}</span>
+          </div>
+        </div>
       </section>
 
       {/* 예약자 정보 */}
