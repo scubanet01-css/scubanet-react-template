@@ -77,19 +77,46 @@ function saveBooking(params) {
         trip,
         selectedBookings = [],
         guest,
+
+        // ✅ 금액 정보
         totalPrice = 0,
+        basePrice = null,
+        discountAmount = 0,
+        finalPrice = null,
+        promotion = null,
+
         bookingType = "general",
         invoiceFileUrl = null,
         invoiceFilePath = null,
         emailSent = false,
         paymentStatus = "pending",
         bookingStatus = "confirmed",
+
+        // ✅ 강사예약 정산 정보 유지
+        focDiscount = null,
+        commissionRate = null,
+        commissionAmount = null,
+        finalAmount = null,
+
         agreements = null,
         agreementMeta = null,
     } = params || {};
 
     const bookings = readBookings();
     const bookingId = generateBookingId(bookings);
+
+    const resolvedTotalPrice = Number(totalPrice) || 0;
+    const resolvedBasePrice =
+        basePrice !== null && basePrice !== undefined
+            ? Number(basePrice) || 0
+            : resolvedTotalPrice;
+
+    const resolvedDiscountAmount = Number(discountAmount) || 0;
+
+    const resolvedFinalPrice =
+        finalPrice !== null && finalPrice !== undefined
+            ? Number(finalPrice) || 0
+            : resolvedTotalPrice;
 
     const savedBooking = {
         bookingId,
@@ -122,10 +149,25 @@ function saveBooking(params) {
                 occupancyType: item?.occupancyType || "",
                 occupancyValue: item?.occupancyValue || "",
                 price: Number(item?.price) || 0,
+                totalPrice: Number(item?.totalPrice) || 0,
             }))
             : [],
 
-        totalPrice: Number(totalPrice) || 0,
+        // ✅ 프로모션 반영 금액 정보 저장
+        totalPrice: resolvedTotalPrice,
+        basePrice: resolvedBasePrice,
+        discountAmount: resolvedDiscountAmount,
+        finalPrice: resolvedFinalPrice,
+        promotion: promotion
+            ? {
+                id: promotion?.id || null,
+                title: promotion?.title || "",
+                discountValue: Number(promotion?.discountValue) || 0,
+                discountType: promotion?.discountType || "percent",
+                targetBookingType: promotion?.targetBookingType || bookingType,
+            }
+            : null,
+
         currency: getCurrency(trip, "USD"),
 
         invoiceFileUrl,
@@ -134,6 +176,24 @@ function saveBooking(params) {
         emailSent,
         paymentStatus,
         bookingStatus,
+
+        // ✅ 강사예약 정산 정보 유지
+        focDiscount:
+            focDiscount !== null && focDiscount !== undefined
+                ? Number(focDiscount) || 0
+                : null,
+        commissionRate:
+            commissionRate !== null && commissionRate !== undefined
+                ? Number(commissionRate) || 0
+                : null,
+        commissionAmount:
+            commissionAmount !== null && commissionAmount !== undefined
+                ? Number(commissionAmount) || 0
+                : null,
+        finalAmount:
+            finalAmount !== null && finalAmount !== undefined
+                ? Number(finalAmount) || 0
+                : null,
 
         agreements,
         agreementMeta,
