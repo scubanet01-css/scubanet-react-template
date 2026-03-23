@@ -141,7 +141,7 @@ function MyBooking() {
         )}
 
         <div style={{ ...priceBoxStyles.row, ...priceBoxStyles.total }}>
-          <span>최종 금액</span>
+          <span>총 합계</span>
           <span>{formatCurrency(resolvedFinalPrice, currency)}</span>
         </div>
       </div>
