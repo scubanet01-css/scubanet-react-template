@@ -17,8 +17,6 @@ const formatCurrencyLocal = (amount, currency = "USD") => {
   return `$${formatted}`;
 };
 
-import { useEffect, useState } from "react";
-
 const [policy, setPolicy] = useState(null);
 
 useEffect(() => {
