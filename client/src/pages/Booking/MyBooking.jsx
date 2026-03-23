@@ -316,80 +316,52 @@ function MyBooking() {
                 '정보 없음';
 
               const itemCurrency = item?.currency || 'USD';
-
               const itemFinalPrice = Number(item?.finalPrice ?? item?.totalPrice ?? 0);
-              const itemBasePrice = Number(item?.basePrice ?? itemFinalPrice);
-              const itemDiscountAmount = Number(item?.discountAmount ?? 0);
-              const itemPromotion = item?.promotion || null;
 
               return (
                 <div
                   key={item.bookingId}
                   style={{
-                    border: '1px solid #ddd',
-                    borderRadius: '10px',
-                    padding: '16px',
-                    marginBottom: '16px',
-                    background: '#fff',
+                    borderBottom: '1px solid #e5e7eb',
+                    padding: '14px 0',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '16px',
+                    flexWrap: 'wrap',
                   }}
                 >
-                  <p>
-                    <strong>예약번호:</strong> {item.bookingId}
-                  </p>
+                  <div style={{ flex: '1 1 700px', minWidth: '280px' }}>
+                    <div style={{ fontWeight: '700', marginBottom: '6px' }}>
+                      {item.bookingId}
+                    </div>
 
-                  <p>
-                    <strong>예약 상태:</strong> {getStatusLabel(item.bookingStatus || 'confirmed')}
-                  </p>
+                    <div style={{ fontSize: '14px', color: '#374151', lineHeight: 1.6 }}>
+                      {itemTripName} / {itemTrip?.startDate || '-'} 출발 / {itemBoatName}
+                    </div>
 
-                  <p>
-                    <strong>결제 상태:</strong>{' '}
-                    <span
+                    <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
+                      결제상태: {getPaymentLabel(item.paymentStatus || 'pending')} / 최종금액:{' '}
+                      {formatCurrency(itemFinalPrice, itemCurrency)}
+                    </div>
+                  </div>
+
+                  <div style={{ flexShrink: 0 }}>
+                    <button
+                      onClick={() => navigate(`/booking/summary/${item.bookingId}`)}
                       style={{
-                        fontWeight: 'bold',
-                        color: item.paymentStatus === 'paid' ? '#16a34a' : '#f59e0b',
+                        padding: '8px 14px',
+                        borderRadius: '8px',
+                        border: '1px solid #d1d5db',
+                        background: '#fff',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500',
                       }}
                     >
-                      {getPaymentLabel(item.paymentStatus || 'pending')}
-                    </span>
-                  </p>
-
-                  {item.createdAt && (
-                    <p>
-                      <strong>예약일시:</strong>{' '}
-                      {new Date(item.createdAt).toLocaleString('ko-KR')}
-                    </p>
-                  )}
-
-                  <p>
-                    <strong>예약자:</strong> {item.guest?.name} / {item.guest?.email}
-                  </p>
-
-                  <p>
-                    <strong>여행:</strong> {itemTripName} / {itemTrip?.startDate || '-'} 출발 / {itemBoatName}
-                  </p>
-
-                  {itemTrip?.endDate && (
-                    <p>
-                      <strong>도착일:</strong> {itemTrip.endDate}
-                    </p>
-                  )}
-
-                  {renderPriceBox({
-                    basePrice: itemBasePrice,
-                    discountAmount: itemDiscountAmount,
-                    finalPrice: itemFinalPrice,
-                    promotion: itemPromotion,
-                    currency: itemCurrency,
-                  })}
-
-                  {item.invoiceFileUrl && (
-                    <p style={{ marginTop: 12 }}>
-                      <strong>인보이스 파일:</strong>{' '}
-                      <a href={item.invoiceFileUrl} target="_blank" rel="noreferrer">
-                        인보이스 열기
-                      </a>
-                    </p>
-                  )}
+                      상세보기
+                    </button>
+                  </div>
                 </div>
               );
             })}
