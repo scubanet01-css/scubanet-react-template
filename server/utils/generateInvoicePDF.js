@@ -9,28 +9,15 @@ const fontPath = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf";
 // 공통 헬퍼
 // -------------------------------
 function getTripName(trip) {
-  return (
-    trip?.product?.name ||
-    trip?.title ||
-    trip?.tripName ||
-    "정보 없음"
-  );
+  return trip?.product?.name || trip?.title || trip?.tripName || "정보 없음";
 }
 
 function getBoatName(trip) {
-  return (
-    trip?.boat?.name ||
-    trip?.boatName ||
-    "정보 없음"
-  );
+  return trip?.boat?.name || trip?.boatName || "정보 없음";
 }
 
 function getCurrency(trip, fallback = "USD") {
-  return (
-    trip?.pricing?.currency ||
-    trip?.currency ||
-    fallback
-  );
+  return trip?.pricing?.currency || trip?.currency || fallback;
 }
 
 function formatMoney(value, currency = "USD") {
@@ -54,7 +41,13 @@ function getOccupancyCount(type, occupancyValue) {
     if (!Number.isNaN(parsed) && parsed > 0) return parsed;
   }
 
-  if (type === "독방사용" || type === "독실 예약" || type === "1인 예약" || type === "1") return 1;
+  if (
+    type === "독방사용" ||
+    type === "독실 예약" ||
+    type === "1인 예약" ||
+    type === "1"
+  )
+    return 1;
   if (type === "2인 예약" || type === "2") return 2;
 
   return 1;
@@ -74,6 +67,10 @@ function safeText(value, fallback = "-") {
  * @param {Array}  data.cabins
  * @param {object} data.guest
  * @param {number} data.totalPrice
+ * @param {number} data.basePrice
+ * @param {number} data.discountAmount
+ * @param {number} data.finalPrice
+ * @param {object} data.promotion
  * @param {number} data.focDiscount
  * @param {number} data.commissionRate
  * @param {number} data.commissionAmount
@@ -90,6 +87,10 @@ function generateInvoicePDF(data, outputPath) {
         cabins = [],
         guest = {},
         totalPrice,
+        basePrice,
+        discountAmount,
+        finalPrice,
+        promotion,
         focDiscount,
         commissionRate,
         commissionAmount,
@@ -103,14 +104,33 @@ function generateInvoicePDF(data, outputPath) {
 
       const computedCabinTotal = Array.isArray(cabins)
         ? cabins.reduce((sum, cabin) => {
-          const count = getOccupancyCount(cabin?.occupancyType, cabin?.occupancyValue);
+          const count = getOccupancyCount(
+            cabin?.occupancyType,
+            cabin?.occupancyValue
+          );
           const price = Number(cabin?.price) || 0;
           return sum + price * count;
         }, 0)
         : 0;
 
-      const resolvedTotalPrice =
-        Number.isFinite(Number(totalPrice)) ? Number(totalPrice) : computedCabinTotal;
+      const resolvedTotalPrice = Number.isFinite(Number(totalPrice))
+        ? Number(totalPrice)
+        : computedCabinTotal;
+
+      // ✅ 일반예약 프로모션 대응
+      const resolvedBasePrice = Number.isFinite(Number(basePrice))
+        ? Number(basePrice)
+        : resolvedTotalPrice;
+
+      const resolvedDiscountAmount = Number.isFinite(Number(discountAmount))
+        ? Number(discountAmount)
+        : 0;
+
+      const resolvedFinalPrice = Number.isFinite(Number(finalPrice))
+        ? Number(finalPrice)
+        : resolvedTotalPrice;
+
+      const hasPromotionDiscount = resolvedDiscountAmount > 0;
 
       const doc = new PDFDocument({ margin: 50 });
 
@@ -138,7 +158,9 @@ function generateInvoicePDF(data, outputPath) {
       // -------------------------------
       doc.fontSize(14).text("예약 정보", { underline: true });
       doc.moveDown(0.5);
-      doc.fontSize(12).text(`예약 유형: ${bookingType === "instructor" ? "강사 예약" : "일반 예약"}`);
+      doc
+        .fontSize(12)
+        .text(`예약 유형: ${bookingType === "instructor" ? "강사 예약" : "일반 예약"}`);
       doc.text(`여행 상품: ${tripName}`);
       doc.text(`출발일: ${safeText(trip?.startDate, "미정")}`);
       doc.text(`도착일: ${safeText(trip?.endDate, "미정")}`);
@@ -154,26 +176,21 @@ function generateInvoicePDF(data, outputPath) {
 
       if (Array.isArray(cabins) && cabins.length > 0) {
         cabins.forEach((cabin, index) => {
-          const count = getOccupancyCount(cabin?.occupancyType, cabin?.occupancyValue);
+          const count = getOccupancyCount(
+            cabin?.occupancyType,
+            cabin?.occupancyValue
+          );
           const unitPrice = Number(cabin?.price) || 0;
           const lineTotal = unitPrice * count;
 
           doc
             .fontSize(12)
-            .text(
-              `${index + 1}. ${safeText(cabin?.cabinName, "객실명 없음")}`
-            );
-          doc
-            .fontSize(11)
-            .text(`   - Cabin ID: ${safeText(cabin?.cabinId, "-")}`);
-          doc
-            .text(`   - 예약 형태: ${safeText(cabin?.occupancyType, "-")}`);
-          doc
-            .text(`   - 인원 수: ${count}`);
-          doc
-            .text(`   - 1인 기준 금액: ${formatMoney(unitPrice, currency)}`);
-          doc
-            .text(`   - 소계: ${formatMoney(lineTotal, currency)}`);
+            .text(`${index + 1}. ${safeText(cabin?.cabinName, "객실명 없음")}`);
+          doc.fontSize(11).text(`   - Cabin ID: ${safeText(cabin?.cabinId, "-")}`);
+          doc.text(`   - 예약 형태: ${safeText(cabin?.occupancyType, "-")}`);
+          doc.text(`   - 인원 수: ${count}`);
+          doc.text(`   - 1인 기준 금액: ${formatMoney(unitPrice, currency)}`);
+          doc.text(`   - 소계: ${formatMoney(lineTotal, currency)}`);
           doc.moveDown(0.4);
         });
       } else {
@@ -188,15 +205,37 @@ function generateInvoicePDF(data, outputPath) {
       doc.fontSize(14).text("금액 정보", { underline: true });
       doc.moveDown(0.5);
 
-      doc.fontSize(12).text(`기본 총액: ${formatMoney(resolvedTotalPrice, currency)}`);
+      // ✅ 일반예약 프로모션이 있으면 할인 전 금액을 기본 금액으로 표시
+      doc.fontSize(12).text(`기본 금액: ${formatMoney(resolvedBasePrice, currency)}`);
 
-      const hasFOC = Number.isFinite(Number(focDiscount)) && Number(focDiscount) !== 0;
+      if (hasPromotionDiscount) {
+        const promotionLabel = promotion?.title
+          ? `${promotion.title}${promotion?.discountValue ? ` (${promotion.discountValue}%)` : ""
+          }`
+          : "프로모션 할인";
+
+        doc.text(`${promotionLabel}: - ${formatMoney(resolvedDiscountAmount, currency)}`);
+        doc.text(`최종 금액: ${formatMoney(resolvedFinalPrice, currency)}`);
+      } else {
+        doc.text(`최종 금액: ${formatMoney(resolvedTotalPrice, currency)}`);
+      }
+
+      const hasFOC =
+        Number.isFinite(Number(focDiscount)) && Number(focDiscount) !== 0;
       const hasCommissionRate = Number.isFinite(Number(commissionRate));
       const hasCommissionAmount =
-        Number.isFinite(Number(commissionAmount)) && Number(commissionAmount) !== 0;
+        Number.isFinite(Number(commissionAmount)) &&
+        Number(commissionAmount) !== 0;
       const hasFinalAmount = Number.isFinite(Number(finalAmount));
 
-      if (bookingType === "instructor" || hasFOC || hasCommissionRate || hasCommissionAmount || hasFinalAmount) {
+      // ✅ 강사예약 정산 정보는 기존 기능 유지
+      if (
+        bookingType === "instructor" ||
+        hasFOC ||
+        hasCommissionRate ||
+        hasCommissionAmount ||
+        hasFinalAmount
+      ) {
         if (hasFOC) {
           doc.text(`FOC 할인: - ${formatMoney(Number(focDiscount), currency)}`);
         }
@@ -206,7 +245,9 @@ function generateInvoicePDF(data, outputPath) {
         }
 
         if (hasCommissionAmount) {
-          doc.text(`커미션 금액: - ${formatMoney(Number(commissionAmount), currency)}`);
+          doc.text(
+            `커미션 금액: - ${formatMoney(Number(commissionAmount), currency)}`
+          );
         }
 
         if (hasFinalAmount) {
@@ -243,10 +284,12 @@ function generateInvoicePDF(data, outputPath) {
           : "-";
 
         doc.moveDown(1.2);
-        doc.fontSize(11).fillColor("black").text(
-          "본 예약은 고객의 약관 동의를 기반으로 확정되었습니다.",
-          { align: "left" }
-        );
+        doc
+          .fontSize(11)
+          .fillColor("black")
+          .text("본 예약은 고객의 약관 동의를 기반으로 확정되었습니다.", {
+            align: "left",
+          });
         doc.moveDown(0.4);
         doc.text(`동의 일시: ${agreedDate}`);
         doc.text("특별약관 / 일반약관 확인 완료");
