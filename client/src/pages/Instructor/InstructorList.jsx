@@ -40,31 +40,70 @@ function InstructorList() {
   // 1. 데이터 로드
   // -----------------------------
   useEffect(() => {
-    setLoading(true);
+    async function loadInstructorTrips() {
+      try {
+        setLoading(true);
 
-    axios
-      .get("/data/uts-trips.json")
-      .then((res) => {
-        const raw = res.data;
+        const [tripRes, policyRes] = await Promise.all([
+          axios.get("/data/uts-trips.json"),
+          axios.get("/api/instructor-policy"),
+        ]);
+
+        const raw = tripRes.data;
+        const policyMap = policyRes.data || {};
 
         const list = Array.isArray(raw)
           ? raw
           : raw?.data || [];
 
-        // 👉 강사용: 좌석 있는 것만
+        // 강사용: 좌석 있는 것만
         const withSeats = list.filter(
           (t) => Number(t?.spaces?.available || 0) > 0
         );
 
-        setTrips(withSeats);
-      })
-      .catch((err) => {
+        // ✅ trip마다 policy 붙이기
+        const merged = withSeats.map((trip) => {
+          const vesselId = trip?.vesselId || trip?.boatId || trip?.boatCode || "";
+          const policy = policyMap[vesselId] || null;
+
+          return {
+            ...trip,
+            instructorPolicy: policy,
+            pricing: {
+              ...(trip.pricing || {}),
+              instructorCommissionPercent:
+                policy?.commissionPercent ?? 0,
+
+              // inseanq는 원본 FOC 유지
+              // 그 외(source가 special/scubadates 등)는 policy.focPolicy 사용
+              instructorFOCPolicy:
+                trip?.source === "inseanq"
+                  ? (trip?.pricing?.instructorFOCPolicy ||
+                    trip?.focPolicy ||
+                    "")
+                  : (policy?.focPolicy || ""),
+            },
+            instructorBookingMode: policy?.bookingMode || "inquiry",
+            instructorContractStatus: policy?.contractStatus || "none",
+            instructorPolicyMemo: policy?.memo || "",
+          };
+        });
+
+        // 숨김 정책은 여기서 제외
+        const visibleTrips = merged.filter(
+          (trip) => trip.instructorBookingMode !== "hidden"
+        );
+
+        setTrips(visibleTrips);
+      } catch (err) {
         console.error("❌ Instructor trips load error:", err);
         setTrips([]);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    }
+
+    loadInstructorTrips();
   }, []);
 
   // -----------------------------

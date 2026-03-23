@@ -17,22 +17,6 @@ const formatCurrencyLocal = (amount, currency = "USD") => {
   return `$${formatted}`;
 };
 
-const [policy, setPolicy] = useState(null);
-
-useEffect(() => {
-  const vesselId = "vessel_sample_1"; // 🔥 테스트용
-
-  fetch(`/api/instructor-policy/${vesselId}`)
-    .then(res => res.json())
-    .then(data => {
-      console.log("🔥 정책:", data);
-      setPolicy(data);
-    })
-    .catch(err => {
-      console.error("❌ 정책 불러오기 실패:", err);
-    });
-}, []);
-
 {
   policy && (
     <div>
