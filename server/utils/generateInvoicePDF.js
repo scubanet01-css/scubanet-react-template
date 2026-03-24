@@ -173,6 +173,12 @@ function generateInvoicePDF(data, outputPath) {
 
       const hasFinalAmount = Number.isFinite(Number(finalAmount));
 
+      const focLabel =
+        Array.isArray(focDetails) && focDetails.length > 0
+          ? focDetails.map((f) => f.offerName || f.name || "").filter(Boolean).join(", ")
+          : "FOC";
+
+
       const resolvedBaseCommissionPercent = Number.isFinite(
         Number(baseCommissionPercent)
       )
