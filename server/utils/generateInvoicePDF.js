@@ -4,6 +4,7 @@ const path = require("path");
 const PDFDocument = require("pdfkit");
 
 const fontPath = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf";
+const fontBoldPath = "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf";
 
 // -------------------------------
 // 공통 헬퍼
@@ -198,6 +199,9 @@ function generateInvoicePDF(data, outputPath) {
 
       if (fontPath && fs.existsSync(fontPath)) {
         doc.font(fontPath);
+      } else {
+        console.warn("⚠️ NanumGothic.ttf 없음 → Helvetica 사용");
+        doc.font(fontPath);
       }
 
       // -------------------------------
@@ -347,7 +351,11 @@ function generateInvoicePDF(data, outputPath) {
         }
 
         if (hasFinalAmount) {
-          doc.font("Helvetica-Bold");
+          if (fs.existsSync(fontBoldPath)) {
+            doc.font(fontBoldPath);
+          } else {
+            doc.font(fontPath);
+          }
           doc.text(`최종 결제 금액: ${formatMoney(Number(finalAmount), currency)}`);
           doc.font(fontPath && fs.existsSync(fontPath) ? fontPath : "Helvetica");
           doc.moveDown(0.5);
