@@ -33,12 +33,28 @@ function Home() {
     <div className="home-container">
       <section className="hero-section">
         <div className="hero-overlay">
-          <h1 className="hero-title">스쿠버넷 트레블</h1>
-          <p className="hero-sub">좋은 사람들과 함께하는 여행을 만드세요!</p>
+          <h1 className="hero-title">ScubaNet Travel</h1>
+
+          <p className="hero-sub">
+            전 세계 리브어보드 & 다이빙 리조트 예약 플랫폼
+          </p>
+
+          <p className="hero-beta">
+            현재 베타(가오픈) 테스트 중입니다. 일부 기능은 제한될 수 있으나,
+            예약 및 문의는 정상적으로 이용 가능합니다.
+          </p>
+
+          <p className="hero-desc">
+            스쿠버넷은 30년 다이빙 전문 경험을 바탕으로 검증된 리브어보드와
+            다이빙 여행을 제공합니다.
+          </p>
+
+          <p className="hero-contact">
+            오류 발견 또는 예약 문의는 현장 스태프 또는 아래 문의처로 연락해주세요.
+          </p>
 
           {/* Quick Search */}
           <div className="quick-search">
-
             {/* 나라 선택 */}
             <select
               className="qs-input"
