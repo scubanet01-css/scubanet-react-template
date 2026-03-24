@@ -34,50 +34,50 @@ const API_KEY = "fa031783567788e568d8010a488a6c0f9cb860d0";
 // --------------------------------------------------
 // 공통 미들웨어
 // --------------------------------------------------
-app.use("/data", express.static(path.join(__dirname, "../data")));
+app.use("/data", express.static("/var/scubanet-data"));
 
 const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
   "http://210.114.22.82",
-  "http://210.114.22.82:4002",
+  "https://210.114.22.82",
+  "http://scubanet-travel.com",
+  "https://scubanet-travel.com",
+  "http://www.scubanet-travel.com",
+  "https://www.scubanet-travel.com",
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin) {
       return callback(null, true);
     }
-    return callback(new Error("CORS blocked for origin: " + origin));
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
-
-app.use((req, res, next) => {
-  if (req.method === "OPTIONS") {
-    const origin = req.headers.origin;
 
     if (allowedOrigins.includes(origin)) {
-      res.header("Access-Control-Allow-Origin", origin);
+      return callback(null, true);
     }
 
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    return res.sendStatus(204);
-  }
-  next();
-});
+    console.error("❌ CORS blocked for origin:", origin);
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 app.use(express.json());
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
 
 // 🔍 모든 요청 로깅
 app.use((req, res, next) => {
-  console.log("➡ REQ:", req.method, req.url);
+  console.log("➡ REQ:", req.method, req.url, "| origin =", req.headers.origin || "-");
   next();
 });
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 app.use("/uploads", express.static("/var/scubanet-data/uploads"));
 app.use(authRouter);
