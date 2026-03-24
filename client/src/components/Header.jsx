@@ -16,21 +16,20 @@ function Header() {
     return (
         <header style={headerStyle}>
             <div style={innerStyle}>
-                <div style={logoAreaStyle}>
+                <div style={logoWrapStyle}>
                     <Link to="/" style={logoStyle}>
                         ScubaNet Travel
                     </Link>
+                    <span style={betaBadgeStyle}>BETA</span>
                 </div>
 
                 <nav style={navStyle}>
                     <Link to="/" style={linkStyle}>홈</Link>
                     <Link to="/triplist" style={linkStyle}>트립리스트</Link>
-                    <Link to="/specialtrips" style={linkStyle}>스페셜트립</Link>
 
                     {!user && (
                         <>
                             <Link to="/auth/login" style={linkStyle}>로그인</Link>
-                            <Link to="/auth/register" style={primaryLinkStyle}>회원가입</Link>
                         </>
                     )}
 
@@ -86,7 +85,10 @@ const innerStyle = {
     gap: "20px",
 };
 
-const logoAreaStyle = {
+const logoWrapStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
     flexShrink: 0,
 };
 
@@ -95,6 +97,17 @@ const logoStyle = {
     fontWeight: "700",
     color: "#111827",
     textDecoration: "none",
+};
+
+const betaBadgeStyle = {
+    fontSize: "11px",
+    fontWeight: "700",
+    letterSpacing: "0.08em",
+    color: "#1d4ed8",
+    background: "#dbeafe",
+    border: "1px solid #93c5fd",
+    borderRadius: "999px",
+    padding: "4px 8px",
 };
 
 const navStyle = {
@@ -109,16 +122,6 @@ const linkStyle = {
     color: "#374151",
     fontSize: "15px",
     fontWeight: "500",
-};
-
-const primaryLinkStyle = {
-    textDecoration: "none",
-    color: "#ffffff",
-    background: "#1d4ed8",
-    padding: "8px 14px",
-    borderRadius: "8px",
-    fontSize: "14px",
-    fontWeight: "600",
 };
 
 const logoutButtonStyle = {
