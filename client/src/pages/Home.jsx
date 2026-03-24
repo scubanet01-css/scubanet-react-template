@@ -51,6 +51,9 @@ function Home() {
 
           <p className="hero-contact">
             베타 테스트 리뷰를 SNS에 공유하고, 오류 신고를 해주시면 추첨을 통해 최고급 리브어보드 이용권을 드립니다.
+          </p>
+
+          <p className="hero-contact">
             오류 발견 또는 예약 문의는 현장 스태프 또는 아래 문의처로 연락해주세요.
           </p>
 
