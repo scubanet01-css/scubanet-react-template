@@ -76,6 +76,8 @@ function getNights(start, end) {
 // ⭐ NEW: FOC 조건 추출 (예: "5+1", "8+1", "10+2")
 // ⭐ FOC 조건 추출 (예: "5+1", "8+1", "10+2")
 function getFOCLabel(trip) {
+    if (trip?.disableFOC) return null;
+
     // 1) 스페셜 트립 / Admin 저장된 FOC 우선
     const focSource =
         trip?.pricing?.instructorFOCPolicy ||
