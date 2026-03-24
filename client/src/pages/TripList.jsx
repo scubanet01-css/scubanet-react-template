@@ -20,6 +20,15 @@ import {
     getBoatOptions,
 } from "../utils/utsFilterNormalizer";
 
+// ✔ 좌석 계산
+function getSeatCounts(trip) {
+    const s = trip?.spaces || {};
+    return {
+        available: Number(s.available || 0),
+        holding: Number(s.holding || 0),
+        booked: Number(s.booked || 0),
+    };
+}
 
 function TripList() {
     const location = useLocation();
@@ -217,6 +226,7 @@ function TripList() {
                 });
             });
         }
+
         // ✅ 예약 가능한 좌석이 있는 트립만 노출
         list = list.filter((t) => getSeatCounts(t).available > 0);
 
