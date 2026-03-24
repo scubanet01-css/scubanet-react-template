@@ -340,10 +340,6 @@ function generateInvoicePDF(data, outputPath) {
         if (resolvedSavings > 0) {
           doc.text(`총 절약 금액: ${formatMoney(resolvedSavings, currency)}`);
         }
-
-        if (resolvedSavings > 0) {
-          doc.text(`총 절약 금액: ${formatMoney(resolvedSavings, currency)}`);
-        }
       }
 
       doc.moveDown();

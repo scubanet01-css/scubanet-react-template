@@ -65,13 +65,40 @@ function InstructorList() {
         const merged = withSeats.map((trip) => {
           const vesselId = trip?.vesselId || trip?.boatId || trip?.boatCode || "";
           console.log("🔥 instructor vessel check:", trip?.boatName, vesselId, policyMap[vesselId]);
+
           const policy = policyMap[vesselId] || null;
+
+          const isSpecialTrip =
+            trip?.isScubanetSpecial === true || trip?.source === "special";
 
           const hasCommissionValue =
             policy?.commissionPercent !== undefined &&
             policy?.commissionPercent !== null &&
             policy?.commissionPercent !== "";
 
+          // ✅ special trip은 일반 강사 policy merge 금지
+          if (isSpecialTrip) {
+            return {
+              ...trip,
+              instructorPolicy: null,
+              pricing: {
+                ...(trip.pricing || {}),
+                instructorCommissionPercent:
+                  trip?.pricing?.instructorCommissionPercent ??
+                  trip?.commissionPercent ??
+                  0,
+                instructorFOCPolicy:
+                  trip?.pricing?.instructorFOCPolicy ||
+                  trip?.focPolicy ||
+                  "",
+              },
+              instructorBookingMode: "bookable",
+              instructorContractStatus: "special",
+              instructorPolicyMemo: "special trip 자체 정책 사용",
+            };
+          }
+
+          // ✅ 일반 trip은 기존 policy merge
           return {
             ...trip,
             instructorPolicy: policy,
@@ -80,8 +107,9 @@ function InstructorList() {
               instructorCommissionPercent: hasCommissionValue
                 ? Number(policy.commissionPercent)
                 : 10,
+
               // inseanq는 원본 FOC 유지
-              // 그 외(source가 special/scubadates 등)는 policy.focPolicy 사용
+              // 그 외(scubadates 등)는 관리자 policy 사용
               instructorFOCPolicy:
                 trip?.source === "inseanq"
                   ? (trip?.pricing?.instructorFOCPolicy ||
@@ -94,7 +122,6 @@ function InstructorList() {
             instructorPolicyMemo: policy?.memo || "",
           };
         });
-
         // 숨김 정책은 여기서 제외
         const visibleTrips = merged.filter(
           (trip) => trip.instructorBookingMode !== "hidden"
