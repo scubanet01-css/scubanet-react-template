@@ -618,9 +618,6 @@ function InstructorBooking() {
                 </span>
               </div>
 
-              const isSpecialTrip =
-              trip?.isScubanetSpecial === true || trip?.source === "special";
-
               <div className="book-controls" style={{ marginTop: "12px" }}>
                 {cabin.available > 0 ? (
                   <>
@@ -637,14 +634,23 @@ function InstructorBooking() {
                               className="book-btn"
                               style={{ marginLeft: "10px" }}
                               onClick={() => {
+                                const peopleCount = Number(room.availableSpaces || 0);
+                                const unitPrice = Number(cabin.occupancy?.[0]?.price || 0);
+                                const totalPrice = unitPrice * peopleCount;
+
                                 setSelectedBookings((prev) => [
                                   ...prev.filter((b) => b.id !== room.id),
                                   {
                                     id: room.id,
                                     cabin: cabin.name,
                                     room: room.name,
-                                    price: cabin.occupancy?.[0]?.price || 0,
-                                    occLabel: "객실 예약",
+                                    selectionKey: `${room.id}_${peopleCount}`,
+                                    price: unitPrice,
+                                    peopleCount,
+                                    totalPrice,
+                                    occId: peopleCount,
+                                    occLabel: `${peopleCount}인 예약`,
+                                    unitSuffix: "/인",
                                   },
                                 ]);
                               }}
