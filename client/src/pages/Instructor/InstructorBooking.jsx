@@ -162,6 +162,9 @@ function InstructorBooking() {
     trip?.tripName ||
     "정보 없음";
 
+  const isSpecialTrip =
+    trip?.isScubanetSpecial === true || trip?.source === "special";
+
   const instructorGroupPrice =
     Number(trip?.pricing?.instructorGroupPrice || 0) || 0;
 
