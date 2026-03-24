@@ -615,55 +615,93 @@ function InstructorBooking() {
                 </span>
               </div>
 
+              const isSpecialTrip =
+              trip?.isScubanetSpecial === true || trip?.source === "special";
+
               <div className="book-controls" style={{ marginTop: "12px" }}>
                 {cabin.available > 0 ? (
                   <>
-                    <p style={{ color: "red", fontSize: "12px" }}>
+                    {isSpecialTrip ? (
+                      // ✅ SPECIAL: 객실별 버튼 UI
+                      <div className="room-list">
+                        {subCabins.map((room) => (
+                          <div key={room.id} style={{ marginBottom: "6px" }}>
+                            <span>
+                              {room.name} ({room.availableSpaces}석)
+                            </span>
 
-                    </p>
-                    <select
-                      value={selectedOcc[cabin.id] ?? ""}
-                      onChange={(e) => {
-                        const selectedValue = e.target.value;
-                        handleOccChange(selectedValue, cabin);
-                      }}
-                      className="occ-select"
-                    >
-                      <option value="">예약 유형 선택</option>
+                            <button
+                              className="book-btn"
+                              style={{ marginLeft: "10px" }}
+                              onClick={() => {
+                                setSelectedBookings((prev) => [
+                                  ...prev.filter((b) => b.id !== room.id),
+                                  {
+                                    id: room.id,
+                                    cabin: cabin.name,
+                                    room: room.name,
+                                    price: cabin.occupancy?.[0]?.price || 0,
+                                    occLabel: "객실 예약",
+                                  },
+                                ]);
+                              }}
+                              disabled={room.availableSpaces <= 0}
+                            >
+                              예약
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      // ✅ GENERAL: 기존 dropdown 유지
+                      <>
+                        <select
+                          value={selectedOcc[cabin.id] ?? ""}
+                          onChange={(e) => {
+                            const selectedValue = e.target.value;
+                            handleOccChange(selectedValue, cabin);
+                          }}
+                          className="occ-select"
+                        >
+                          <option value="">예약 유형 선택</option>
 
-                      {trip?.source === "scubadates"
-                        ? (cabin.occupancyOptions || []).map((opt) => (
-                          <option key={opt.selectionKey} value={opt.selectionKey}>
-                            {opt.label} - {formatCurrency(opt.price, currency)}
-                            {opt.unitSuffix}
-                          </option>
-                        ))
-                        : (cabin.occupancy || [])
-                          .filter(
-                            (o) =>
-                              [1, 2, 3].includes(Number(o.id)) &&
-                              parseFloat(o.price) > 0
-                          )
-                          .map((o) => {
-                            const label = getOccLabelById(o.id);
-                            return label ? (
-                              <option key={o.id} value={o.id}>
-                                {label}
+                          {trip?.source === "scubadates"
+                            ? (cabin.occupancyOptions || []).map((opt) => (
+                              <option key={opt.selectionKey} value={opt.selectionKey}>
+                                {opt.label} - {formatCurrency(opt.price, currency)}
+                                {opt.unitSuffix}
                               </option>
-                            ) : null;
-                          })}
-                    </select>
+                            ))
+                            : (cabin.occupancy || [])
+                              .filter(
+                                (o) =>
+                                  [1, 2, 3].includes(Number(o.id)) &&
+                                  parseFloat(o.price) > 0
+                              )
+                              .map((o) => {
+                                const label = getOccLabelById(o.id);
+                                return label ? (
+                                  <option key={o.id} value={o.id}>
+                                    {label}
+                                  </option>
+                                ) : null;
+                              })}
+                        </select>
 
-                    <button
-                      className="book-btn"
-                      onClick={() => {
-                        setSelectedBookings((prev) => prev.filter((b) => b.id !== cabin.id));
-                        setSelectedOcc((prev) => ({ ...prev, [cabin.id]: "" }));
-                      }}
-                      disabled={!selectedBookings.find((b) => b.id === cabin.id)}
-                    >
-                      예약 취소
-                    </button>
+                        <button
+                          className="book-btn"
+                          onClick={() => {
+                            setSelectedBookings((prev) =>
+                              prev.filter((b) => b.id !== cabin.id)
+                            );
+                            setSelectedOcc((prev) => ({ ...prev, [cabin.id]: "" }));
+                          }}
+                          disabled={!selectedBookings.find((b) => b.id === cabin.id)}
+                        >
+                          예약 취소
+                        </button>
+                      </>
+                    )}
                   </>
                 ) : (
                   <span style={{ color: "#e74c3c" }}>🔴 Full</span>
