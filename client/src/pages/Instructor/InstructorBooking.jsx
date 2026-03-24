@@ -138,38 +138,135 @@ function buildOccupancyFromRatePlans(ratePlans = []) {
 
 function buildSpecialRoomBookingOptions(room, cabin, currency) {
   const roomName = String(room?.name || room?.roomName || "");
-  const availableSpaces = Number(room?.availableSpaces || 0);
   const unitPrice = Number(cabin?.occupancy?.[0]?.price || 0);
 
+  // -----------------------------------
+  // 객실 타입 판별
+  // -----------------------------------
   const isQuad = /quad/i.test(roomName);
-  const maxPeople = isQuad
-    ? Math.min(availableSpaces, 4)
-    : Math.min(availableSpaces, 2);
+  const isDouble = /double/i.test(roomName);
+  const isTwin = /twin/i.test(roomName) || (!isQuad && !isDouble);
+
+  // -----------------------------------
+  // 객실 전체 정원(capacity) 계산
+  // inventory에 capacity가 있으면 우선 사용
+  // 없으면 roomName 기준 fallback
+  // -----------------------------------
+  let capacity = Number(room?.capacity || 0);
+
+  if (!capacity || capacity <= 0) {
+    if (isQuad) capacity = 4;
+    else capacity = 2; // twin / double 기본 2인실
+  }
+
+  // -----------------------------------
+  // 현재 이미 들어가 있는 인원
+  // inventory에 occupied가 있으면 사용
+  // 없으면 availableSpaces로 역산
+  // -----------------------------------
+  let occupied = Number(room?.occupied || 0);
+
+  if (!Number.isFinite(occupied) || occupied < 0) {
+    occupied = 0;
+  }
+
+  let availableSpaces = Number(room?.availableSpaces || 0);
+
+  if (!Number.isFinite(availableSpaces) || availableSpaces < 0) {
+    availableSpaces = Math.max(0, capacity - occupied);
+  }
+
+  // occupied가 없고 available만 있으면 역산
+  if ((room?.occupied == null || room?.occupied === "") && availableSpaces >= 0) {
+    occupied = Math.max(0, capacity - availableSpaces);
+  }
+
+  const remaining = Math.max(0, capacity - occupied);
 
   const options = [];
 
-  for (let n = 1; n <= maxPeople; n += 1) {
+  // -----------------------------------
+  // Quad room 규칙
+  // - 독실 예약 없음
+  // - 1인 ~ 남은 자리 수까지만 예약 가능
+  // -----------------------------------
+  if (isQuad) {
+    for (let n = 1; n <= remaining; n += 1) {
+      options.push({
+        selectionKey: `${room.id}_${n}`,
+        peopleCount: n,
+        price: unitPrice,
+        totalPrice: unitPrice * n,
+        label: `${n}인 예약 - ${formatCurrency(unitPrice, currency)}/인`,
+        occLabel: `${n}인 예약`,
+        unitSuffix: "/인",
+      });
+    }
+
+    return options;
+  }
+
+  // -----------------------------------
+  // Twin / Double 계열 규칙
+  // -----------------------------------
+
+  // 이미 1명 이상 들어가 있으면
+  // → 남은 자리만 판매
+  // → 1인 예약만 가능
+  if (occupied > 0) {
+    if (remaining >= 1) {
+      options.push({
+        selectionKey: `${room.id}_1`,
+        peopleCount: 1,
+        price: unitPrice,
+        totalPrice: unitPrice,
+        label: `1인 예약 - ${formatCurrency(unitPrice, currency)}/인`,
+        occLabel: "1인 예약",
+        unitSuffix: "/인",
+      });
+    }
+
+    return options;
+  }
+
+  // 빈 방일 때
+  // Twin / Double 모두 1인, 2인, 독실 예약 허용
+  if (remaining >= 1) {
     options.push({
-      selectionKey: `${room.id}_${n}`,
-      peopleCount: n,
+      selectionKey: `${room.id}_1`,
+      peopleCount: 1,
       price: unitPrice,
-      totalPrice: unitPrice * n,
-      label: `${n}인 예약 - ${formatCurrency(unitPrice, currency)}/인`,
-      occLabel: `${n}인 예약`,
+      totalPrice: unitPrice,
+      label: `1인 예약 - ${formatCurrency(unitPrice, currency)}/인`,
+      occLabel: "1인 예약",
       unitSuffix: "/인",
     });
   }
 
-  // 독실 예약은 Twin/Double/Quad 모두 일단 허용
-  if (availableSpaces > 0) {
+  if (remaining >= 2) {
+    options.push({
+      selectionKey: `${room.id}_2`,
+      peopleCount: 2,
+      price: unitPrice,
+      totalPrice: unitPrice * 2,
+      label: `2인 예약 - ${formatCurrency(unitPrice, currency)}/인`,
+      occLabel: "2인 예약",
+      unitSuffix: "/인",
+    });
+  }
+
+  // 독실 예약 가격 = 1인 가격의 1.5배
+  if (remaining >= 1) {
+    const privatePrice = Math.round(unitPrice * 1.5);
+
     options.push({
       selectionKey: `${room.id}_private`,
       peopleCount: 1,
-      price: unitPrice,
-      totalPrice: unitPrice,
-      label: `독실 예약 - ${formatCurrency(unitPrice, currency)}/인`,
+      price: privatePrice,
+      totalPrice: privatePrice,
+      label: `독실 예약 - ${formatCurrency(privatePrice, currency)}`,
       occLabel: "독실 예약",
-      unitSuffix: "/인",
+      unitSuffix: "",
     });
   }
 
