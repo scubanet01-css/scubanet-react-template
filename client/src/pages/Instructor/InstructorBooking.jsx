@@ -273,6 +273,52 @@ function buildSpecialRoomBookingOptions(room, cabin, currency) {
   return options;
 }
 
+function getLowestFOCUnitPrice(cabinGroups = [], trip = {}) {
+  const candidates = [];
+
+  cabinGroups.forEach((cabin) => {
+    // scubadates
+    if (trip?.source === "scubadates") {
+      (cabin.occupancyOptions || []).forEach((opt) => {
+        const label = String(opt?.label || opt?.occLabel || "").toLowerCase();
+
+        // 독실/프라이빗 계열은 FOC 기준 제외
+        if (
+          label.includes("독실") ||
+          label.includes("private") ||
+          label.includes("single")
+        ) {
+          return;
+        }
+
+        const price = Number(opt?.price || 0);
+        if (price > 0) {
+          candidates.push(price);
+        }
+      });
+
+      return;
+    }
+
+    // inseanq / special 공통
+    (cabin.occupancy || []).forEach((o) => {
+      const id = Number(o?.id);
+      const price = Number(o?.price || 0);
+
+      if (!price || price <= 0) return;
+
+      // 독실 예약은 제외
+      // 현재 구조상 id=3 을 독실로 쓰고 있음
+      if (id === 3) return;
+
+      candidates.push(price);
+    });
+  });
+
+  if (candidates.length === 0) return 0;
+  return Math.min(...candidates);
+}
+
 function InstructorBooking() {
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -628,37 +674,37 @@ function InstructorBooking() {
   }, [instructorFOCPolicy, specialOffers]);
 
   // -----------------------------------
-  // pax(인원) 계산 및 unit price 배열
+  // pax(인원) 계산
   // -----------------------------------
   let pax = 0;
-  const unitPrices = [];
 
   selectedBookings.forEach((b) => {
     const peopleCount = Number(b.peopleCount || 1);
     pax += peopleCount;
-
-    for (let i = 0; i < peopleCount; i += 1) {
-      unitPrices.push(Number(b.price || 0));
-    }
   });
 
   // -----------------------------------
+  // 트립 전체 기준 최저 1인 가격
+  // -----------------------------------
+  const lowestFOCUnitPrice = getLowestFOCUnitPrice(cabinGroups, trip);
+
+  // -----------------------------------
   // FOC 계산
+  // 원칙:
+  // - 선택된 예약 중 가장 싼 가격이 아니라
+  // - 트립 전체 판매 가능 객실 중 최저 1인 가격 × 무료 인원 수
   // -----------------------------------
   let focDiscount = 0;
   let focDetails = [];
   let bestFOC = null;
 
-  if (pax > 0 && unitPrices.length > 0 && focOffers.length > 0) {
-    bestFOC = getBestFOCOffer(focOffers, pax, unitPrices);
+  if (pax > 0 && lowestFOCUnitPrice > 0 && focOffers.length > 0) {
+    bestFOC = getBestFOCOffer(focOffers, pax, [lowestFOCUnitPrice]);
   }
 
   if (bestFOC) {
-    const sorted = unitPrices.slice().sort((a, b) => a - b);
     const freeCount = Number(bestFOC.free || bestFOC.bonus || 0);
-    const discount = sorted
-      .slice(0, freeCount)
-      .reduce((sum, v) => sum + v, 0);
+    const discount = lowestFOCUnitPrice * freeCount;
 
     focDiscount = discount;
 
@@ -668,6 +714,7 @@ function InstructorBooking() {
         req: bestFOC.req,
         bonus: bestFOC.bonus,
         freeUnits: freeCount,
+        unitPrice: lowestFOCUnitPrice,
         discount,
       },
     ];
