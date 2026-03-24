@@ -46,6 +46,42 @@ export function extractOfferNames({ trip, specialOffers = [] }) {
 }
 
 export function hasDiscountOffer({ trip, specialOffers = [] }) {
+    // 1) trip 자체 할인 플래그
+    if (trip?.isDiscounted === true) return true;
+
+    // 2) pricing 레벨 할인
+    if (Number(trip?.pricing?.publicDiscountPercent || 0) > 0) return true;
+    if (Number(trip?.discountPercent || 0) > 0) return true;
+
+    // 3) 원가 대비 할인 가격 존재
+    if (
+        Number(trip?.originalPriceFrom || 0) > 0 &&
+        Number(trip?.pricing?.basePrice || 0) > 0 &&
+        Number(trip?.pricing?.basePrice || 0) < Number(trip?.originalPriceFrom || 0)
+    ) {
+        return true;
+    }
+
+    // 4) cabin ratePlans 기준 할인
+    if (Array.isArray(trip?.cabins)) {
+        const hasCabinDiscount = trip.cabins.some((cabin) =>
+            Array.isArray(cabin?.ratePlans) &&
+            cabin.ratePlans.some((rp) => {
+                const price = Number(rp?.price || 0);
+                const parentPrice = Number(rp?.parentPrice || 0);
+                const discountPercent = Number(rp?.discountPercent || 0);
+
+                return (
+                    discountPercent > 0 ||
+                    (parentPrice > 0 && price > 0 && price < parentPrice)
+                );
+            })
+        );
+
+        if (hasCabinDiscount) return true;
+    }
+
+    // 5) 마지막 fallback: offer name 문자열
     const names = extractOfferNames({ trip, specialOffers });
 
     return names.some((name) => {

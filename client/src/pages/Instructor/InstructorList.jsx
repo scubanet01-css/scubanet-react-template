@@ -21,6 +21,12 @@ import {
   getBoatOptions,
 } from "../../utils/utsFilterNormalizer";
 
+import {
+  isSpecialTrip,
+  shouldDisableFOC,
+  resolveInstructorFOCPolicy,
+} from "../../utils/instructorPricingRules";
+
 function InstructorList() {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -66,67 +72,43 @@ function InstructorList() {
           const vesselId = trip?.vesselId || trip?.boatId || trip?.boatCode || "";
           console.log("🔥 instructor vessel check:", trip?.boatName, vesselId, policyMap[vesselId]);
 
-          const offerNames = [];
-
-          // pricing / trip 상단 오퍼
-          if (Array.isArray(trip?.specialOffers)) {
-            trip.specialOffers.forEach((offer) => {
-              if (offer?.name) offerNames.push(String(offer.name));
-            });
-          }
-
-          // cabins.ratePlans 쪽 오퍼 이름도 같이 확인
-          if (Array.isArray(trip?.cabins)) {
-            trip.cabins.forEach((cabin) => {
-              (cabin?.ratePlans || []).forEach((rp) => {
-                if (rp?.name) offerNames.push(String(rp.name));
-              });
-            });
-          }
-
-          const hasDiscountOffer = offerNames.some((name) => {
-            const lower = name.toLowerCase();
-            return lower.includes("off") || lower.includes("%");
-          });
-
-          const isAggressorFleet = String(
-            trip?.boatName || trip?.boat?.name || ""
-          ).toLowerCase().includes("aggressor");
-
-          const disableFOC = isAggressorFleet && hasDiscountOffer;
-
           const policy = policyMap[vesselId] || null;
 
-          const isSpecialTrip =
-            trip?.isScubanetSpecial === true || trip?.source === "special";
+          const specialTrip = isSpecialTrip(trip);
+
+          const disableFOC = shouldDisableFOC({
+            trip,
+            specialOffers: trip?.specialOffers || [],
+          });
+
+          const resolvedFOCPolicy = resolveInstructorFOCPolicy({
+            trip,
+            policy,
+            specialOffers: trip?.specialOffers || [],
+          });
 
           const hasCommissionValue =
             policy?.commissionPercent !== undefined &&
             policy?.commissionPercent !== null &&
             policy?.commissionPercent !== "";
 
+
           // ✅ special trip은 일반 강사 policy merge 금지
-          if (isSpecialTrip) {
+          if (specialTrip) {
             return {
               ...trip,
               instructorPolicy: null,
-
-              // ❗ pricing은 절대 구조를 깨지 않음
+              disableFOC,
               pricing: {
                 ...trip.pricing,
-
-                // 필요한 값만 추가 (덮지 않음)
                 instructorCommissionPercent:
                   trip?.pricing?.instructorCommissionPercent ??
                   trip?.commissionPercent ??
                   0,
-
-                instructorFOCPolicy:
-                  trip?.pricing?.instructorFOCPolicy ||
-                  trip?.focPolicy ||
-                  "",
+                instructorFOCPolicy: disableFOC
+                  ? ""
+                  : resolvedFOCPolicy,
               },
-
               instructorBookingMode: "bookable",
               instructorContractStatus: "special",
               instructorPolicyMemo: "special trip 자체 정책 사용",
@@ -137,20 +119,16 @@ function InstructorList() {
           return {
             ...trip,
             instructorPolicy: policy,
+            disableFOC,
             pricing: {
               ...(trip.pricing || {}),
               instructorCommissionPercent: hasCommissionValue
                 ? Number(policy.commissionPercent)
                 : 10,
 
-              // inseanq는 원본 FOC 유지
-              // 그 외(scubadates 등)는 관리자 policy 사용
-              instructorFOCPolicy:
-                trip?.source === "inseanq"
-                  ? (trip?.pricing?.instructorFOCPolicy ||
-                    trip?.focPolicy ||
-                    "")
-                  : (policy?.focPolicy || ""),
+              instructorFOCPolicy: disableFOC
+                ? ""
+                : resolvedFOCPolicy,
             },
             instructorBookingMode: policy?.bookingMode || "inquiry",
             instructorContractStatus: policy?.contractStatus || "none",
