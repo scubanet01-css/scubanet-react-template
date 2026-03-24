@@ -66,6 +66,35 @@ function InstructorList() {
           const vesselId = trip?.vesselId || trip?.boatId || trip?.boatCode || "";
           console.log("🔥 instructor vessel check:", trip?.boatName, vesselId, policyMap[vesselId]);
 
+          const offerNames = [];
+
+          // pricing / trip 상단 오퍼
+          if (Array.isArray(trip?.specialOffers)) {
+            trip.specialOffers.forEach((offer) => {
+              if (offer?.name) offerNames.push(String(offer.name));
+            });
+          }
+
+          // cabins.ratePlans 쪽 오퍼 이름도 같이 확인
+          if (Array.isArray(trip?.cabins)) {
+            trip.cabins.forEach((cabin) => {
+              (cabin?.ratePlans || []).forEach((rp) => {
+                if (rp?.name) offerNames.push(String(rp.name));
+              });
+            });
+          }
+
+          const hasDiscountOffer = offerNames.some((name) => {
+            const lower = name.toLowerCase();
+            return lower.includes("off") || lower.includes("%");
+          });
+
+          const isAggressorFleet = String(
+            trip?.boatName || trip?.boat?.name || ""
+          ).toLowerCase().includes("aggressor");
+
+          const disableFOC = isAggressorFleet && hasDiscountOffer;
+
           const policy = policyMap[vesselId] || null;
 
           const isSpecialTrip =
