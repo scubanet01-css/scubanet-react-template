@@ -281,24 +281,27 @@ function generateInvoicePDF(data, outputPath) {
       doc.fontSize(14).text("금액 정보", { underline: true });
       doc.moveDown(0.5);
 
-      // ✅ 일반예약 프로모션 유지
-      doc.fontSize(12).text(`기본 금액: ${formatMoney(resolvedBasePrice, currency)}`);
+      // -------------------------------
+      // 일반예약 금액 구조
+      // -------------------------------
+      if (bookingType !== "instructor") {
+        doc.fontSize(12).text(`기본 금액: ${formatMoney(resolvedBasePrice, currency)}`);
 
-      if (hasPromotionDiscount) {
-        const promotionLabel = promotion?.title
-          ? `${promotion.title}${promotion?.discountValue ? ` (${promotion.discountValue}%)` : ""}`
-          : "프로모션 할인";
+        if (hasPromotionDiscount) {
+          const promotionLabel = promotion?.title
+            ? `${promotion.title}${promotion?.discountValue ? ` (${promotion.discountValue}%)` : ""}`
+            : "프로모션 할인";
 
-        doc.text(`${promotionLabel}: - ${formatMoney(resolvedDiscountAmount, currency)}`);
-        doc.text(`최종 금액: ${formatMoney(resolvedFinalPrice, currency)}`);
-      } else {
-        // ✅ 일반예약은 기존과 동일
-        if (bookingType !== "instructor") {
+          doc.text(`${promotionLabel}: - ${formatMoney(resolvedDiscountAmount, currency)}`);
+          doc.text(`최종 금액: ${formatMoney(resolvedFinalPrice, currency)}`);
+        } else {
           doc.text(`최종 금액: ${formatMoney(resolvedTotalPrice, currency)}`);
         }
       }
 
-      // ✅ 강사예약 정산 정보는 개선된 구조로 출력
+      // -------------------------------
+      // 강사예약 금액 구조
+      // -------------------------------
       if (
         bookingType === "instructor" ||
         hasFOC ||
@@ -306,6 +309,8 @@ function generateInvoicePDF(data, outputPath) {
         hasCommissionAmount ||
         hasFinalAmount
       ) {
+        doc.fontSize(12).text(`총 판매 금액: ${formatMoney(resolvedBasePrice, currency)}`);
+
         if (hasFOC) {
           const focLabel =
             Array.isArray(focDetails) && focDetails.length > 0
@@ -313,9 +318,8 @@ function generateInvoicePDF(data, outputPath) {
               : "FOC";
 
           doc.text(`FOC 적용 (${focLabel}): - ${formatMoney(Number(focDiscount), currency)}`);
+          doc.text(`FOC 적용 후 판매 금액: ${formatMoney(resolvedTotalPrice, currency)}`);
         }
-
-        doc.text(`FOC 적용 후 판매 금액: ${formatMoney(resolvedTotalPrice, currency)}`);
 
         if (resolvedBaseCommissionPercent !== null) {
           doc.text(`정책 커미션: ${resolvedBaseCommissionPercent}%`);
@@ -326,13 +330,13 @@ function generateInvoicePDF(data, outputPath) {
         }
 
         if (hasCommissionAmount) {
-          doc.text(
-            `커미션 금액: - ${formatMoney(Number(commissionAmount), currency)}`
-          );
+          doc.text(`커미션 금액: - ${formatMoney(Number(commissionAmount), currency)}`);
         }
 
         if (hasFinalAmount) {
+          doc.font("Helvetica-Bold");
           doc.text(`최종 결제 금액: ${formatMoney(Number(finalAmount), currency)}`);
+          doc.font(fontPath && fs.existsSync(fontPath) ? fontPath : "Helvetica");
         }
 
         if (resolvedSavings > 0) {
