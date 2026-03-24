@@ -206,19 +206,31 @@ function InstructorConfirm() {
       const invoiceData = {
         trip,
         selectedBookings,
-        totalPrice, // ✅ FOC 적용 후 판매 금액
+
+        // ✅ 가격 구조
+        baseTotal,
+        totalPrice,
         focDiscount,
         focDetails,
+
+        // ✅ 커미션 구조 (🔥 핵심)
+        baseCommissionPercent,
+        appliedCommissionPercent,
         commissionRate: Number((commissionRate * 100).toFixed(0)),
         commissionAmount,
+
+        // ✅ 최종 금액
         finalAmount,
+
         bookingType: "instructor",
         currency,
+
         guest: {
           name: "Instructor",
           email: "scubanet01@gmail.com",
           phone: "01030192402",
         },
+
         agreements,
       };
 
