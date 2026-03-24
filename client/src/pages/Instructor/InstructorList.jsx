@@ -62,6 +62,11 @@ function InstructorList() {
         );
 
         // ✅ trip마다 policy 붙이기
+        const hasCommissionValue =
+          policy?.commissionPercent !== undefined &&
+          policy?.commissionPercent !== null &&
+          policy?.commissionPercent !== "";
+
         const merged = withSeats.map((trip) => {
           const vesselId = trip?.vesselId || trip?.boatId || trip?.boatCode || "";
           console.log("🔥 instructor vessel check:", trip?.boatName, vesselId, policyMap[vesselId]);
@@ -72,9 +77,9 @@ function InstructorList() {
             instructorPolicy: policy,
             pricing: {
               ...(trip.pricing || {}),
-              instructorCommissionPercent:
-                policy?.commissionPercent ?? 0,
-
+              instructorCommissionPercent: hasCommissionValue
+                ? Number(policy.commissionPercent)
+                : 10,
               // inseanq는 원본 FOC 유지
               // 그 외(source가 special/scubadates 등)는 policy.focPolicy 사용
               instructorFOCPolicy:
