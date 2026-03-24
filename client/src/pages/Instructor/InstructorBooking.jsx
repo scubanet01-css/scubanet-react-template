@@ -658,6 +658,22 @@ function InstructorBooking() {
   // FOC 오퍼 재구성
   // -----------------------------------
   const focOffers = useMemo(() => {
+    const boatName = String(trip?.boatName || "").toLowerCase();
+
+    const isAggressorFleet = boatName.includes("aggressor");
+
+    const hasDiscountOffer =
+      Array.isArray(specialOffers) &&
+      specialOffers.some((offer) => {
+        const name = String(offer?.name || "").toLowerCase();
+        return name.includes("off") || name.includes("%");
+      });
+
+    // ✅ Aggressor + 할인 → FOC 차단
+    if (isAggressorFleet && hasDiscountOffer) {
+      return [];
+    }
+
     const offers = [];
 
     if (instructorFOCPolicy) {
@@ -671,7 +687,7 @@ function InstructorBooking() {
     }
 
     return filterFOCOffers(offers);
-  }, [instructorFOCPolicy, specialOffers]);
+  }, [trip, instructorFOCPolicy, specialOffers]);
 
   // -----------------------------------
   // pax(인원) 계산
