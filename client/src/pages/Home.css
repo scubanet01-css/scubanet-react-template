@@ -73,13 +73,6 @@
   text-align: center;
 }
 
-.hero-section {
-  background-image: url("/images/home-bg.jpg");
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-}
-
 .hero-beta {
   margin-top: 12px;
   font-size: 16px;
