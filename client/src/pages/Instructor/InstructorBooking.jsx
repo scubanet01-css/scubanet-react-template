@@ -136,6 +136,46 @@ function buildOccupancyFromRatePlans(ratePlans = []) {
   return result.sort((a, b) => a.id - b.id);
 }
 
+function buildSpecialRoomBookingOptions(room, cabin, currency) {
+  const roomName = String(room?.name || room?.roomName || "");
+  const availableSpaces = Number(room?.availableSpaces || 0);
+  const unitPrice = Number(cabin?.occupancy?.[0]?.price || 0);
+
+  const isQuad = /quad/i.test(roomName);
+  const maxPeople = isQuad
+    ? Math.min(availableSpaces, 4)
+    : Math.min(availableSpaces, 2);
+
+  const options = [];
+
+  for (let n = 1; n <= maxPeople; n += 1) {
+    options.push({
+      selectionKey: `${room.id}_${n}`,
+      peopleCount: n,
+      price: unitPrice,
+      totalPrice: unitPrice * n,
+      label: `${n}인 예약 - ${formatCurrency(unitPrice, currency)}/인`,
+      occLabel: `${n}인 예약`,
+      unitSuffix: "/인",
+    });
+  }
+
+  // 독실 예약은 Twin/Double/Quad 모두 일단 허용
+  if (availableSpaces > 0) {
+    options.push({
+      selectionKey: `${room.id}_private`,
+      peopleCount: 1,
+      price: unitPrice,
+      totalPrice: unitPrice,
+      label: `독실 예약 - ${formatCurrency(unitPrice, currency)}/인`,
+      occLabel: "독실 예약",
+      unitSuffix: "/인",
+    });
+  }
+
+  return options;
+}
+
 function InstructorBooking() {
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -622,44 +662,85 @@ function InstructorBooking() {
                 {cabin.available > 0 ? (
                   <>
                     {isSpecialTrip ? (
-                      // ✅ SPECIAL: 객실별 버튼 UI
+                      // ✅ SPECIAL: 객실별 dropdown UI
                       <div className="room-list">
-                        {subCabins.map((room) => (
-                          <div key={room.id} style={{ marginBottom: "6px" }}>
-                            <span>
-                              {room.name} ({room.availableSpaces}석)
-                            </span>
+                        {subCabins.map((room) => {
+                          const roomOptions = buildSpecialRoomBookingOptions(room, cabin, currency);
 
-                            <button
-                              className="book-btn"
-                              style={{ marginLeft: "10px" }}
-                              onClick={() => {
-                                const peopleCount = Number(room.availableSpaces || 0);
-                                const unitPrice = Number(cabin.occupancy?.[0]?.price || 0);
-                                const totalPrice = unitPrice * peopleCount;
+                          return (
+                            <div key={room.id} style={{ marginBottom: "10px" }}>
+                              <span style={{ marginRight: "10px" }}>
+                                {room.name} ({room.availableSpaces}석)
+                              </span>
 
-                                setSelectedBookings((prev) => [
-                                  ...prev.filter((b) => b.id !== room.id),
-                                  {
-                                    id: room.id,
-                                    cabin: cabin.name,
-                                    room: room.name,
-                                    selectionKey: `${room.id}_${peopleCount}`,
-                                    price: unitPrice,
-                                    peopleCount,
-                                    totalPrice,
-                                    occId: peopleCount,
-                                    occLabel: `${peopleCount}인 예약`,
-                                    unitSuffix: "/인",
-                                  },
-                                ]);
-                              }}
-                              disabled={room.availableSpaces <= 0}
-                            >
-                              예약
-                            </button>
-                          </div>
-                        ))}
+                              <select
+                                value={selectedOcc[room.id] ?? ""}
+                                onChange={(e) => {
+                                  const selectedValue = e.target.value;
+
+                                  setSelectedOcc((prev) => ({
+                                    ...prev,
+                                    [room.id]: selectedValue,
+                                  }));
+
+                                  if (!selectedValue) {
+                                    setSelectedBookings((prev) =>
+                                      prev.filter((b) => b.id !== room.id)
+                                    );
+                                    return;
+                                  }
+
+                                  const selectedOption = roomOptions.find(
+                                    (opt) => opt.selectionKey === selectedValue
+                                  );
+
+                                  if (!selectedOption) return;
+
+                                  setSelectedBookings((prev) => [
+                                    ...prev.filter((b) => b.id !== room.id),
+                                    {
+                                      id: room.id,
+                                      cabin: cabin.name,
+                                      room: room.name,
+                                      selectionKey: selectedOption.selectionKey,
+                                      price: selectedOption.price,
+                                      peopleCount: selectedOption.peopleCount,
+                                      totalPrice: selectedOption.totalPrice,
+                                      occId: selectedOption.peopleCount,
+                                      occLabel: selectedOption.occLabel,
+                                      unitSuffix: selectedOption.unitSuffix,
+                                    },
+                                  ]);
+                                }}
+                                className="occ-select"
+                                style={{ marginRight: "8px" }}
+                              >
+                                <option value="">예약 유형 선택</option>
+                                {roomOptions.map((opt) => (
+                                  <option key={opt.selectionKey} value={opt.selectionKey}>
+                                    {opt.label}
+                                  </option>
+                                ))}
+                              </select>
+
+                              <button
+                                className="book-btn"
+                                onClick={() => {
+                                  setSelectedBookings((prev) =>
+                                    prev.filter((b) => b.id !== room.id)
+                                  );
+                                  setSelectedOcc((prev) => ({
+                                    ...prev,
+                                    [room.id]: "",
+                                  }));
+                                }}
+                                disabled={!selectedBookings.find((b) => b.id === room.id)}
+                              >
+                                예약 취소
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
                     ) : (
                       // ✅ GENERAL: 기존 dropdown 유지
