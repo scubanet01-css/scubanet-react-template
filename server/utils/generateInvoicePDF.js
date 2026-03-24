@@ -313,31 +313,15 @@ function generateInvoicePDF(data, outputPath) {
         hasCommissionAmount ||
         hasFinalAmount
       ) {
-        doc.fontSize(12).text(`총 판매 금액: ${formatMoney(resolvedBasePrice, currency)}`);
+        doc.text(`총 판매 금액: ${formatMoney(resolvedBasePrice, currency)}`);
         doc.moveDown(0.3);
 
         if (hasFOC) {
-          const focLabel =
-            Array.isArray(focDetails) && focDetails.length > 0
-              ? focDetails.map((f) => f.offerName || f.name || "").filter(Boolean).join(", ")
-              : "FOC";
-
-          doc.text(`FOC 적용 (${focLabel}): - ${formatMoney(Number(focDiscount), currency)}`);
+          doc.text(`FOC 적용 (${focLabel}): - ${formatMoney(focDiscount, currency)}`);
           doc.moveDown(0.3);
 
           doc.text(`FOC 적용 후 판매 금액: ${formatMoney(resolvedTotalPrice, currency)}`);
           doc.moveDown(0.3);
-        } else {
-          // FOC 없으면 그냥 판매금액이 기준
-          doc.text(`판매 금액: ${formatMoney(resolvedTotalPrice, currency)}`);
-          doc.moveDown(0.3);
-        }
-
-
-        if (resolvedBaseCommissionPercent !== null) {
-          doc.text(`정책 커미션: ${resolvedBaseCommissionPercent}%`);
-          doc.moveDown(0.3);
-
         }
 
         if (resolvedAppliedCommissionPercent !== null) {
@@ -346,19 +330,15 @@ function generateInvoicePDF(data, outputPath) {
         }
 
         if (hasCommissionAmount) {
-          doc.text(`커미션 금액: - ${formatMoney(Number(commissionAmount), currency)}`);
+          doc.text(`커미션 금액: - ${formatMoney(commissionAmount, currency)}`);
           doc.moveDown(0.3);
         }
 
-        if (hasFinalAmount) {
-          if (fs.existsSync(fontBoldPath)) {
-            doc.font(fontBoldPath);
-          } else {
-            doc.font(fontPath);
-          }
-          doc.text(`최종 결제 금액: ${formatMoney(Number(finalAmount), currency)}`);
-          doc.font(fontPath && fs.existsSync(fontPath) ? fontPath : "Helvetica");
-          doc.moveDown(0.5);
+        doc.text(`최종 결제 금액: ${formatMoney(finalAmount, currency)}`);
+        doc.moveDown(0.3);
+
+        if (resolvedSavings > 0) {
+          doc.text(`총 절약 금액: ${formatMoney(resolvedSavings, currency)}`);
         }
 
         if (resolvedSavings > 0) {
