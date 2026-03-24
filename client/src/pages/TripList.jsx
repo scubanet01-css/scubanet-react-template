@@ -217,6 +217,8 @@ function TripList() {
                 });
             });
         }
+        // ✅ 예약 가능한 좌석이 있는 트립만 노출
+        list = list.filter((t) => getSeatCounts(t).available > 0);
 
         list.sort((a, b) => {
             const aSpecial =
