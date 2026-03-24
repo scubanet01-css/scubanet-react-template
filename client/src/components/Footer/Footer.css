@@ -84,3 +84,15 @@
         margin-bottom: 0;
     }
 }
+
+.footer-desc {
+    font-size: 14px;
+    color: #d1d5db;
+    margin-bottom: 6px;
+}
+
+.footer-beta {
+    font-size: 13px;
+    color: #93c5fd;
+    margin-bottom: 12px;
+}
