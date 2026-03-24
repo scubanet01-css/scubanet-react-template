@@ -21,6 +21,17 @@ function Footer() {
             {/* 회사 정보 */}
             <div className="footer-section company-info">
                 <h3>(주)스쿠버넷트레블</h3>
+
+                {/* ✅ 추가: 서비스 설명 */}
+                <p className="footer-desc">
+                    전 세계 리브어보드 & 다이빙 리조트 예약 플랫폼
+                </p>
+
+                {/* ✅ 추가: 베타 안내 */}
+                <p className="footer-beta">
+                    현재 베타(가오픈) 테스트 중입니다.
+                </p>
+
                 <p>사업자등록번호: 230-81-02952</p>
                 <p>주소: 경기도 화성시 동탄영천로 101, 서영아너시티 1014호</p>
                 <p>
@@ -29,7 +40,7 @@ function Footer() {
                         info@scubanet-travel.com
                     </a>
                 </p>
-                <p>카카오톡: scubanet</p>
+                <p>카카오톡채널: 스쿠버넷</p>
             </div>
 
             {/* 증서 / 등록증 */}
