@@ -81,23 +81,29 @@ function InstructorList() {
             return {
               ...trip,
               instructorPolicy: null,
+
+              // ❗ pricing은 절대 구조를 깨지 않음
               pricing: {
-                ...(trip.pricing || {}),
+                ...trip.pricing,
+
+                // 필요한 값만 추가 (덮지 않음)
                 instructorCommissionPercent:
                   trip?.pricing?.instructorCommissionPercent ??
                   trip?.commissionPercent ??
                   0,
+
                 instructorFOCPolicy:
                   trip?.pricing?.instructorFOCPolicy ||
                   trip?.focPolicy ||
                   "",
               },
+
               instructorBookingMode: "bookable",
               instructorContractStatus: "special",
               instructorPolicyMemo: "special trip 자체 정책 사용",
             };
           }
-
+          console.log("SPECIAL CABINS:", trip.pricing?.cabins);
           // ✅ 일반 trip은 기존 policy merge
           return {
             ...trip,
