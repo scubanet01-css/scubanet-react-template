@@ -230,6 +230,9 @@ function TripList() {
         // ✅ 예약 가능한 좌석이 있는 트립만 노출
         list = list.filter((t) => getSeatCounts(t).available > 0);
 
+        // ✅ 가오픈 제외 선박
+        list = list.filter((t) => t.boatName !== "Nusantara");
+
         list.sort((a, b) => {
             const aSpecial =
                 a.source === "special" ||
