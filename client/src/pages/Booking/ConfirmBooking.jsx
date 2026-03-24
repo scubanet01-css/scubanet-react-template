@@ -394,6 +394,23 @@ function ConfirmBooking() {
     <div className="confirm-booking">
       <h2>예약 확인</h2>
 
+      <h1>예약 확인</h1>
+
+      <div
+        style={{
+          background: "#eff6ff",
+          border: "1px solid #bfdbfe",
+          color: "#1e40af",
+          padding: "12px 16px",
+          borderRadius: "8px",
+          fontSize: "14px",
+          marginBottom: "20px",
+          lineHeight: "1.6",
+        }}
+      >
+        현재 베타(가오픈) 테스트 중입니다. 예약 접수 후 담당자가 별도로 확인 안내드립니다.
+      </div>
+
       {/* 여행 정보 */}
       <section>
         <h3>여행 정보</h3>
