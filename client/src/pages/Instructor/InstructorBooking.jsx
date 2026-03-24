@@ -658,6 +658,10 @@ function InstructorBooking() {
   // FOC 오퍼 재구성
   // -----------------------------------
   const focOffers = useMemo(() => {
+
+    if (trip?.disableFOC) {
+      return [];
+    }
     const boatName = String(trip?.boatName || "").toLowerCase();
 
     const isAggressorFleet = boatName.includes("aggressor");
@@ -709,31 +713,34 @@ function InstructorBooking() {
   // 원칙:
   // - 선택된 예약 중 가장 싼 가격이 아니라
   // - 트립 전체 판매 가능 객실 중 최저 1인 가격 × 무료 인원 수
+  // - 단, trip.disableFOC === true 이면 FOC 완전 비활성화
   // -----------------------------------
   let focDiscount = 0;
   let focDetails = [];
   let bestFOC = null;
 
-  if (pax > 0 && lowestFOCUnitPrice > 0 && focOffers.length > 0) {
-    bestFOC = getBestFOCOffer(focOffers, pax, [lowestFOCUnitPrice]);
-  }
+  if (!trip?.disableFOC) {
+    if (pax > 0 && lowestFOCUnitPrice > 0 && focOffers.length > 0) {
+      bestFOC = getBestFOCOffer(focOffers, pax, [lowestFOCUnitPrice]);
+    }
 
-  if (bestFOC) {
-    const freeCount = Number(bestFOC.free || bestFOC.bonus || 0);
-    const discount = lowestFOCUnitPrice * freeCount;
+    if (bestFOC) {
+      const freeCount = Number(bestFOC.free || bestFOC.bonus || 0);
+      const discount = lowestFOCUnitPrice * freeCount;
 
-    focDiscount = discount;
+      focDiscount = discount;
 
-    focDetails = [
-      {
-        offerName: bestFOC.name,
-        req: bestFOC.req,
-        bonus: bestFOC.bonus,
-        freeUnits: freeCount,
-        unitPrice: lowestFOCUnitPrice,
-        discount,
-      },
-    ];
+      focDetails = [
+        {
+          offerName: bestFOC.name,
+          req: bestFOC.req,
+          bonus: bestFOC.bonus,
+          freeUnits: freeCount,
+          unitPrice: lowestFOCUnitPrice,
+          discount,
+        },
+      ];
+    }
   }
 
   const totalPrice = baseTotal - focDiscount;
@@ -990,9 +997,11 @@ function InstructorBooking() {
             </div>
           )}
 
-          <p>
-            <strong>FOC 적용 후 합계:</strong> {formatCurrencyLocal(totalPrice, currency)}
-          </p>
+          {Number(focDiscount || 0) > 0 && (
+            <p>
+              <strong>FOC 적용 후 합계:</strong> {formatCurrencyLocal(totalPrice, currency)}
+            </p>
+          )}
 
           <p>
             <strong>정책 커미션:</strong> {baseCommissionPercent}%
