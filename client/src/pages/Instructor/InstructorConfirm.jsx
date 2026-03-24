@@ -254,9 +254,12 @@ function InstructorConfirm() {
         state: {
           trip,
           selectedBookings,
+          baseTotal,
           totalPrice,
           focDiscount,
           focDetails,
+          baseCommissionPercent,
+          appliedCommissionPercent,
           commissionRate,
           commissionAmount,
           finalAmount,
@@ -264,7 +267,7 @@ function InstructorConfirm() {
           bookingType: "instructor",
           bookingId: data.bookingId || null,
           invoiceFileUrl: data.fileUrl || null,
-        },
+        }
       });
     } catch (err) {
       console.error("❌ 강사 인보이스 생성 실패:", err);

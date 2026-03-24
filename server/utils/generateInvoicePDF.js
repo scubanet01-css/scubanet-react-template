@@ -46,8 +46,10 @@ function getOccupancyCount(type, occupancyValue) {
     type === "독실 예약" ||
     type === "1인 예약" ||
     type === "1"
-  )
+  ) {
     return 1;
+  }
+
   if (type === "2인 예약" || type === "2") return 2;
 
   return 1;
@@ -65,13 +67,18 @@ function safeText(value, fallback = "-") {
  * @param {object} data
  * @param {object} data.trip
  * @param {Array}  data.cabins
+ * @param {Array}  data.selectedBookings
  * @param {object} data.guest
  * @param {number} data.totalPrice
  * @param {number} data.basePrice
+ * @param {number} data.baseTotal
  * @param {number} data.discountAmount
  * @param {number} data.finalPrice
  * @param {object} data.promotion
  * @param {number} data.focDiscount
+ * @param {Array}  data.focDetails
+ * @param {number} data.baseCommissionPercent
+ * @param {number} data.appliedCommissionPercent
  * @param {number} data.commissionRate
  * @param {number} data.commissionAmount
  * @param {number} data.finalAmount
@@ -85,13 +92,18 @@ function generateInvoicePDF(data, outputPath) {
       const {
         trip = {},
         cabins = [],
+        selectedBookings = [],
         guest = {},
         totalPrice,
         basePrice,
+        baseTotal,
         discountAmount,
         finalPrice,
         promotion,
         focDiscount,
+        focDetails = [],
+        baseCommissionPercent,
+        appliedCommissionPercent,
         commissionRate,
         commissionAmount,
         finalAmount,
@@ -102,35 +114,80 @@ function generateInvoicePDF(data, outputPath) {
       const boatName = getBoatName(trip);
       const currency = getCurrency(trip, "USD");
 
-      const computedCabinTotal = Array.isArray(cabins)
-        ? cabins.reduce((sum, cabin) => {
-          const count = getOccupancyCount(
-            cabin?.occupancyType,
-            cabin?.occupancyValue
-          );
+      // ✅ 강사예약은 selectedBookings 우선 사용, 없으면 기존 cabins 사용
+      const cabinList =
+        Array.isArray(selectedBookings) && selectedBookings.length > 0
+          ? selectedBookings
+          : Array.isArray(cabins)
+            ? cabins
+            : [];
+
+      // ✅ 기존 일반예약 cabins 구조 + 새 selectedBookings 구조 모두 대응
+      const computedCabinTotal = Array.isArray(cabinList)
+        ? cabinList.reduce((sum, cabin) => {
+          if (Number.isFinite(Number(cabin?.totalPrice))) {
+            return sum + Number(cabin.totalPrice);
+          }
+
+          const count =
+            Number(cabin?.peopleCount) > 0
+              ? Number(cabin.peopleCount)
+              : getOccupancyCount(cabin?.occupancyType, cabin?.occupancyValue);
+
           const price = Number(cabin?.price) || 0;
           return sum + price * count;
         }, 0)
+        : 0;
+
+      // ✅ 일반예약/강사예약 모두 대응
+      const resolvedBasePrice = Number.isFinite(Number(basePrice))
+        ? Number(basePrice)
+        : Number.isFinite(Number(baseTotal))
+          ? Number(baseTotal)
+          : computedCabinTotal;
+
+      const resolvedDiscountAmount = Number.isFinite(Number(discountAmount))
+        ? Number(discountAmount)
         : 0;
 
       const resolvedTotalPrice = Number.isFinite(Number(totalPrice))
         ? Number(totalPrice)
         : computedCabinTotal;
 
-      // ✅ 일반예약 프로모션 대응
-      const resolvedBasePrice = Number.isFinite(Number(basePrice))
-        ? Number(basePrice)
-        : resolvedTotalPrice;
-
-      const resolvedDiscountAmount = Number.isFinite(Number(discountAmount))
-        ? Number(discountAmount)
-        : 0;
-
       const resolvedFinalPrice = Number.isFinite(Number(finalPrice))
         ? Number(finalPrice)
-        : resolvedTotalPrice;
+        : Number.isFinite(Number(finalAmount))
+          ? Number(finalAmount)
+          : resolvedTotalPrice;
 
       const hasPromotionDiscount = resolvedDiscountAmount > 0;
+
+      const hasFOC =
+        Number.isFinite(Number(focDiscount)) && Number(focDiscount) !== 0;
+
+      const hasCommissionRate = Number.isFinite(Number(commissionRate));
+      const hasCommissionAmount =
+        Number.isFinite(Number(commissionAmount)) &&
+        Number(commissionAmount) !== 0;
+
+      const hasFinalAmount = Number.isFinite(Number(finalAmount));
+
+      const resolvedBaseCommissionPercent = Number.isFinite(
+        Number(baseCommissionPercent)
+      )
+        ? Number(baseCommissionPercent)
+        : null;
+
+      const resolvedAppliedCommissionPercent = Number.isFinite(
+        Number(appliedCommissionPercent)
+      )
+        ? Number(appliedCommissionPercent)
+        : hasCommissionRate
+          ? Number(commissionRate)
+          : null;
+
+      const resolvedSavings =
+        Number(focDiscount || 0) + Number(commissionAmount || 0);
 
       const doc = new PDFDocument({ margin: 50 });
 
@@ -174,21 +231,40 @@ function generateInvoicePDF(data, outputPath) {
       doc.fontSize(14).text("선택된 객실 정보", { underline: true });
       doc.moveDown(0.5);
 
-      if (Array.isArray(cabins) && cabins.length > 0) {
-        cabins.forEach((cabin, index) => {
-          const count = getOccupancyCount(
-            cabin?.occupancyType,
-            cabin?.occupancyValue
-          );
-          const unitPrice = Number(cabin?.price) || 0;
-          const lineTotal = unitPrice * count;
+      if (Array.isArray(cabinList) && cabinList.length > 0) {
+        cabinList.forEach((cabin, index) => {
+          // ✅ 강사예약 selectedBookings 구조 우선
+          const cabinType =
+            cabin?.cabin ||
+            cabin?.cabinType ||
+            cabin?.cabinName ||
+            "객실명 없음";
 
-          doc
-            .fontSize(12)
-            .text(`${index + 1}. ${safeText(cabin?.cabinName, "객실명 없음")}`);
-          doc.fontSize(11).text(`   - Cabin ID: ${safeText(cabin?.cabinId, "-")}`);
-          doc.text(`   - 예약 형태: ${safeText(cabin?.occupancyType, "-")}`);
-          doc.text(`   - 인원 수: ${count}`);
+          const roomName =
+            cabin?.room ||
+            cabin?.roomName ||
+            cabin?.cabinId ||
+            "-";
+
+          const occLabel =
+            cabin?.occLabel ||
+            cabin?.occupancyType ||
+            "-";
+
+          const count =
+            Number(cabin?.peopleCount) > 0
+              ? Number(cabin.peopleCount)
+              : getOccupancyCount(cabin?.occupancyType, cabin?.occupancyValue);
+
+          const unitPrice = Number(cabin?.price) || 0;
+          const lineTotal = Number.isFinite(Number(cabin?.totalPrice))
+            ? Number(cabin.totalPrice)
+            : unitPrice * count;
+
+          doc.fontSize(12).text(`${index + 1}. ${safeText(cabinType, "객실명 없음")}`);
+          doc.text(`   - 세부 객실: ${safeText(roomName, "-")}`);
+          doc.text(`   - 예약 유형: ${safeText(occLabel, "-")}`);
+          doc.text(`   - 인원 수: ${count}명`);
           doc.text(`   - 1인 기준 금액: ${formatMoney(unitPrice, currency)}`);
           doc.text(`   - 소계: ${formatMoney(lineTotal, currency)}`);
           doc.moveDown(0.4);
@@ -205,30 +281,24 @@ function generateInvoicePDF(data, outputPath) {
       doc.fontSize(14).text("금액 정보", { underline: true });
       doc.moveDown(0.5);
 
-      // ✅ 일반예약 프로모션이 있으면 할인 전 금액을 기본 금액으로 표시
+      // ✅ 일반예약 프로모션 유지
       doc.fontSize(12).text(`기본 금액: ${formatMoney(resolvedBasePrice, currency)}`);
 
       if (hasPromotionDiscount) {
         const promotionLabel = promotion?.title
-          ? `${promotion.title}${promotion?.discountValue ? ` (${promotion.discountValue}%)` : ""
-          }`
+          ? `${promotion.title}${promotion?.discountValue ? ` (${promotion.discountValue}%)` : ""}`
           : "프로모션 할인";
 
         doc.text(`${promotionLabel}: - ${formatMoney(resolvedDiscountAmount, currency)}`);
         doc.text(`최종 금액: ${formatMoney(resolvedFinalPrice, currency)}`);
       } else {
-        doc.text(`최종 금액: ${formatMoney(resolvedTotalPrice, currency)}`);
+        // ✅ 일반예약은 기존과 동일
+        if (bookingType !== "instructor") {
+          doc.text(`최종 금액: ${formatMoney(resolvedTotalPrice, currency)}`);
+        }
       }
 
-      const hasFOC =
-        Number.isFinite(Number(focDiscount)) && Number(focDiscount) !== 0;
-      const hasCommissionRate = Number.isFinite(Number(commissionRate));
-      const hasCommissionAmount =
-        Number.isFinite(Number(commissionAmount)) &&
-        Number(commissionAmount) !== 0;
-      const hasFinalAmount = Number.isFinite(Number(finalAmount));
-
-      // ✅ 강사예약 정산 정보는 기존 기능 유지
+      // ✅ 강사예약 정산 정보는 개선된 구조로 출력
       if (
         bookingType === "instructor" ||
         hasFOC ||
@@ -237,11 +307,22 @@ function generateInvoicePDF(data, outputPath) {
         hasFinalAmount
       ) {
         if (hasFOC) {
-          doc.text(`FOC 할인: - ${formatMoney(Number(focDiscount), currency)}`);
+          const focLabel =
+            Array.isArray(focDetails) && focDetails.length > 0
+              ? focDetails.map((f) => f.offerName || f.name || "").filter(Boolean).join(", ")
+              : "FOC";
+
+          doc.text(`FOC 적용 (${focLabel}): - ${formatMoney(Number(focDiscount), currency)}`);
         }
 
-        if (hasCommissionRate) {
-          doc.text(`커미션율: ${Number(commissionRate)}%`);
+        doc.text(`FOC 적용 후 판매 금액: ${formatMoney(resolvedTotalPrice, currency)}`);
+
+        if (resolvedBaseCommissionPercent !== null) {
+          doc.text(`정책 커미션: ${resolvedBaseCommissionPercent}%`);
+        }
+
+        if (resolvedAppliedCommissionPercent !== null) {
+          doc.text(`적용 커미션: ${resolvedAppliedCommissionPercent}%`);
         }
 
         if (hasCommissionAmount) {
@@ -251,7 +332,11 @@ function generateInvoicePDF(data, outputPath) {
         }
 
         if (hasFinalAmount) {
-          doc.text(`최종 정산 금액: ${formatMoney(Number(finalAmount), currency)}`);
+          doc.text(`최종 결제 금액: ${formatMoney(Number(finalAmount), currency)}`);
+        }
+
+        if (resolvedSavings > 0) {
+          doc.text(`총 절약 금액: ${formatMoney(resolvedSavings, currency)}`);
         }
       }
 
