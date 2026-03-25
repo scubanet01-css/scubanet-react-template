@@ -47,6 +47,42 @@ function AdminUsers() {
         }
     }
 
+    async function handleChangeRole(userId, currentRole, nextRole) {
+        try {
+            const roleLabel =
+                nextRole === "instructor"
+                    ? "강사회원"
+                    : nextRole === "general"
+                        ? "일반회원"
+                        : nextRole;
+
+            const confirmMessage =
+                currentRole === nextRole
+                    ? `이미 ${roleLabel}입니다.`
+                    : `이 회원의 역할을 ${roleLabel}(으)로 변경하시겠습니까?`;
+
+            if (currentRole === nextRole) {
+                alert(confirmMessage);
+                return;
+            }
+
+            const ok = window.confirm(confirmMessage);
+            if (!ok) return;
+
+            const res = await axios.put(`/admin/api/users/${userId}/role`, {
+                role: nextRole,
+            });
+
+            alert(res.data?.message || "회원 역할이 변경되었습니다.");
+
+            // 권한 변경 직후 목록 다시 불러오기
+            fetchUsers();
+        } catch (err) {
+            console.error("회원 역할 변경 실패:", err);
+            alert(err.response?.data?.message || "회원 역할 변경에 실패했습니다.");
+        }
+    }
+
     const filteredUsers = useMemo(() => {
         return users.filter((user) => {
             const matchesKeyword =
@@ -215,6 +251,24 @@ function AdminUsers() {
                                                     활성화
                                                 </button>
                                             )}
+
+                                            {user.role === "general" && (
+                                                <button
+                                                    onClick={() => handleChangeRole(user._id, user.role, "instructor")}
+                                                    style={roleInstructorBtn}
+                                                >
+                                                    강사회원 변경
+                                                </button>
+                                            )}
+
+                                            {user.role === "instructor" && (
+                                                <button
+                                                    onClick={() => handleChangeRole(user._id, user.role, "general")}
+                                                    style={roleGeneralBtn}
+                                                >
+                                                    일반회원 변경
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -278,6 +332,24 @@ const normalBtn = {
     padding: "6px 10px",
     border: "none",
     background: "#059669",
+    color: "#fff",
+    cursor: "pointer",
+    borderRadius: "6px",
+};
+
+const roleInstructorBtn = {
+    padding: "6px 10px",
+    border: "none",
+    background: "#7c3aed",
+    color: "#fff",
+    cursor: "pointer",
+    borderRadius: "6px",
+};
+
+const roleGeneralBtn = {
+    padding: "6px 10px",
+    border: "none",
+    background: "#ea580c",
     color: "#fff",
     cursor: "pointer",
     borderRadius: "6px",

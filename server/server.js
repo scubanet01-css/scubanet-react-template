@@ -354,3 +354,47 @@ app.post("/api/instructor-policy", (req, res) => {
     res.status(500).json({ error: "Failed to save policy" });
   }
 });
+
+// 관리자용: 회원 role 변경
+app.put("/admin/api/users/:userId/role", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { role } = req.body;
+
+    if (!["general", "instructor", "admin"].includes(role)) {
+      return res.status(400).json({ message: "유효하지 않은 role입니다." });
+    }
+
+    const users = readUsers(); // 현재 프로젝트의 사용자 읽기 함수
+    const idx = users.findIndex((u) => String(u.id) === String(userId));
+
+    if (idx === -1) {
+      return res.status(404).json({ message: "회원을 찾을 수 없습니다." });
+    }
+
+    users[idx].role = role;
+
+    // 강사회원으로 바꾸는 경우 승인 상태도 같이 반영
+    if (role === "instructor") {
+      users[idx].instructorStatus = "approved";
+      users[idx].isInstructorApproved = true;
+    }
+
+    // 일반회원으로 되돌릴 경우 필요하면 정리
+    if (role === "general") {
+      users[idx].instructorStatus = "none";
+      users[idx].isInstructorApproved = false;
+    }
+
+    writeUsers(users); // 현재 프로젝트의 사용자 저장 함수
+
+    res.json({
+      success: true,
+      message: "회원 권한이 변경되었습니다.",
+      user: users[idx],
+    });
+  } catch (error) {
+    console.error("❌ 회원 role 변경 실패:", error);
+    res.status(500).json({ message: "서버 오류" });
+  }
+});
