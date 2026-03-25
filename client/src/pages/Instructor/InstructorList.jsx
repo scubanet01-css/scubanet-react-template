@@ -67,6 +67,9 @@ function InstructorList() {
           (t) => Number(t?.spaces?.available || 0) > 0
         );
 
+        // ✅ 가오픈 제외 선박
+        trips.filter(trip => !trip.boatName?.toLowerCase().includes("nusantara"))
+
         // ✅ trip마다 policy 붙이기
         const merged = withSeats.map((trip) => {
           const vesselId = trip?.vesselId || trip?.boatId || trip?.boatCode || "";
