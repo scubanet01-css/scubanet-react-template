@@ -97,7 +97,7 @@ router.post("/send-invoice", async (req, res) => {
     }
 
     const filename = `invoice_${Date.now()}.pdf`;
-    const filePath = path.join(__dirname, `../../data/${filename}`);
+    const filePath = `/var/scubanet-data/${filename}`;
 
     console.log("🧾 [3] PDF 생성 시작:", filePath);
 
