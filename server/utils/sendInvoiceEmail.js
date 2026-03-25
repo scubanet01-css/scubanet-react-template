@@ -65,8 +65,8 @@ async function sendInvoiceEmail({
       secure: false,
       ignoreTLS: true,
       auth: {
-        user: "noreply@scubanet-travel.com",
-        pass: "tNErr2026",
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
       },
       authMethod: "LOGIN",
       logger: true,
