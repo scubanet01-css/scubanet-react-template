@@ -124,6 +124,8 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
         };
       });
 
+    console.log("🔥 rawOptions", cabin?.name || cabin?.type || cabin?.cabinId, rawOptions);
+
     const publicOptions = rawOptions.filter((opt) => !opt.isInstructorOnly);
     const sourceOptions = publicOptions.length > 0 ? publicOptions : rawOptions;
 
@@ -139,6 +141,7 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
     });
 
     const finalOptions = Array.from(bestByLabel.values());
+    console.log("🔥 finalOptions", cabin?.name || cabin?.type || cabin?.cabinId, finalOptions);
 
     const order = {
       "1인 예약": 1,
