@@ -18,7 +18,7 @@ function Header() {
             <div style={innerStyle}>
                 <div style={logoWrapStyle}>
                     <Link to="/" style={logoStyle}>
-                        <img src="/logo.png" alt="ScubaNet Travel" style={{ height: "60px", objectFit: "contain" }} />
+                        <img src="/logo.png" alt="ScubaNet Travel" style={{ height: "100px", objectFit: "contain" }} />
                     </Link>
                     <span style={betaBadgeStyle}>BETA</span>
                 </div>
