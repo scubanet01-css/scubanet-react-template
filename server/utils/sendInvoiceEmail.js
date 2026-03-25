@@ -2,6 +2,8 @@
 const nodemailer = require("nodemailer");
 const path = require("path");
 
+require("dotenv").config();
+
 function getTripName(trip) {
   return (
     trip?.product?.name ||
