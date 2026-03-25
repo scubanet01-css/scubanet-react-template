@@ -229,7 +229,7 @@ app.post("/api/create-invoice", async (req, res) => {
     console.log("📩 POST 요청 수신: /api/create-invoice");
     console.log("📦 받은 payload:", bookingData);
 
-    const filePath = `/root/data/invoice_${Date.now()}.pdf`;
+    const filePath = `/var/scubanet-data/invoice_${Date.now()}.pdf`;
     await generateInvoicePDF(bookingData, filePath);
 
     // 이메일 검증

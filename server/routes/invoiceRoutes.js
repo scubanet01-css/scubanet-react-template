@@ -155,7 +155,7 @@ router.post("/send-invoice", async (req, res) => {
 
     console.log(`📬 이메일 발송 성공: ${guest.email}`);
 
-    const publicFileUrl = `http://210.114.22.82:3002/data/${filename}`;
+    const publicFileUrl = `https://www.scubanet-travel.com/data/${filename}`;
 
     const savedBooking = saveBooking({
       trip,
