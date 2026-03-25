@@ -64,7 +64,7 @@ async function sendInvoiceEmail({
       port: 587,
       secure: false,
       auth: {
-        user: "noreply@scubanet-travel.com",
+        user: "noreply",
         pass: "choiscuba100@",
       },
       debug: true,
