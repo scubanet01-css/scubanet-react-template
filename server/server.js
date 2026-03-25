@@ -16,7 +16,7 @@ const adminBoatAssetsRoutes = require("./routes/adminBoatAssets");
 const bookingRoutes = require("./routes/bookingRoutes");
 const adminPromotionsRouter = require("./routes/adminPromotions");
 
-const USERS_FILE = path.join(__dirname, "data", "users.json");
+const USERS_FILE = "/var/scubanet-data/users.json";
 
 // ✅ Special Trips 유틸 직접 사용
 const {
@@ -391,7 +391,11 @@ app.put("/admin/api/users/:userId/role", async (req, res) => {
     }
 
     const users = loadUsers();
-    const idx = users.findIndex((u) => String(u._id) === String(userId));
+    const idx = users.findIndex(
+      (u) =>
+        String(u._id) === String(userId) ||
+        String(u.id) === String(userId)
+    );
 
     if (idx === -1) {
       return res.status(404).json({ message: "회원을 찾을 수 없습니다." });
