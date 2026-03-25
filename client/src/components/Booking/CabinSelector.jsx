@@ -99,30 +99,40 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
 
     const rawOptions = ratePlans
       .filter((rp) => rp && rp.price != null)
-      .map((rp) => {
-        const occId =
-          rp.occupancyId != null
-            ? rp.occupancyId
-            : rp.occupancyValue != null
-              ? Number(rp.occupancyValue)
-              : rp.occupancy?.[0]?.id ?? 1;
+      .flatMap((rp) => {
+        const occupancyList =
+          Array.isArray(rp.occupancy) && rp.occupancy.length > 0
+            ? rp.occupancy
+            : [
+              {
+                id:
+                  rp.occupancyId != null
+                    ? rp.occupancyId
+                    : rp.occupancyValue != null
+                      ? Number(rp.occupancyValue)
+                      : 1,
+              },
+            ];
 
-        const label = makeFallbackLabel(occId, rp);
-        const unitPrice = parseFloat(rp.price);
+        return occupancyList.map((occ) => {
+          const occId = Number(occ?.id ?? 1);
+          const label = makeFallbackLabel(occId, rp);
+          const unitPrice = parseFloat(rp.price);
 
-        return {
-          selectionKey: `${cabin.cabinId}_${occId}_${label}`,
-          occupancy: String(occId),
-          price: unitPrice,
-          label,
-          peopleCount: String(occId) === "2" ? 2 : 1,
-          roomCount: 1,
-          totalPrice: String(occId) === "2" ? unitPrice * 2 : unitPrice,
-          unitSuffix: label === "독실 예약" ? "/실" : "/인",
-          ratePlanName: rp.ratePlanName || rp.name || "",
-          discountPercent: Number(rp.discountPercent || 0),
-          isInstructorOnly: !!rp.isInstructorOnly,
-        };
+          return {
+            selectionKey: `${cabin.cabinId}_${occId}_${label}`,
+            occupancy: String(occId),
+            price: unitPrice,
+            label,
+            peopleCount: occId === 2 ? 2 : 1,
+            roomCount: 1,
+            totalPrice: occId === 2 ? unitPrice * 2 : unitPrice,
+            unitSuffix: label === "독실 예약" ? "/실" : "/인",
+            ratePlanName: rp.ratePlanName || rp.name || "",
+            discountPercent: Number(rp.discountPercent || 0),
+            isInstructorOnly: !!rp.isInstructorOnly,
+          };
+        });
       });
 
     console.log("🔥 rawOptions", cabin?.name || cabin?.type || cabin?.cabinId, rawOptions);
