@@ -311,7 +311,7 @@ function buildSpecialCabinsFromInventory(inventory = [], mergedPricing = {}) {
                     price: matchedPrice.publicPrice,
                 });
 
-                if (capacity >= 2) {
+                if (remaining >= 2) {
                     occupancyOptions.push({
                         id: 2,
                         price: matchedPrice.publicPrice,
