@@ -72,6 +72,7 @@ function AdminBookings() {
                         <thead>
                             <tr style={{ background: "#f5f5f5" }}>
                                 <th style={thStyle}>예약번호</th>
+                                <th style={thStyle}>예약일</th>
                                 <th style={thStyle}>유형</th>
                                 <th style={thStyle}>예약자</th>
                                 <th style={thStyle}>선박</th>
@@ -79,91 +80,104 @@ function AdminBookings() {
                                 <th style={thStyle}>출발일</th>
                                 <th style={thStyle}>총액</th>
                                 <th style={thStyle}>결제상태</th>
-                                <th style={thStyle}>생성일시</th>
                                 <th style={thStyle}>인보이스</th>
                                 <th style={thStyle}>관리</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {bookings.map((booking) => (
-                                <tr key={booking.bookingId}>
-                                    <td style={tdStyle}>{booking.bookingId}</td>
-                                    <td style={tdStyle}>{booking.bookingType}</td>
-                                    <td style={tdStyle}>
-                                        {booking.guest?.name}
-                                        <br />
-                                        <span style={{ color: "#666", fontSize: "13px" }}>
-                                            {booking.guest?.email}
-                                        </span>
-                                    </td>
-                                    <td style={tdStyle}>{booking.trip?.boatName || "-"}</td>
-                                    <td style={tdStyle}>{booking.trip?.title || "-"}</td>
-                                    <td style={tdStyle}>{booking.trip?.startDate || "-"}</td>
-                                    <td style={tdStyle}>
-                                        {booking.currency} {Number(booking.totalPrice || 0).toLocaleString()}
-                                    </td>
-                                    <td style={tdStyle}>
-                                        <span
-                                            style={{
-                                                fontWeight: 700,
-                                                color:
-                                                    booking.paymentStatus === "paid"
-                                                        ? "#16a34a"
-                                                        : "#f59e0b",
-                                            }}
-                                        >
-                                            {getPaymentStatusLabel(booking.paymentStatus)}
-                                        </span>
-                                    </td>
-                                    <td style={tdStyle}>{formatDateTime(booking.createdAt)}</td>
-                                    <td style={tdStyle}>
-                                        {booking.invoiceFileUrl ? (
-                                            <a
-                                                href={booking.invoiceFileUrl}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                            >
-                                                열기
-                                            </a>
-                                        ) : (
-                                            "-"
-                                        )}
-                                    </td>
-                                    <td style={tdStyle}>
-                                        {booking.paymentStatus === "paid" ? (
-                                            <span style={{ color: "#16a34a", fontWeight: 700 }}>
-                                                확인완료
+                            {[...bookings]
+                                .sort(
+                                    (a, b) =>
+                                        new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+                                )
+                                .map((booking) => (
+                                    <tr key={booking.bookingId}>
+                                        <td style={tdStyle}>{booking.bookingId}</td>
+
+                                        <td style={tdStyle}>
+                                            {booking.createdAt ? formatDateTime(booking.createdAt) : "-"}
+                                        </td>
+
+                                        <td style={tdStyle}>{booking.bookingType || "-"}</td>
+
+                                        <td style={tdStyle}>
+                                            {booking.guest?.name || "-"}
+                                            <br />
+                                            <span style={{ color: "#666", fontSize: "13px" }}>
+                                                {booking.guest?.email || "-"}
                                             </span>
-                                        ) : (
-                                            <button
-                                                onClick={() =>
-                                                    handleMarkAsPaid(booking.bookingId)
-                                                }
-                                                disabled={updatingId === booking.bookingId}
+                                        </td>
+
+                                        <td style={tdStyle}>{booking.trip?.boatName || "-"}</td>
+
+                                        <td style={tdStyle}>{booking.trip?.title || "-"}</td>
+
+                                        <td style={tdStyle}>{booking.trip?.startDate || "-"}</td>
+
+                                        <td style={tdStyle}>
+                                            {booking.currency || "-"}{" "}
+                                            {Number(booking.totalPrice || 0).toLocaleString()}
+                                        </td>
+
+                                        <td style={tdStyle}>
+                                            <span
                                                 style={{
-                                                    padding: "8px 12px",
-                                                    backgroundColor: "#16a34a",
-                                                    color: "#fff",
-                                                    border: "none",
-                                                    borderRadius: "6px",
-                                                    cursor:
-                                                        updatingId === booking.bookingId
-                                                            ? "not-allowed"
-                                                            : "pointer",
-                                                    opacity:
-                                                        updatingId === booking.bookingId
-                                                            ? 0.6
-                                                            : 1,
+                                                    fontWeight: 700,
+                                                    color:
+                                                        booking.paymentStatus === "paid"
+                                                            ? "#16a34a"
+                                                            : "#f59e0b",
                                                 }}
                                             >
-                                                {updatingId === booking.bookingId
-                                                    ? "처리중..."
-                                                    : "입금확인"}
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
+                                                {getPaymentStatusLabel(booking.paymentStatus)}
+                                            </span>
+                                        </td>
+
+                                        <td style={tdStyle}>
+                                            {booking.invoiceFileUrl ? (
+                                                <a
+                                                    href={booking.invoiceFileUrl}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                >
+                                                    열기
+                                                </a>
+                                            ) : (
+                                                "-"
+                                            )}
+                                        </td>
+
+                                        <td style={tdStyle}>
+                                            {booking.paymentStatus === "paid" ? (
+                                                <span style={{ color: "#16a34a", fontWeight: 700 }}>
+                                                    확인완료
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleMarkAsPaid(booking.bookingId)}
+                                                    disabled={updatingId === booking.bookingId}
+                                                    style={{
+                                                        padding: "8px 12px",
+                                                        backgroundColor: "#16a34a",
+                                                        color: "#fff",
+                                                        border: "none",
+                                                        borderRadius: "6px",
+                                                        cursor:
+                                                            updatingId === booking.bookingId
+                                                                ? "not-allowed"
+                                                                : "pointer",
+                                                        opacity:
+                                                            updatingId === booking.bookingId ? 0.6 : 1,
+                                                    }}
+                                                >
+                                                    {updatingId === booking.bookingId
+                                                        ? "처리중..."
+                                                        : "입금확인"}
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
                         </tbody>
                     </table>
                 </div>
