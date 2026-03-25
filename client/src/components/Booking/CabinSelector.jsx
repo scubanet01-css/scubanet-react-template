@@ -66,6 +66,7 @@ function CabinSelector({ trip, cabins = [], selectedCabins, onChange, currency }
   const getPriceOptions = (cabin) => {
     const ratePlans = Array.isArray(cabin?.ratePlans) ? cabin.ratePlans : [];
     if (!ratePlans.length) return [];
+    console.log("🧪 ratePlans", cabin?.name || cabin?.type || cabin?.cabinId, cabin?.ratePlans);
 
     const isScubadates = trip?.source === "scubadates";
 
