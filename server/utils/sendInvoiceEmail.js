@@ -60,19 +60,20 @@ async function sendInvoiceEmail({
     console.log(`📨 이메일 전송 시도 중: ${filePath} → ${to}`);
 
     const transporter = nodemailer.createTransport({
-      host: "mw-002.cafe24.com",
+      host: "smtp.cafe24.com",
       port: 587,
       secure: false,
+      ignoreTLS: true,
       auth: {
         user: "noreply@scubanet-travel.com",
         pass: "tNErr2026",
       },
       authMethod: "LOGIN",
-      debug: true,
       logger: true,
-      tls: {
-        rejectUnauthorized: false,
-      },
+      debug: true,
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 15000,
     });
 
     const hasFOC = Number.isFinite(Number(focDiscount)) && Number(focDiscount) !== 0;
