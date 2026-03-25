@@ -306,10 +306,12 @@ function buildSpecialCabinsFromInventory(inventory = [], mergedPricing = {}) {
             const occupancyOptions = [];
 
             if (matchedPrice.publicPrice != null) {
-                occupancyOptions.push({
-                    id: 1,
-                    price: matchedPrice.publicPrice,
-                });
+                if (remaining >= 1) {
+                    occupancyOptions.push({
+                        id: 1,
+                        price: matchedPrice.publicPrice,
+                    });
+                }
 
                 if (remaining >= 2) {
                     occupancyOptions.push({
